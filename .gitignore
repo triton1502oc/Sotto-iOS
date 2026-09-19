@@ -20,3 +20,7 @@ fastlane/test_output
 
 # CodeGen
 # Sotto.xcodeproj can be regenerated via `xcodegen generate`, but committed for convenience
+
+# AI Assistant Instructions (Local Only)
+GEMINI.md
+ANTIGRAVITY.md

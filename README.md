@@ -26,6 +26,10 @@ This repository is the native iOS (SwiftUI) port of the original [Sotto Android 
 
 ```
 Sotto-iOS/
+├── docs/                           # Documentation and publishing guides
+│   ├── APP_STORE_LISTING.md        # App Store Connect metadata & review notes
+│   ├── CROSS_PLATFORM_WORKFLOW.md  # Android-to-iOS porting guide & checklist
+│   └── RUNNING_ON_DEVICE.md        # Physical device installation instructions
 ├── Sotto.xcodeproj                 # Xcode project bundle (generated via XcodeGen)
 ├── project.yml                     # XcodeGen specification
 ├── Sotto/
@@ -85,6 +89,8 @@ Sotto-iOS/
    ```
 4. Select the `Sotto` scheme and an iOS Simulator or connected physical device.
 5. Press `Cmd + R` to build and run.
+
+For instructions on deploying and testing on a physical iPhone or iPad, see [Running on Physical Device](docs/RUNNING_ON_DEVICE.md). For details on how features are ported from Android, see the [Cross-Platform Workflow](docs/CROSS_PLATFORM_WORKFLOW.md).
 
 ---
 
