@@ -1,0 +1,22 @@
+# Xcode
+.DS_Store
+*/build/*
+*.moved-aside
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+Packages/
+Package.pins
+Package.resolved
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# CodeGen
+# Sotto.xcodeproj can be regenerated via `xcodegen generate`, but committed for convenience
