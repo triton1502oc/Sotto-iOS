@@ -26,6 +26,9 @@ This repository is the native iOS (SwiftUI) port of the original [Sotto Android 
 
 ```
 Sotto-iOS/
+├── AGENTS.md                       # Universal AI agent guidelines & flight rules
+├── CHANGELOG.md                    # Project release notes & version history
+├── CONTRIBUTING.md                 # Design philosophy, architecture, & contribution guide
 ├── docs/                           # Documentation and publishing guides
 │   ├── APP_STORE_LISTING.md        # App Store Connect metadata & review notes
 │   ├── CROSS_PLATFORM_WORKFLOW.md  # Android-to-iOS porting guide & checklist
@@ -90,7 +93,13 @@ Sotto-iOS/
 4. Select the `Sotto` scheme and an iOS Simulator or connected physical device.
 5. Press `Cmd + R` to build and run.
 
-For instructions on deploying and testing on a physical iPhone or iPad, see [Running on Physical Device](docs/RUNNING_ON_DEVICE.md). For details on how features are ported from Android, see the [Cross-Platform Workflow](docs/CROSS_PLATFORM_WORKFLOW.md).
+## Documentation & Development
+
+- **Running on Physical Device**: See [docs/RUNNING_ON_DEVICE.md](docs/RUNNING_ON_DEVICE.md) for signing and installation instructions.
+- **Contributing & Architecture**: See [CONTRIBUTING.md](CONTRIBUTING.md) for design philosophy, architectural guardrails, and verification rules.
+- **Cross-Platform Workflow**: See [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md) for the Android-to-iOS porting guide and checklist.
+- **AI Agent Guidelines**: See [AGENTS.md](AGENTS.md) for universal flight rules for AI coding assistants.
+- **Changelog & Releases**: See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ---
 
