@@ -16,3 +16,6 @@ All notable changes to the Sotto (iOS) project will be documented in this file. 
 - **Offline & Private**: Zero accounts, zero tracking SDKs, zero cloud uploads. 100% local processing via `UserDefaults`.
 - **XcodeGen Integration**: Deterministic Xcode project generation via `project.yml`.
 - **Documentation**: Added [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), and comprehensive guides in `docs/`.
+
+### Assets
+- `Sotto-v1.0.0.ipa`: Release package for iOS sideloading (AltStore, SideStore, Sideloadly).
