@@ -157,6 +157,7 @@ public struct VoiceSettingsModal: View {
                             }
                         }
                         .tint(SottoTheme.primary)
+                        .demoTarget("voice_chimeToggle")
                         
                         Divider()
                             .background(Color.white.opacity(0.12))
@@ -185,6 +186,7 @@ public struct VoiceSettingsModal: View {
                                 }
                             }
                             .tint(SottoTheme.primary)
+                            .demoTarget("voice_dualLanguageToggle")
                             
                             if showLanguageSwitcher {
                                 VStack(alignment: .leading, spacing: 8) {
@@ -268,6 +270,7 @@ public struct VoiceSettingsModal: View {
                                         .stroke(Color.white.opacity(0.2), lineWidth: 1)
                                 )
                         }
+                        .demoTarget("voice_testVoiceButton")
                         
                         Divider()
                             .background(Color.white.opacity(0.12))
@@ -301,6 +304,7 @@ public struct VoiceSettingsModal: View {
                     }
                     .bold()
                     .foregroundColor(SottoTheme.confirm)
+                    .demoTarget("voice_doneButton")
                 }
             }
         }

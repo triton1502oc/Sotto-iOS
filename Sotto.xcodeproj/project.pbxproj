@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		14C9F014A6BC00133503B046 /* DemoAutomationRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CC9160B7A08390A91875D2 /* DemoAutomationRunner.swift */; };
 		2D4F430044489A8B5B421387 /* TranslationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5E8E026AB8A20658DD8382 /* TranslationHelper.swift */; };
 		2DF0CB5F729EF542DD5246E0 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DB5CF59AD2D6A9BD0F8FE3 /* MainViewModel.swift */; };
 		3DDC0BE5B1377078B0E6621C /* QuickSpeakBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */; };
@@ -53,6 +54,7 @@
 		81FBE274B9B8D2CD71D601A3 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		92208DF5C41416FDAE7DD8C9 /* PhraseRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseRepository.swift; sourceTree = "<group>"; };
 		933C92FEFEE7ED36415AAE2D /* FullscreenPhraseModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullscreenPhraseModal.swift; sourceTree = "<group>"; };
+		93CC9160B7A08390A91875D2 /* DemoAutomationRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAutomationRunner.swift; sourceTree = "<group>"; };
 		95A15978C9724C96D4D6E1B4 /* VoiceSettingsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettingsModal.swift; sourceTree = "<group>"; };
 		9D94CC1A48B0A600F8424554 /* VoiceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettings.swift; sourceTree = "<group>"; };
 		A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 		45ADC20DA0474BF055E86D9B /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				93CC9160B7A08390A91875D2 /* DemoAutomationRunner.swift */,
 				DCBBAC2D1DDA6F654C153B57 /* LocaleHelper.swift */,
 			);
 			path = Utils;
@@ -285,6 +288,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */,
+				14C9F014A6BC00133503B046 /* DemoAutomationRunner.swift in Sources */,
 				F2D9D9BA1300747675205C36 /* FullscreenPhraseModal.swift in Sources */,
 				EEA44B73F5CB7F15A93B9F11 /* LocaleHelper.swift in Sources */,
 				D3EA2EC4CCE185B808EC9BC0 /* MainView.swift in Sources */,

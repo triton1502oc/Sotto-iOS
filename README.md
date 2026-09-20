@@ -30,6 +30,17 @@ This repository is the native iOS (SwiftUI) port of the original [Sotto Android 
 
 ---
 
+## Demo Videos
+
+High-definition, synchronized demo videos showcasing Sotto's core features (Quick Speak, Emergency Hero Card, Contextual Categories, Card Reordering, Voice Settings with Attention Chime, and Dual-Language Speech):
+
+- **English Demo**: [`demo/sotto_demo_en.mp4`](demo/sotto_demo_en.mp4) (64s, H.264, 192 kbps AAC audio)
+- **Indonesian Demo**: [`demo/sotto_demo_id.mp4`](demo/sotto_demo_id.mp4) (64s, H.264, 192 kbps AAC audio)
+
+For full details on the automated recording pipeline and reproduction instructions, see [demo/README.md](demo/README.md).
+
+---
+
 ## Project Structure
 
 ```
@@ -37,10 +48,21 @@ Sotto-iOS/
 ├── AGENTS.md                       # Universal AI agent guidelines & flight rules
 ├── CHANGELOG.md                    # Project release notes & version history
 ├── CONTRIBUTING.md                 # Design philosophy, architecture, & contribution guide
+├── demo/                           # Synchronized demo videos & pipeline documentation
+│   ├── README.md                   # Video specs & reproduction instructions
+│   ├── sotto_demo_en.mp4           # English demo video
+│   └── sotto_demo_id.mp4           # Indonesian demo video
 ├── docs/                           # Documentation and publishing guides
 │   ├── APP_STORE_LISTING.md        # App Store Connect metadata & review notes
 │   ├── CROSS_PLATFORM_WORKFLOW.md  # Android-to-iOS porting guide & checklist
 │   └── RUNNING_ON_DEVICE.md        # Physical device installation instructions
+├── scripts/                        # Automation & recording pipeline scripts
+│   ├── record_demo_en.sh           # Automated English screen recording & muxing
+│   ├── record_demo_id.sh           # Automated Indonesian screen recording & muxing
+│   ├── generate_audio.py           # Audio synthesis & Attention Chime generator (EN)
+│   ├── generate_audio_id.py        # Audio synthesis & Attention Chime generator (ID)
+│   ├── mux_audio.py                # Timeline audio-video muxer (EN)
+│   └── mux_audio_id.py             # Timeline audio-video muxer (ID)
 ├── Sotto.xcodeproj                 # Xcode project bundle (generated via XcodeGen)
 ├── project.yml                     # XcodeGen specification
 ├── Sotto/

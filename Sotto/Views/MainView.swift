@@ -2,40 +2,40 @@ import SwiftUI
 
 public struct MainView: View {
     @StateObject private var viewModel: MainViewModel
-    @State private var quickText: String = ""
     
     public init(viewModel: MainViewModel = MainViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
     public var body: some View {
-        ZStack {
-            SottoTheme.background
-                .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Top Bar
-                topBar
+        GeometryReader { geometry in
+            ZStack {
+                SottoTheme.background
+                    .ignoresSafeArea()
                 
-                // Category Filter Chips
-                categoryFilterRow
-                    .padding(.vertical, 8)
-                
-                // Phrases Grid / List
-                phrasesContent
-                
-                // Quick Speak Bar (docked at bottom)
-                QuickSpeakBarView(
-                    text: $quickText,
-                    onSpeak: { text in
-                        viewModel.speakQuickText(text)
-                    },
-                    onFullscreen: { text in
-                        let phrase = Phrase(text: text, language: LocaleHelper.langAuto)
-                        viewModel.activeFullscreenPhrase = phrase
-                    }
-                )
-            }
+                VStack(spacing: 0) {
+                    // Top Bar
+                    topBar
+                    
+                    // Category Filter Chips
+                    categoryFilterRow
+                        .padding(.vertical, 8)
+                    
+                    // Phrases Grid / List
+                    phrasesContent
+                    
+                    // Quick Speak Bar (docked at bottom)
+                    QuickSpeakBarView(
+                        text: $viewModel.quickText,
+                        onSpeak: { text in
+                            viewModel.speakQuickText(text)
+                        },
+                        onFullscreen: { text in
+                            let phrase = Phrase(text: text, language: LocaleHelper.langAuto)
+                            viewModel.activeFullscreenPhrase = phrase
+                        }
+                    )
+                }
             
             // Floating Action Button (+) in Edit Mode
             if viewModel.isEditMode {
@@ -125,7 +125,13 @@ public struct MainView: View {
                 }
             )
         }
+        .onAppear {
+            if DemoAutomationRunner.shared.isDemoRequested {
+                DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: geometry.size)
+            }
+        }
     }
+}
     
     // MARK: - Top Bar
     
@@ -165,6 +171,7 @@ public struct MainView: View {
                             .background(isPrimary ? SottoTheme.primary : Color.clear)
                             .cornerRadius(12)
                     }
+                    .demoTarget("langSwitch_primary")
                     
                     Button(action: { viewModel.activeSpeechTarget = "secondary" }) {
                         Text(secondaryCode)
@@ -175,6 +182,7 @@ public struct MainView: View {
                             .background(!isPrimary ? SottoTheme.primary : Color.clear)
                             .cornerRadius(12)
                     }
+                    .demoTarget("langSwitch_secondary")
                 }
                 .padding(2)
                 .background(SottoTheme.surfaceVariant)
@@ -192,6 +200,7 @@ public struct MainView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                 }
+                .demoTarget("topBar_voiceButton")
                 
                 Button(action: {
                     viewModel.isEditMode = false
@@ -202,6 +211,7 @@ public struct MainView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                 }
+                .demoTarget("topBar_doneButton")
             } else {
                 Button(action: {
                     viewModel.isEditMode = true
@@ -212,6 +222,7 @@ public struct MainView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                 }
+                .demoTarget("topBar_editButton")
             }
         }
         .padding(.horizontal, 16)
@@ -256,6 +267,7 @@ public struct MainView: View {
                                 .stroke(isEmergency && isSelected ? SottoTheme.emergencyBorder : Color.clear, lineWidth: 1)
                         )
                     }
+                    .demoTarget("chip_\(category.rawValue)")
                 }
             }
             .padding(.horizontal, 16)
@@ -289,9 +301,10 @@ public struct MainView: View {
                                 viewModel.activeFullscreenPhrase = phrase
                             }
                         )
+                        .demoTarget("emergencyCard")
                     } else {
                         HStack(spacing: 16) {
-                            ForEach(row.items) { phrase in
+                            ForEach(Array(row.items.enumerated()), id: \.element.id) { colIndex, phrase in
                                 PhraseCardView(
                                     phrase: phrase,
                                     isEditMode: viewModel.isEditMode,
@@ -307,6 +320,7 @@ public struct MainView: View {
                                         viewModel.activeFullscreenPhrase = phrase
                                     }
                                 )
+                                .demoTarget(phrase.spokenText != nil ? "dualLanguageCard" : (colIndex == 0 && rowIndex <= 1 ? "firstRegularCard" : (colIndex == 1 && rowIndex <= 1 ? "secondRegularCard" : "regularCard_\(phrase.id)")))
                             }
                             // If row has only 1 item, pad the other half
                             if row.items.count == 1 {

@@ -12,6 +12,7 @@ public final class MainViewModel: ObservableObject {
     @Published public var showAddPhraseDialog: Bool = false
     @Published public var showVoiceSettingsDialog: Bool = false
     @Published public var activeSpeechTarget: String = "primary"
+    @Published public var quickText: String = ""
     
     private let phraseRepository: PhraseRepositoryProtocol
     private let voiceSettingsRepository: VoiceSettingsRepositoryProtocol

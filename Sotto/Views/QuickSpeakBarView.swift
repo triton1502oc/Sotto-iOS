@@ -69,6 +69,7 @@ public struct QuickSpeakBarView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(speechRecognizer.isRecording ? SottoTheme.danger : Color.white.opacity(0.12), lineWidth: 1)
                 )
+                .demoTarget("quickSpeak_textField")
                 
                 // Fullscreen Button
                 Button(action: {
@@ -84,6 +85,7 @@ public struct QuickSpeakBarView: View {
                         .cornerRadius(10)
                 }
                 .disabled(!isNotEmpty)
+                .demoTarget("quickSpeak_fullscreenButton")
                 
                 // Speak Button
                 Button(action: {
@@ -99,6 +101,7 @@ public struct QuickSpeakBarView: View {
                         .cornerRadius(10)
                 }
                 .disabled(!isNotEmpty)
+                .demoTarget("quickSpeak_speakButton")
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)

@@ -83,6 +83,7 @@ public struct FullscreenPhraseModal: View {
                                 .foregroundColor(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.textPrimary)
                                 .frame(width: 44, height: 44)
                         }
+                        .demoTarget("fullscreen_dismissButton")
                     }
                 }
                 .padding(.horizontal, 20)
@@ -132,6 +133,7 @@ public struct FullscreenPhraseModal: View {
                                 .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
                                 .cornerRadius(16)
                         }
+                        .demoTarget("fullscreen_speakPrimary")
                         
                         Button(action: {
                             onSpeakSecondary?(phrase)
@@ -145,6 +147,7 @@ public struct FullscreenPhraseModal: View {
                                 .background(SottoTheme.surfaceVariant)
                                 .cornerRadius(16)
                         }
+                        .demoTarget("fullscreen_speakSecondary")
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
@@ -164,6 +167,7 @@ public struct FullscreenPhraseModal: View {
                         .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
                         .cornerRadius(16)
                     }
+                    .demoTarget("fullscreen_speakButton")
                     .padding(.horizontal, 20)
                     .padding(.bottom, 20)
                 }
