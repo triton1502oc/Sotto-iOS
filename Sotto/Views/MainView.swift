@@ -183,7 +183,7 @@ public struct MainView: View {
     private var categoryFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(PhraseCategory.filterCategories) { category in
+                ForEach(PhraseCategory.filterCategories, id: \.self) { category in
                     let isSelected = viewModel.selectedCategory == category
                     let isEmergency = category == .emergency
                     
@@ -196,7 +196,7 @@ public struct MainView: View {
                                     .font(.system(size: 12))
                             }
                             Text(category.displayName)
-                                .font(.system(size: 14, weight: isSelected ? .bold : .normal))
+                                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
                         }
                         .foregroundColor(
                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedText :

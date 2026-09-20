@@ -71,7 +71,7 @@ public struct PhraseEditModal: View {
                                 .foregroundColor(SottoTheme.textSecondary)
                             
                             HStack(spacing: 8) {
-                                ForEach(PhraseCategory.selectableCategories) { category in
+                                ForEach(PhraseCategory.selectableCategories, id: \.self) { category in
                                     let isSelected = selectedCategory == category
                                     let isEmergency = category == .emergency
                                     
@@ -82,7 +82,7 @@ public struct PhraseEditModal: View {
                                                     .font(.system(size: 12))
                                             }
                                             Text(category.displayName)
-                                                .font(.system(size: 13, weight: isSelected ? .bold : .normal))
+                                                .font(.system(size: 13, weight: isSelected ? .bold : .regular))
                                         }
                                         .foregroundColor(
                                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedText :

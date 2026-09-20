@@ -64,13 +64,13 @@ public final class ChimePlayer: NSObject, AVAudioPlayerDelegate {
         data.reserveCapacity(44 + Int(pcmDataSize))
         
         // RIFF Header
-        data.append(contentsOf: [UInt8](ascii: "RIFF"))
+        data.append(contentsOf: Array("RIFF".utf8))
         var chunkSizeLE = totalChunkSize.littleEndian
         data.append(Data(bytes: &chunkSizeLE, count: 4))
-        data.append(contentsOf: [UInt8](ascii: "WAVE"))
+        data.append(contentsOf: Array("WAVE".utf8))
         
         // "fmt " Subchunk
-        data.append(contentsOf: [UInt8](ascii: "fmt "))
+        data.append(contentsOf: Array("fmt ".utf8))
         var subchunk1Size: UInt32 = 16
         data.append(Data(bytes: &subchunk1Size, count: 4))
         var audioFormat: UInt16 = 1 // PCM
@@ -87,7 +87,7 @@ public final class ChimePlayer: NSObject, AVAudioPlayerDelegate {
         data.append(Data(bytes: &bitsPerSample, count: 2))
         
         // "data" Subchunk
-        data.append(contentsOf: [UInt8](ascii: "data"))
+        data.append(contentsOf: Array("data".utf8))
         var dataSizeLE = pcmDataSize.littleEndian
         data.append(Data(bytes: &dataSizeLE, count: 4))
         
