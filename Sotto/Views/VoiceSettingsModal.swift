@@ -10,6 +10,8 @@ public struct VoiceSettingsModal: View {
     @State private var pitch: Float
     @State private var attentionChime: Bool
     @State private var selectedLanguage: String
+    @State private var showLanguageSwitcher: Bool
+    @State private var secondaryLanguage: String
     @State private var availableLanguages: [(code: String, name: String)] = []
     
     public init(
@@ -25,6 +27,8 @@ public struct VoiceSettingsModal: View {
         _pitch = State(initialValue: settings.wrappedValue.speechPitch)
         _attentionChime = State(initialValue: settings.wrappedValue.playAttentionChime)
         _selectedLanguage = State(initialValue: settings.wrappedValue.appLanguage)
+        _showLanguageSwitcher = State(initialValue: settings.wrappedValue.showLanguageSwitcher)
+        _secondaryLanguage = State(initialValue: settings.wrappedValue.secondaryLanguage)
     }
     
     private var speedLabel: String {
@@ -154,6 +158,91 @@ public struct VoiceSettingsModal: View {
                         }
                         .tint(SottoTheme.primary)
                         
+                        Divider()
+                            .background(Color.white.opacity(0.12))
+                            .padding(.vertical, 4)
+                        
+                        // Dual-Language Speech Section
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("Dual-Language Speech")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(SottoTheme.textPrimary)
+                            
+                            Toggle(isOn: Binding(
+                                get: { showLanguageSwitcher },
+                                set: { newValue in
+                                    showLanguageSwitcher = newValue
+                                    applyChanges()
+                                }
+                            )) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Show language switcher on home")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(SottoTheme.textPrimary)
+                                    Text("Adds a toggle in the top bar to switch speech language")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(SottoTheme.textSecondary)
+                                }
+                            }
+                            .tint(SottoTheme.primary)
+                            
+                            if showLanguageSwitcher {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    Text("Secondary speech language")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(SottoTheme.textSecondary)
+                                    
+                                    Menu {
+                                        ForEach(availableLanguages.filter { $0.code != LocaleHelper.langSystem }, id: \.code) { item in
+                                            Button(action: {
+                                                secondaryLanguage = item.code
+                                                applyChanges()
+                                            }) {
+                                                HStack {
+                                                    Text(item.name)
+                                                    if secondaryLanguage == item.code {
+                                                        Image(systemName: "checkmark")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } label: {
+                                        HStack {
+                                            Text(LocaleHelper.getLanguageDisplayName(secondaryLanguage))
+                                                .foregroundColor(SottoTheme.textPrimary)
+                                                .font(.system(size: 15))
+                                            Spacer()
+                                            Image(systemName: "chevron.down")
+                                                .font(.system(size: 13))
+                                                .foregroundColor(SottoTheme.textSecondary)
+                                        }
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 12)
+                                        .background(SottoTheme.background)
+                                        .cornerRadius(10)
+                                    }
+                                    
+                                    // Language Model Status
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text("Language model (\(LocaleHelper.getLanguageDisplayName(secondaryLanguage)))")
+                                                .font(.system(size: 13, weight: .medium))
+                                                .foregroundColor(SottoTheme.textPrimary)
+                                            Text("Downloaded (Ready offline)")
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color(hex: 0x81C784))
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 10)
+                                    .background(SottoTheme.surfaceVariant.opacity(0.5))
+                                    .cornerRadius(8)
+                                }
+                                .padding(.top, 4)
+                            }
+                        }
+                        
                         // Test Voice Button
                         Button(action: {
                             let current = VoiceSettings(
@@ -161,7 +250,9 @@ public struct VoiceSettingsModal: View {
                                 speechPitch: pitch,
                                 voiceIdentifier: settings.voiceIdentifier,
                                 appLanguage: selectedLanguage,
-                                playAttentionChime: attentionChime
+                                playAttentionChime: attentionChime,
+                                showLanguageSwitcher: showLanguageSwitcher,
+                                secondaryLanguage: secondaryLanguage
                             )
                             onTestVoice(current)
                         }) {
@@ -184,7 +275,7 @@ public struct VoiceSettingsModal: View {
                         
                         // About Section
                         VStack(spacing: 8) {
-                            Text("Sotto v1.0.0")
+                            Text("Sotto v1.5.2")
                                 .font(.system(size: 13))
                                 .foregroundColor(SottoTheme.textSecondary.opacity(0.6))
                             
@@ -225,7 +316,9 @@ public struct VoiceSettingsModal: View {
             speechPitch: pitch,
             voiceIdentifier: settings.voiceIdentifier,
             appLanguage: selectedLanguage,
-            playAttentionChime: attentionChime
+            playAttentionChime: attentionChime,
+            showLanguageSwitcher: showLanguageSwitcher,
+            secondaryLanguage: secondaryLanguage
         )
         settings = updated
     }

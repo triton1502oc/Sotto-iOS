@@ -14,9 +14,9 @@ Ready-to-use metadata, descriptions, keywords, screenshot specifications, and pr
 * **Secondary Category:** `Productivity`
 * **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)
 
-### Promotional Text *(167 / 170 characters)*
+### Promotional Text *(168 / 170 characters)*
 ```text
-Dignified, one-touch AAC speech communication for autistic teens, adults, and non-speaking individuals. Low-stimulus dark theme, emergency hero card, and 100% private.
+Dignified, one-touch AAC speech communication for autistic teens, adults, and speech-impaired users. Low-stimulus dark theme, emergency hero card, and 100% private.
 ```
 
 ### Keywords *(Comma-separated, no spaces after commas, 96 / 100 characters)*
@@ -24,9 +24,9 @@ Dignified, one-touch AAC speech communication for autistic teens, adults, and no
 aac,autism,speech,assistive,talk,tts,nonverbal,communication,mute,autistic,emergency,text to speech
 ```
 
-### Full Description *(Markdown & Plain Text compliant, ~1,900 / 4,000 characters)*
+### Full Description *(Markdown & Plain Text compliant, ~1,950 / 4,000 characters)*
 ```text
-Sotto (meaning "under one's breath" or a soft voice) is an assistive augmentative and alternative communication (AAC) app designed for autistic teens, adults, and non-speaking individuals who need clear, dignified, and low-stimulation text-to-speech support.
+Sotto (meaning "under one's breath" or a soft voice) is an assistive augmentative and alternative communication (AAC) app designed for autistic teens, adults, speech-impaired individuals, and non-speaking users who need clear, dignified, and low-stimulation text-to-speech support.
 
 Unlike typical AAC tools built with pediatric cartoon symbols and complex administrative menus, Sotto provides a calm, mature, and predictable environment built specifically for everyday communication.
 
@@ -55,6 +55,9 @@ Optionally sound a gentle, two-tone chime (D5 -> A5) and vibration before speaki
 
 • Configurable Voice & Speed
 Fine-tune your speech output to your comfort. Adjust speech rate and pitch with a live voice preview.
+
+• Dual-Language Speech & On-Device Auto-Translate
+Display cards in one language while speaking in another (e.g., English card text read aloud in Indonesian). Includes one-tap on-device auto-translation with zero cloud text transmission and dual-language speak controls in fullscreen view.
 
 • Fully Customizable
 Toggle "Edit List" when you want to add new phrases, edit existing text, delete phrases, or assign categories.

@@ -1,13 +1,13 @@
 # Contributing to Sotto (iOS)
 
 ### TL;DR
-Sotto is an assistive communication (AAC) app designed for autistic teens and adults. We welcome contributions that uphold our dignified, low-stimulation design philosophy, strict SwiftUI architecture, and 1:1 feature parity with Sotto Android.
+Sotto is an assistive communication (AAC) app designed for autistic teens and adults, speech-impaired individuals, and non-speaking users. We welcome contributions that uphold our dignified, low-stimulation design philosophy, strict SwiftUI architecture, and 1:1 feature parity with Sotto Android.
 
 ---
 
 ## 1. Mission & Design Philosophy
 
-Sotto (meaning *"under one's breath"* / soft voice) is designed specifically for autistic teens, adults, and non-speaking individuals who need clear, dignified text-to-speech support.
+Sotto (meaning *"under one's breath"* / soft voice) is designed specifically for autistic teens, adults, speech-impaired individuals, and non-speaking users who need clear, dignified text-to-speech support.
 
 * **Dignified & Mature UI**: Zero cartoon clip-art, zero pediatric pastel palettes, and zero nested visual clutter.
 * **Low-Stimulus & High-Contrast**: Dark-neutral theme (`#121212` background, `#1E1E1E` surface) with high-contrast text (`#E0E0E0`) and large, fast touch targets.
@@ -59,3 +59,10 @@ Sotto (meaning *"under one's breath"* / soft voice) is designed specifically for
 * Releases are tracked in [CHANGELOG.md](CHANGELOG.md) and published via GitHub Releases (`gh release create`).
 * App Store assets and metadata are documented in [docs/APP_STORE_LISTING.md](docs/APP_STORE_LISTING.md).
 * Cross-platform porting guidelines are documented in [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md).
+
+---
+
+## 5. Licensing & Inbound Contributions
+
+Sotto is licensed under the [GNU General Public License v3.0](LICENSE) with an Apple App Store Exception. All contributions submitted to this repository are understood to be licensed under these same terms.
+

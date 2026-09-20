@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2D4F430044489A8B5B421387 /* TranslationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB5E8E026AB8A20658DD8382 /* TranslationHelper.swift */; };
 		2DF0CB5F729EF542DD5246E0 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1DB5CF59AD2D6A9BD0F8FE3 /* MainViewModel.swift */; };
 		3DDC0BE5B1377078B0E6621C /* QuickSpeakBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */; };
 		473A4D1EF52751EC7BDC3A64 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */; };
 		4CD6302713AC84FEFD20215E /* SpeechRecognizerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560972E52962ED7AD92AC85A /* SpeechRecognizerService.swift */; };
 		691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B55F23C484A0237DA644B35 /* ChimePlayer.swift */; };
+		78092A8B5735AB5313EC7DEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A24908333DE146E3D8CF491 /* PrivacyInfo.xcprivacy */; };
 		7D285F069E47980D04FDCBE1 /* SottoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB5E6918B1C8328F8FCB740B /* SottoTests.swift */; };
 		814A321F8CABF94168522D57 /* SottoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3D46D2F57F9B2A8F0B0168B /* SottoApp.swift */; };
 		90CAEEE8F5AA9772AD6F4FC7 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C203C02585BC6B4EE7610171 /* Assets.xcassets */; };
@@ -42,6 +44,7 @@
 		0E81F2622E53599603D99FE8 /* PhraseCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseCardView.swift; sourceTree = "<group>"; };
 		19108C1E76AF0DC6FF388D5C /* PhraseEditModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseEditModal.swift; sourceTree = "<group>"; };
 		19EA034914959BAF2965EE1F /* Phrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phrase.swift; sourceTree = "<group>"; };
+		1A24908333DE146E3D8CF491 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2A94A254F9B50269EE1EAB8A /* Sotto.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Sotto.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		378FC8A333BBE8CBF711C792 /* VoiceSettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettingsRepository.swift; sourceTree = "<group>"; };
 		560972E52962ED7AD92AC85A /* SpeechRecognizerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizerService.swift; sourceTree = "<group>"; };
@@ -57,6 +60,7 @@
 		A8B54D57DD9AC696E5411B70 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AEA9648D29EB3F5FF0F8D077 /* SottoTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SottoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C203C02585BC6B4EE7610171 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		CB5E8E026AB8A20658DD8382 /* TranslationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationHelper.swift; sourceTree = "<group>"; };
 		DCBBAC2D1DDA6F654C153B57 /* LocaleHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleHelper.swift; sourceTree = "<group>"; };
 		E3D46D2F57F9B2A8F0B0168B /* SottoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoApp.swift; sourceTree = "<group>"; };
 		EB5E6918B1C8328F8FCB740B /* SottoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoTests.swift; sourceTree = "<group>"; };
@@ -143,6 +147,7 @@
 				7B55F23C484A0237DA644B35 /* ChimePlayer.swift */,
 				560972E52962ED7AD92AC85A /* SpeechRecognizerService.swift */,
 				A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */,
+				CB5E8E026AB8A20658DD8382 /* TranslationHelper.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -160,6 +165,7 @@
 			children = (
 				C203C02585BC6B4EE7610171 /* Assets.xcassets */,
 				A8B54D57DD9AC696E5411B70 /* Info.plist */,
+				1A24908333DE146E3D8CF491 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -228,6 +234,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					FED82104CD54FDCBF3A1311B = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 0712DFF1311348F061AB6BB7 /* Build configuration list for PBXProject "Sotto" */;
@@ -256,6 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				90CAEEE8F5AA9772AD6F4FC7 /* Assets.xcassets in Resources */,
+				78092A8B5735AB5313EC7DEA /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +298,7 @@
 				4CD6302713AC84FEFD20215E /* SpeechRecognizerService.swift in Sources */,
 				473A4D1EF52751EC7BDC3A64 /* SpeechService.swift in Sources */,
 				E98802E5AF4F31B95ABBCAC6 /* Theme.swift in Sources */,
+				2D4F430044489A8B5B421387 /* TranslationHelper.swift in Sources */,
 				F7017AF3AC70719B612EE848 /* VoiceSettings.swift in Sources */,
 				E47EF526BBC7E02278EA6898 /* VoiceSettingsModal.swift in Sources */,
 				DB6B73CD6F36992D2FB9BD3C /* VoiceSettingsRepository.swift in Sources */,
@@ -310,8 +321,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sotto/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -467,8 +478,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGNING_ALLOWED = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Sotto/Resources/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;

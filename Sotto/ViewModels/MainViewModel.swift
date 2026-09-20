@@ -11,6 +11,7 @@ public final class MainViewModel: ObservableObject {
     @Published public var phraseToEdit: Phrase? = nil
     @Published public var showAddPhraseDialog: Bool = false
     @Published public var showVoiceSettingsDialog: Bool = false
+    @Published public var activeSpeechTarget: String = "primary"
     
     private let phraseRepository: PhraseRepositoryProtocol
     private let voiceSettingsRepository: VoiceSettingsRepositoryProtocol
@@ -87,9 +88,29 @@ public final class MainViewModel: ObservableObject {
     // MARK: - Speech
     
     public func speak(phrase: Phrase) {
+        if voiceSettings.showLanguageSwitcher && activeSpeechTarget == "secondary",
+           let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !spoken.isEmpty {
+            speechService.speak(
+                text: spoken,
+                language: phrase.spokenLanguage ?? voiceSettings.secondaryLanguage,
+                settings: voiceSettings
+            )
+        } else {
+            speechService.speak(
+                text: phrase.text,
+                language: phrase.language,
+                settings: voiceSettings
+            )
+        }
+    }
+    
+    public func speakText(_ text: String, language: String? = nil) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
         speechService.speak(
-            text: phrase.text,
-            language: phrase.language,
+            text: trimmed,
+            language: language ?? LocaleHelper.langAuto,
             settings: voiceSettings
         )
     }

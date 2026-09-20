@@ -3,19 +3,29 @@ import SwiftUI
 public struct PhraseCardView: View {
     public let phrase: Phrase
     public let isEditMode: Bool
+    public let showAlternateSpeech: Bool
     public let onTap: () -> Void
     public let onLongPress: () -> Void
     
     public init(
         phrase: Phrase,
         isEditMode: Bool,
+        showAlternateSpeech: Bool = false,
         onTap: @escaping () -> Void,
         onLongPress: @escaping () -> Void
     ) {
         self.phrase = phrase
         self.isEditMode = isEditMode
+        self.showAlternateSpeech = showAlternateSpeech
         self.onTap = onTap
         self.onLongPress = onLongPress
+    }
+    
+    private var hasSpokenText: Bool {
+        guard showAlternateSpeech, let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            return false
+        }
+        return !spoken.isEmpty
     }
     
     public var body: some View {
@@ -43,7 +53,7 @@ public struct PhraseCardView: View {
     
     @ViewBuilder
     private var emergencyCardContent: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 8) {
             // Emergency Badge
             HStack(spacing: 4) {
                 Text("🚨")
@@ -64,9 +74,22 @@ public struct PhraseCardView: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .padding(.horizontal, 12)
+            
+            if hasSpokenText, let spoken = phrase.spokenText {
+                HStack(spacing: 4) {
+                    Text("🗣️")
+                        .font(.system(size: 12))
+                    Text(spoken)
+                        .font(.system(size: 13))
+                        .foregroundColor(Color(hex: 0xFFFFCC80).opacity(0.8))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .padding(.horizontal, 8)
+            }
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
+        .padding(.vertical, 16)
         .padding(.horizontal, 16)
         .background(isEditMode ? SottoTheme.surfaceVariant : SottoTheme.emergencyBackground)
         .cornerRadius(16)
@@ -84,7 +107,23 @@ public struct PhraseCardView: View {
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(SottoTheme.textPrimary)
                 .multilineTextAlignment(.center)
-                .padding(12)
+                .lineLimit(hasSpokenText ? 3 : 4)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+            
+            if hasSpokenText, let spoken = phrase.spokenText {
+                Spacer().frame(height: 4)
+                HStack(spacing: 4) {
+                    Text("🗣️")
+                        .font(.system(size: 11))
+                    Text(spoken)
+                        .font(.system(size: 12))
+                        .foregroundColor(SottoTheme.textSecondary.opacity(0.7))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                }
+                .padding(.horizontal, 8)
+            }
             Spacer()
         }
         .frame(maxWidth: .infinity)

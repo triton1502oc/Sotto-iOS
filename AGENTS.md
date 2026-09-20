@@ -8,7 +8,7 @@ All AI coding agents (Copilot, Cursor, Claude, Antigravity, etc.) working on Sot
 ## 1. Context & Architecture
 
 Before making changes, familiarize yourself with [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md):
-- **Domain**: Assistive Augmentative and Alternative Communication (AAC) for autistic teens & adults.
+- **Domain**: Assistive Augmentative and Alternative Communication (AAC) for autistic teens & adults, speech-impaired individuals, and non-speaking users.
 - **UI Policy**: Low-stimulus, dignified, 100% SwiftUI. Never use legacy Storyboards or UIKit xibs.
 - **Data Flow**: Unidirectional state management (`ObservableObject`, `@Published`, state flows down, events flow up).
 - **Audio & Speech**: Native `AVFoundation` and `Speech` framework with zero third-party dependencies.

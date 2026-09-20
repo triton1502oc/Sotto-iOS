@@ -68,8 +68,14 @@ public struct MainView: View {
         .fullScreenCover(item: $viewModel.activeFullscreenPhrase) { phrase in
             FullscreenPhraseModal(
                 phrase: phrase,
+                voiceSettings: viewModel.voiceSettings,
                 onSpeak: { toSpeak in
-                    viewModel.speak(phrase: toSpeak)
+                    viewModel.speakText(toSpeak.text, language: toSpeak.language)
+                },
+                onSpeakSecondary: { toSpeak in
+                    if let spoken = toSpeak.spokenText {
+                        viewModel.speakText(spoken, language: toSpeak.spokenLanguage ?? viewModel.voiceSettings.secondaryLanguage)
+                    }
                 },
                 onDismiss: {
                     viewModel.activeFullscreenPhrase = nil
@@ -78,6 +84,7 @@ public struct MainView: View {
         }
         .sheet(isPresented: $viewModel.showAddPhraseDialog) {
             PhraseEditModal(
+                voiceSettings: viewModel.voiceSettings,
                 onSave: { newPhrase in
                     viewModel.addPhrase(newPhrase)
                     viewModel.showAddPhraseDialog = false
@@ -90,6 +97,7 @@ public struct MainView: View {
         .sheet(item: $viewModel.phraseToEdit) { phrase in
             PhraseEditModal(
                 existingPhrase: phrase,
+                voiceSettings: viewModel.voiceSettings,
                 onSave: { updated in
                     viewModel.editPhrase(old: phrase, new: updated)
                     viewModel.phraseToEdit = nil
@@ -138,6 +146,40 @@ public struct MainView: View {
                     .background(SottoTheme.warning)
                     .cornerRadius(6)
                     .padding(.trailing, 6)
+            }
+            
+            if viewModel.voiceSettings.showLanguageSwitcher {
+                let isPrimary = viewModel.activeSpeechTarget == "primary"
+                let primaryCode = LocaleHelper.getLocaleForLanguage(
+                    LocaleHelper.getEffectiveLanguage(appLanguage: viewModel.voiceSettings.appLanguage)
+                ).language.languageCode?.identifier.uppercased() ?? "EN"
+                let secondaryCode = viewModel.voiceSettings.secondaryLanguage.uppercased()
+                
+                HStack(spacing: 2) {
+                    Button(action: { viewModel.activeSpeechTarget = "primary" }) {
+                        Text(primaryCode)
+                            .font(.system(size: 12, weight: isPrimary ? .bold : .regular))
+                            .foregroundColor(isPrimary ? SottoTheme.onPrimary : SottoTheme.textSecondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(isPrimary ? SottoTheme.primary : Color.clear)
+                            .cornerRadius(12)
+                    }
+                    
+                    Button(action: { viewModel.activeSpeechTarget = "secondary" }) {
+                        Text(secondaryCode)
+                            .font(.system(size: 12, weight: !isPrimary ? .bold : .regular))
+                            .foregroundColor(!isPrimary ? SottoTheme.onPrimary : SottoTheme.textSecondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(!isPrimary ? SottoTheme.primary : Color.clear)
+                            .cornerRadius(12)
+                    }
+                }
+                .padding(2)
+                .background(SottoTheme.surfaceVariant)
+                .cornerRadius(14)
+                .padding(.trailing, 4)
             }
             
             if viewModel.isEditMode {
@@ -235,6 +277,7 @@ public struct MainView: View {
                         PhraseCardView(
                             phrase: phrase,
                             isEditMode: viewModel.isEditMode,
+                            showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
                             onTap: {
                                 if viewModel.isEditMode {
                                     viewModel.phraseToEdit = phrase
@@ -252,6 +295,7 @@ public struct MainView: View {
                                 PhraseCardView(
                                     phrase: phrase,
                                     isEditMode: viewModel.isEditMode,
+                                    showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
                                     onTap: {
                                         if viewModel.isEditMode {
                                             viewModel.phraseToEdit = phrase

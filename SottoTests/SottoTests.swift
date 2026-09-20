@@ -121,6 +121,8 @@ final class SottoTests: XCTestCase {
         XCTAssertNil(settings.voiceIdentifier)
         XCTAssertEqual(settings.appLanguage, "system")
         XCTAssertFalse(settings.playAttentionChime)
+        XCTAssertFalse(settings.showLanguageSwitcher)
+        XCTAssertEqual(settings.secondaryLanguage, "id")
     }
     
     func testVoiceSettingsCodable() throws {
@@ -129,12 +131,57 @@ final class SottoTests: XCTestCase {
             speechPitch: 0.9,
             voiceIdentifier: "com.apple.voice.compact.en-US.Samantha",
             appLanguage: "en",
-            playAttentionChime: true
+            playAttentionChime: true,
+            showLanguageSwitcher: true,
+            secondaryLanguage: "id"
         )
         
         let data = try JSONEncoder().encode(settings)
         let decoded = try JSONDecoder().decode(VoiceSettings.self, from: data)
         
         XCTAssertEqual(settings, decoded)
+    }
+    
+    // MARK: - Dual-Language & SpokenText Tests
+    
+    func testPhraseWithSpokenTextCodableRoundtrip() throws {
+        let phrase = Phrase(
+            id: UUID(),
+            text: "I need a quiet space.",
+            spokenText: "Saya butuh tempat tenang.",
+            spokenLanguage: "id",
+            language: "en",
+            isEmergency: false,
+            category: .needs
+        )
+        
+        let data = try JSONEncoder().encode(phrase)
+        let decoded = try JSONDecoder().decode(Phrase.self, from: data)
+        
+        XCTAssertEqual(phrase.id, decoded.id)
+        XCTAssertEqual(phrase.text, decoded.text)
+        XCTAssertEqual(phrase.spokenText, decoded.spokenText)
+        XCTAssertEqual(phrase.spokenLanguage, decoded.spokenLanguage)
+        XCTAssertEqual(phrase.language, decoded.language)
+        XCTAssertEqual(phrase.isEmergency, decoded.isEmergency)
+        XCTAssertEqual(phrase.category, decoded.category)
+    }
+    
+    // MARK: - TranslationHelper Tests
+    
+    func testTranslationHelperDictionary() {
+        let enText = "I need a quiet space."
+        let idTranslation = TranslationHelper.dictionaryTranslation(for: enText, sourceLang: "en", targetLang: "id")
+        XCTAssertEqual(idTranslation, "Saya butuh tempat tenang.")
+        
+        let idText = "Terima kasih."
+        let enTranslation = TranslationHelper.dictionaryTranslation(for: idText, sourceLang: "id", targetLang: "en")
+        XCTAssertEqual(enTranslation, "Thank you.")
+        
+        let normalizedId = TranslationHelper.normalizeLanguageCode("id-ID")
+        XCTAssertEqual(normalizedId, "id")
+        
+        let normalizedEn = TranslationHelper.normalizeLanguageCode("en_US")
+        XCTAssertEqual(normalizedEn, "en")
     }
 }

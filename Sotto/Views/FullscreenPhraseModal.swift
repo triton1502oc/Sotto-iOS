@@ -2,21 +2,56 @@ import SwiftUI
 
 public struct FullscreenPhraseModal: View {
     public let phrase: Phrase
+    public let voiceSettings: VoiceSettings
     public let onSpeak: (Phrase) -> Void
+    public let onSpeakSecondary: ((Phrase) -> Void)?
     public let onDismiss: () -> Void
     
     public init(
         phrase: Phrase,
+        voiceSettings: VoiceSettings = VoiceSettings(),
         onSpeak: @escaping (Phrase) -> Void,
+        onSpeakSecondary: ((Phrase) -> Void)? = nil,
         onDismiss: @escaping () -> Void
     ) {
         self.phrase = phrase
+        self.voiceSettings = voiceSettings
         self.onSpeak = onSpeak
+        self.onSpeakSecondary = onSpeakSecondary
         self.onDismiss = onDismiss
     }
     
     private var isEmergency: Bool {
         phrase.isEmergency
+    }
+    
+    private var hasSpokenText: Bool {
+        guard voiceSettings.showLanguageSwitcher,
+              let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            return false
+        }
+        return !spoken.isEmpty
+    }
+    
+    private var primaryLangLabel: String {
+        let locale = LocaleHelper.resolvePhraseLocale(
+            phraseLang: phrase.language,
+            phraseText: phrase.text,
+            appLanguage: voiceSettings.appLanguage
+        )
+        let name = locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier
+        return name.capitalized
+    }
+    
+    private var secondaryLangLabel: String {
+        let spokenLang = phrase.spokenLanguage ?? voiceSettings.secondaryLanguage
+        let locale = LocaleHelper.resolvePhraseLocale(
+            phraseLang: spokenLang,
+            phraseText: phrase.spokenText ?? "",
+            appLanguage: voiceSettings.appLanguage
+        )
+        let name = locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier
+        return name.capitalized
     }
     
     public var body: some View {
@@ -55,33 +90,83 @@ public struct FullscreenPhraseModal: View {
                 
                 // Giant High-Contrast Phrase Text
                 Spacer()
-                Text(phrase.text)
-                    .font(.system(size: (isEmergency && phrase.text.count > 60) ? 36 : 48, weight: .bold))
-                    .foregroundColor(isEmergency ? SottoTheme.emergencyText : SottoTheme.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(10)
-                    .minimumScaleFactor(0.5)
-                    .padding(.horizontal, 24)
+                VStack(spacing: 16) {
+                    Text(phrase.text)
+                        .font(.system(size: (isEmergency && phrase.text.count > 60) ? 36 : 48, weight: .bold))
+                        .foregroundColor(isEmergency ? SottoTheme.emergencyText : SottoTheme.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(10)
+                        .minimumScaleFactor(0.5)
+                        .padding(.horizontal, 24)
+                    
+                    if hasSpokenText, let spoken = phrase.spokenText {
+                        HStack(spacing: 8) {
+                            Text("🗣️")
+                                .font(.system(size: 20))
+                            Text(spoken)
+                                .font(.system(size: 22, weight: .medium))
+                                .foregroundColor(SottoTheme.textSecondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(SottoTheme.surfaceVariant.opacity(0.6))
+                        .cornerRadius(12)
+                        .padding(.horizontal, 20)
+                    }
+                }
                 Spacer()
                 
-                // Big Speak Aloud Action Button
-                Button(action: {
-                    onSpeak(phrase)
-                }) {
+                // Action Buttons
+                if hasSpokenText {
                     HStack(spacing: 12) {
-                        Image(systemName: "speaker.wave.3.fill")
-                            .font(.system(size: 22, weight: .bold))
-                        Text("Speak Aloud")
-                            .font(.system(size: 22, weight: .bold))
+                        Button(action: {
+                            onSpeak(phrase)
+                        }) {
+                            Text("Speak (\(primaryLangLabel))")
+                                .font(.system(size: 15, weight: .bold))
+                                .lineLimit(1)
+                                .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : SottoTheme.onPrimary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
+                                .cornerRadius(16)
+                        }
+                        
+                        Button(action: {
+                            onSpeakSecondary?(phrase)
+                        }) {
+                            Text("Speak (\(secondaryLangLabel))")
+                                .font(.system(size: 15, weight: .bold))
+                                .lineLimit(1)
+                                .foregroundColor(SottoTheme.textPrimary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(SottoTheme.surfaceVariant)
+                                .cornerRadius(16)
+                        }
                     }
-                    .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : SottoTheme.onPrimary)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 64)
-                    .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
-                    .cornerRadius(16)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
+                } else {
+                    Button(action: {
+                        onSpeak(phrase)
+                    }) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "speaker.wave.3.fill")
+                                .font(.system(size: 22, weight: .bold))
+                            Text("Speak Aloud")
+                                .font(.system(size: 22, weight: .bold))
+                        }
+                        .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : SottoTheme.onPrimary)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 64)
+                        .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
+                        .cornerRadius(16)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 20)
             }
         }
         .overlay(
