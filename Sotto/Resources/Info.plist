@@ -17,17 +17,17 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.5.2</string>
+	<string>1.5.7</string>
 	<key>CFBundleVersion</key>
-	<string>2</string>
+	<string>3</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Sotto uses your microphone to transcribe speech when using the voice input button.</string>
+	<string>Sotto uses your microphone to transcribe speech when using the voice input button or Caregiver Receptive Mode.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Sotto uses speech recognition to convert your voice into text for Quick-Speak and custom phrases.</string>
+	<string>Sotto uses speech recognition to convert spoken words into text for Quick-Speak, custom phrases, and Caregiver Receptive Mode.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -29,6 +29,7 @@
 		F2D9D9BA1300747675205C36 /* FullscreenPhraseModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 933C92FEFEE7ED36415AAE2D /* FullscreenPhraseModal.swift */; };
 		F601608F9E07DBE0DCA0EE1E /* PhraseEditModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19108C1E76AF0DC6FF388D5C /* PhraseEditModal.swift */; };
 		F7017AF3AC70719B612EE848 /* VoiceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94CC1A48B0A600F8424554 /* VoiceSettings.swift */; };
+		F9063BF6D35C72017B467DD1 /* TwoWayConversationModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 		93CC9160B7A08390A91875D2 /* DemoAutomationRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoAutomationRunner.swift; sourceTree = "<group>"; };
 		95A15978C9724C96D4D6E1B4 /* VoiceSettingsModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettingsModal.swift; sourceTree = "<group>"; };
 		9D94CC1A48B0A600F8424554 /* VoiceSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettings.swift; sourceTree = "<group>"; };
+		9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoWayConversationModal.swift; sourceTree = "<group>"; };
 		A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
 		A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickSpeakBarView.swift; sourceTree = "<group>"; };
 		A8B54D57DD9AC696E5411B70 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -122,6 +124,7 @@
 				0E81F2622E53599603D99FE8 /* PhraseCardView.swift */,
 				19108C1E76AF0DC6FF388D5C /* PhraseEditModal.swift */,
 				A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */,
+				9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */,
 				95A15978C9724C96D4D6E1B4 /* VoiceSettingsModal.swift */,
 			);
 			path = Views;
@@ -303,6 +306,7 @@
 				473A4D1EF52751EC7BDC3A64 /* SpeechService.swift in Sources */,
 				E98802E5AF4F31B95ABBCAC6 /* Theme.swift in Sources */,
 				2D4F430044489A8B5B421387 /* TranslationHelper.swift in Sources */,
+				F9063BF6D35C72017B467DD1 /* TwoWayConversationModal.swift in Sources */,
 				F7017AF3AC70719B612EE848 /* VoiceSettings.swift in Sources */,
 				E47EF526BBC7E02278EA6898 /* VoiceSettingsModal.swift in Sources */,
 				DB6B73CD6F36992D2FB9BD3C /* VoiceSettingsRepository.swift in Sources */,

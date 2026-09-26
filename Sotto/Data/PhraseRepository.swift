@@ -25,6 +25,11 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                 Phrase(text: "Ya, silakan.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "Tidak, terima kasih.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "Terima kasih.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
+                Phrase(text: "Apakah merasa sakit?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Apakah butuh minum atau makan?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Apakah perlu ke kamar mandi?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Apakah merasa dingin atau panas?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Apakah ingin istirahat atau tidur?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
                 Phrase(text: "Halo.", language: LocaleHelper.langAuto, isEmergency: false, category: .general),
                 Phrase(text: "Tolong ulangi.", language: LocaleHelper.langAuto, isEmergency: false, category: .general)
             ]
@@ -37,6 +42,11 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                 Phrase(text: "Yes, please.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "No, thank you.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "Thank you.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
+                Phrase(text: "Are you in pain?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Do you need water or food?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Do you need the restroom?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Are you feeling cold or warm?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Do you want to rest or sleep?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
                 Phrase(text: "Hello.", language: LocaleHelper.langAuto, isEmergency: false, category: .general),
                 Phrase(text: "Please repeat that.", language: LocaleHelper.langAuto, isEmergency: false, category: .general)
             ]
@@ -48,11 +58,21 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             let defaults = Self.defaultPhrases()
             savePhrases(defaults)
             userDefaults.set(true, forKey: keyMigrated)
+            userDefaults.set(true, forKey: "care_migrated")
             return defaults
         }
         
         do {
             var phrases = try JSONDecoder().decode([Phrase].self, from: data)
+            var needsSave = false
+            
+            // Sanitize legacy "auto" spoken text
+            for i in 0..<phrases.count {
+                if phrases[i].spokenText == "auto" {
+                    phrases[i].spokenText = nil
+                    needsSave = true
+                }
+            }
             
             // Check emergency migration
             let isMigrated = userDefaults.bool(forKey: keyMigrated)
@@ -63,6 +83,22 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                     }
                 }
                 userDefaults.set(true, forKey: keyMigrated)
+                needsSave = true
+            }
+            
+            // Check Care category migration
+            let keyCareMigrated = "care_migrated"
+            let isCareMigrated = userDefaults.bool(forKey: keyCareMigrated)
+            if !isCareMigrated {
+                if !phrases.contains(where: { $0.category == .care }) {
+                    let careDefaults = Self.defaultPhrases().filter { $0.category == .care }
+                    phrases.append(contentsOf: careDefaults)
+                }
+                userDefaults.set(true, forKey: keyCareMigrated)
+                needsSave = true
+            }
+            
+            if needsSave {
                 savePhrases(phrases)
             }
             

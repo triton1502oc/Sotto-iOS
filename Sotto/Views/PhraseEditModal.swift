@@ -24,6 +24,7 @@ public struct PhraseEditModal: View {
     
     public init(
         existingPhrase: Phrase? = nil,
+        initialText: String = "",
         voiceSettings: VoiceSettings = VoiceSettings(),
         onSave: @escaping (Phrase) -> Void,
         onDelete: ((Phrase) -> Void)? = nil,
@@ -35,7 +36,7 @@ public struct PhraseEditModal: View {
         self.onDelete = onDelete
         self.onCancel = onCancel
         
-        _text = State(initialValue: existingPhrase?.text ?? "")
+        _text = State(initialValue: existingPhrase?.text ?? initialText)
         let initialSpoken = existingPhrase?.spokenText ?? ""
         _spokenText = State(initialValue: initialSpoken)
         _spokenLanguage = State(initialValue: existingPhrase?.spokenLanguage ?? voiceSettings.secondaryLanguage)

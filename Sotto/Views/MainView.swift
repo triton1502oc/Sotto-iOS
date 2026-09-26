@@ -33,6 +33,10 @@ public struct MainView: View {
                         onFullscreen: { text in
                             let phrase = Phrase(text: text, language: LocaleHelper.langAuto)
                             viewModel.activeFullscreenPhrase = phrase
+                        },
+                        onSaveAsCard: { text in
+                            viewModel.initialAddText = text
+                            viewModel.showAddPhraseDialog = true
                         }
                     )
                 }
@@ -65,6 +69,17 @@ public struct MainView: View {
             }
         }
         // Modals
+        .fullScreenCover(isPresented: $viewModel.showTwoWayDialog) {
+            TwoWayConversationModal(
+                allPhrases: viewModel.phrases,
+                onSpeakResponse: { text in
+                    viewModel.speakText(text, language: LocaleHelper.langAuto)
+                },
+                onDismiss: {
+                    viewModel.showTwoWayDialog = false
+                }
+            )
+        }
         .fullScreenCover(item: $viewModel.activeFullscreenPhrase) { phrase in
             FullscreenPhraseModal(
                 phrase: phrase,
@@ -84,12 +99,15 @@ public struct MainView: View {
         }
         .sheet(isPresented: $viewModel.showAddPhraseDialog) {
             PhraseEditModal(
+                initialText: viewModel.initialAddText,
                 voiceSettings: viewModel.voiceSettings,
                 onSave: { newPhrase in
                     viewModel.addPhrase(newPhrase)
+                    viewModel.initialAddText = ""
                     viewModel.showAddPhraseDialog = false
                 },
                 onCancel: {
+                    viewModel.initialAddText = ""
                     viewModel.showAddPhraseDialog = false
                 }
             )
@@ -190,40 +208,51 @@ public struct MainView: View {
                 .padding(.trailing, 4)
             }
             
-            if viewModel.isEditMode {
-                Button(action: {
-                    viewModel.showVoiceSettingsDialog = true
-                }) {
-                    Text("Voice")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                }
-                .demoTarget("topBar_voiceButton")
-                
-                Button(action: {
-                    viewModel.isEditMode = false
-                }) {
-                    Text("Done")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(SottoTheme.confirm)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                }
-                .demoTarget("topBar_doneButton")
-            } else {
-                Button(action: {
-                    viewModel.isEditMode = true
-                }) {
-                    Text("Edit List")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                }
-                .demoTarget("topBar_editButton")
+            // Caregiver Receptive Mode (👂)
+            Button(action: {
+                viewModel.showTwoWayDialog = true
+            }) {
+                Text("👂")
+                    .font(.system(size: 20))
+                    .frame(width: 36, height: 36)
             }
+            .demoTarget("topBar_listenModeButton")
+            
+            // Settings Gear Icon (Always accessible)
+            Button(action: {
+                viewModel.showVoiceSettingsDialog = true
+            }) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(SottoTheme.textSecondary)
+                    .frame(width: 36, height: 36)
+            }
+            .demoTarget("topBar_voiceButton")
+            
+            // Edit List / Done Button
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    viewModel.isEditMode.toggle()
+                }
+            }) {
+                HStack(spacing: 4) {
+                    Text(viewModel.isEditMode ? "✓" : "✏️")
+                        .font(.system(size: 13))
+                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : SottoTheme.textPrimary)
+                    Text(viewModel.isEditMode ? "Done" : "Edit List")
+                        .font(.system(size: 14, weight: viewModel.isEditMode ? .bold : .medium))
+                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : SottoTheme.textPrimary)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(viewModel.isEditMode ? SottoTheme.confirm.opacity(0.15) : SottoTheme.surfaceVariant)
+                .cornerRadius(18)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(viewModel.isEditMode ? SottoTheme.confirm : Color.white.opacity(0.1), lineWidth: 1)
+                )
+            }
+            .demoTarget("topBar_editButton")
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)

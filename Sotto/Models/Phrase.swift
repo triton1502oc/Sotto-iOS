@@ -5,6 +5,7 @@ public enum PhraseCategory: String, Codable, CaseIterable, Identifiable {
     case emergency = "Emergency"
     case needs = "Needs"
     case social = "Social"
+    case care = "Care"
     case general = "General"
     
     public var id: String { rawValue }
@@ -15,18 +16,19 @@ public enum PhraseCategory: String, Codable, CaseIterable, Identifiable {
         case .emergency: return "Emergency"
         case .needs: return "Needs"
         case .social: return "Social"
+        case .care: return "Care"
         case .general: return "General"
         }
     }
     
     /// Categories available for assignment to a phrase (excludes "All")
     public static var selectableCategories: [PhraseCategory] {
-        [.general, .needs, .social, .emergency]
+        [.general, .needs, .social, .care, .emergency]
     }
     
     /// Filter categories displayed in the top chip bar
     public static var filterCategories: [PhraseCategory] {
-        [.all, .emergency, .needs, .social, .general]
+        [.all, .emergency, .needs, .social, .care, .general]
     }
 }
 

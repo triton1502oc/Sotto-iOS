@@ -278,7 +278,8 @@ public struct VoiceSettingsModal: View {
                         
                         // About Section
                         VStack(spacing: 8) {
-                            Text("Sotto v1.5.2")
+                            let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.5.7"
+                            Text("Sotto v\(version)")
                                 .font(.system(size: 13))
                                 .foregroundColor(SottoTheme.textSecondary.opacity(0.6))
                             

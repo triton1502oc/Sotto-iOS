@@ -12,6 +12,8 @@ public final class MainViewModel: ObservableObject {
     @Published public var showAddPhraseDialog: Bool = false
     @Published public var showVoiceSettingsDialog: Bool = false
     @Published public var activeSpeechTarget: String = "primary"
+    @Published public var showTwoWayDialog: Bool = false
+    @Published public var initialAddText: String = ""
     @Published public var quickText: String = ""
     
     private let phraseRepository: PhraseRepositoryProtocol
@@ -89,14 +91,32 @@ public final class MainViewModel: ObservableObject {
     // MARK: - Speech
     
     public func speak(phrase: Phrase) {
-        if voiceSettings.showLanguageSwitcher && activeSpeechTarget == "secondary",
-           let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
-           !spoken.isEmpty {
-            speechService.speak(
-                text: spoken,
-                language: phrase.spokenLanguage ?? voiceSettings.secondaryLanguage,
-                settings: voiceSettings
-            )
+        if voiceSettings.showLanguageSwitcher && activeSpeechTarget == "secondary" {
+            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !spoken.isEmpty && spoken != LocaleHelper.langAuto {
+                speechService.speak(
+                    text: spoken,
+                    language: phrase.spokenLanguage ?? voiceSettings.secondaryLanguage,
+                    settings: voiceSettings
+                )
+            } else {
+                let sourceLocale = LocaleHelper.resolvePhraseLocale(phraseLang: phrase.language, phraseText: phrase.text, appLanguage: voiceSettings.appLanguage)
+                let sourceLang = sourceLocale.language.languageCode?.identifier ?? "en"
+                let targetLang = voiceSettings.secondaryLanguage
+                if let dictMatch = TranslationHelper.dictionaryTranslation(for: phrase.text, sourceLang: sourceLang, targetLang: targetLang) {
+                    speechService.speak(
+                        text: dictMatch,
+                        language: targetLang,
+                        settings: voiceSettings
+                    )
+                } else {
+                    speechService.speak(
+                        text: phrase.text,
+                        language: targetLang,
+                        settings: voiceSettings
+                    )
+                }
+            }
         } else {
             speechService.speak(
                 text: phrase.text,
@@ -119,11 +139,32 @@ public final class MainViewModel: ObservableObject {
     public func speakQuickText(_ text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
-        speechService.speak(
-            text: trimmed,
-            language: LocaleHelper.langAuto,
-            settings: voiceSettings
-        )
+        
+        if voiceSettings.showLanguageSwitcher && activeSpeechTarget == "secondary" {
+            let sourceLocale = LocaleHelper.resolvePhraseLocale(phraseLang: LocaleHelper.langAuto, phraseText: trimmed, appLanguage: voiceSettings.appLanguage)
+            let sourceLang = sourceLocale.language.languageCode?.identifier ?? "en"
+            let targetLang = voiceSettings.secondaryLanguage
+            
+            if let dictMatch = TranslationHelper.dictionaryTranslation(for: trimmed, sourceLang: sourceLang, targetLang: targetLang) {
+                speechService.speak(
+                    text: dictMatch,
+                    language: targetLang,
+                    settings: voiceSettings
+                )
+            } else {
+                speechService.speak(
+                    text: trimmed,
+                    language: targetLang,
+                    settings: voiceSettings
+                )
+            }
+        } else {
+            speechService.speak(
+                text: trimmed,
+                language: LocaleHelper.langAuto,
+                settings: voiceSettings
+            )
+        }
     }
     
     public func testVoice(with settings: VoiceSettings) {

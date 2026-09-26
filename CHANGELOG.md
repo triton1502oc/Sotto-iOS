@@ -3,7 +3,45 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
+## [v1.5.7] - 2026-09-26
+
+### Added
+- **Two-Way Caregiver Receptive Mode**: Dedicated receptive HUD accessible via the ear icon (`👂`) in the top bar, allowing caregivers, medical professionals, and communication partners to speak or present questions to non-speaking users.
+- **180° Face-to-Face Screen Flip**: One-tap screen inversion (`🔄 Flip`) that turns the question display and response dock upside down for conversation partners sitting across a table, while keeping caregiver controls upright.
+- **Read Aloud for Questions**: Added a `🔊 Read Aloud` button in caregiver mode to vocalize the displayed question text via offline TTS for users with visual fatigue or eyes closed.
+- **Categorized Question Bank**: Quick question picker with category filter chips (`Care`, `All`, `Needs`, `Social`, `Emergency`, `General`) for standard care and comfort checks.
+- **Dignified 4-Button Rapid Response**: High-contrast, tactile response dock with four dignified answers (`Yes`, `No`, `Repeat`, `Wait`), each triggering instant TTS speech, visual badge confirmation, and subtle haptic feedback.
+- **Care Category & Phrases**: Added new `Care` category filter chip with 5 default care phrases in English and Indonesian (*"Are you in pain?"*, *"Do you need water or food?"*, etc.) with automated migration for existing user libraries.
+- **Streamlined Midline Top Bar**: Unified top app bar featuring Two-Way Receptive Mode (`👂`), permanent Voice & Language Settings (`⚙️`), and clean rounded `[✏️ Edit List]` action button centered on the exact horizontal midline with zero layout shifting.
+- **Caregiver & User Guide**: Added comprehensive documentation in `docs/CAREGIVER_GUIDE.md` covering daily AAC cards, emergency hero mode, Quick-Speak, and caregiver two-way interactions.
+- **Community Standards**: Added Contributor Covenant `CODE_OF_CONDUCT.md` v2.1, `SECURITY.md`, pull request template, and issue templates.
+
+## [v1.5.6] - 2026-09-24
+
+### Added
+- **Multi-Line Quick-Speak View**: Typing sentences in the Quick-Speak bar now expands vertically (up to 4 lines), keeping the full sentence visible and easy to edit.
+- **Save as Card from Quick-Speak**: Added a `+` button in the Quick-Speak bar to save spontaneous phrases directly into your phrase board with one tap.
+- **Smart Dictation / Clear Toggle**: The input bar now shows voice dictation (`🎤`) when empty and smoothly switches to clear (`✕`) while typing, giving more space for text.
+
+## [v1.5.5] - 2026-09-22
+
+### Added
+- **Language Code Normalization**: Added normalization for 3-letter ISO-639-2 language codes (e.g. `eng`, `ind`) returned by system TTS engines, mapping them properly to standard ISO-639-1 tags.
+- **Localization Guide**: Added `docs/LANGUAGE_AND_LOCALIZATION.md` documenting card seeding, app locale switching, and offline translation.
+
+## [v1.5.4] - 2026-09-21
+
+### Added
+- **Settings Gear Icon**: Added permanently accessible settings gear icon (`⚙️`) to the top bar for instant access to Voice & Language Settings.
+
+### Changed
+- **Documentation Overhaul**: Streamlined and condensed project documentation, contributing guidelines, and agent instructions.
+
+## [v1.5.3] - 2026-09-20
+
+### Fixed
+- **Quick-Speak & Speech Cards in Dual-Language Mode**: On-demand auto-translation for Quick-Speak and untranslated speech cards in dual-language mode when secondary language is active.
+- **Legacy Storage Sanitization**: Sanitized legacy `"auto"` entries in `spokenText` to `nil`.
 
 ## [v1.5.2] - 2026-09-20
 

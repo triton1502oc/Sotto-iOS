@@ -184,4 +184,88 @@ final class SottoTests: XCTestCase {
         let normalizedEn = TranslationHelper.normalizeLanguageCode("en_US")
         XCTAssertEqual(normalizedEn, "en")
     }
+    
+    // MARK: - Care Category & Care Migration Tests
+    
+    func testCareCategoryAndPhraseModel() {
+        XCTAssertEqual(PhraseCategory.care.rawValue, "Care")
+        XCTAssertEqual(PhraseCategory.care.displayName, "Care")
+        XCTAssertTrue(PhraseCategory.selectableCategories.contains(.care))
+        XCTAssertTrue(PhraseCategory.filterCategories.contains(.care))
+        
+        let carePhrase = Phrase(text: "Are you in pain?", category: .care)
+        XCTAssertEqual(carePhrase.category, .care)
+        XCTAssertFalse(carePhrase.isEmergency)
+    }
+    
+    func testDefaultPhrasesIncludeCareCategory() {
+        let enDefaults = UserDefaultsPhraseRepository.defaultPhrases(forLanguage: "en")
+        let careEn = enDefaults.filter { $0.category == .care }
+        XCTAssertEqual(careEn.count, 5)
+        XCTAssertTrue(careEn.contains { $0.text == "Are you in pain?" })
+        
+        let idDefaults = UserDefaultsPhraseRepository.defaultPhrases(forLanguage: "id")
+        let careId = idDefaults.filter { $0.category == .care }
+        XCTAssertEqual(careId.count, 5)
+        XCTAssertTrue(careId.contains { $0.text == "Apakah merasa sakit?" })
+    }
+    
+    func testCareMigrationAppendsCarePhrases() {
+        let userDefaultsSuite = "test_sotto_care_migration_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: userDefaultsSuite)!
+        
+        // Seed without care phrases
+        let existingPhrases = [
+            Phrase(text: "Hello.", category: .general),
+            Phrase(text: "I need a quiet space.", category: .needs)
+        ]
+        let data = try! JSONEncoder().encode(existingPhrases)
+        testDefaults.set(data, forKey: "saved_phrases")
+        testDefaults.set(true, forKey: "v2_migrated")
+        testDefaults.set(false, forKey: "care_migrated")
+        
+        let repo = UserDefaultsPhraseRepository(userDefaults: testDefaults)
+        let loaded = repo.getPhrases()
+        
+        XCTAssertTrue(loaded.contains { $0.category == .care })
+        XCTAssertTrue(testDefaults.bool(forKey: "care_migrated"))
+        
+        testDefaults.removePersistentDomain(forName: userDefaultsSuite)
+    }
+    
+    func testSanitizeLegacyAutoSpokenText() {
+        let userDefaultsSuite = "test_sotto_sanitize_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: userDefaultsSuite)!
+        
+        let legacyPhrases = [
+            Phrase(text: "Hello.", spokenText: "auto", category: .general),
+            Phrase(text: "Thank you.", spokenText: "Terima kasih.", category: .social)
+        ]
+        let data = try! JSONEncoder().encode(legacyPhrases)
+        testDefaults.set(data, forKey: "saved_phrases")
+        testDefaults.set(true, forKey: "v2_migrated")
+        testDefaults.set(true, forKey: "care_migrated")
+        
+        let repo = UserDefaultsPhraseRepository(userDefaults: testDefaults)
+        let loaded = repo.getPhrases()
+        
+        XCTAssertNil(loaded[0].spokenText, "Legacy 'auto' should be sanitized to nil")
+        XCTAssertEqual(loaded[1].spokenText, "Terima kasih.")
+        
+        testDefaults.removePersistentDomain(forName: userDefaultsSuite)
+    }
+    
+    func testCareAndTwoWayDictionaryTranslations() {
+        let careEn = "Are you in pain?"
+        let careId = TranslationHelper.dictionaryTranslation(for: careEn, sourceLang: "en", targetLang: "id")
+        XCTAssertEqual(careId, "Apakah merasa sakit?")
+        
+        let repeatEn = "repeat"
+        let repeatId = TranslationHelper.dictionaryTranslation(for: repeatEn, sourceLang: "en", targetLang: "id")
+        XCTAssertEqual(repeatId, "Ulangi")
+        
+        let waitId = "tolong beri saya waktu sebentar."
+        let waitEn = TranslationHelper.dictionaryTranslation(for: waitId, sourceLang: "id", targetLang: "en")
+        XCTAssertEqual(waitEn, "Please give me a moment.")
+    }
 }

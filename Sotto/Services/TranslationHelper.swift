@@ -34,7 +34,17 @@ public final class TranslationHelper {
         "i am not okay.": "Saya sedang tidak baik-baik saja.",
         "goodbye.": "Selamat tinggal.",
         "good morning.": "Selamat pagi.",
-        "good night.": "Selamat malam."
+        "good night.": "Selamat malam.",
+        "are you in pain?": "Apakah merasa sakit?",
+        "do you need water or food?": "Apakah butuh minum atau makan?",
+        "do you need the restroom?": "Apakah perlu ke kamar mandi?",
+        "are you feeling cold or warm?": "Apakah merasa dingin atau panas?",
+        "do you want to rest or sleep?": "Apakah ingin istirahat atau tidur?",
+        "yes": "Ya",
+        "no": "Tidak",
+        "repeat": "Ulangi",
+        "wait": "Tunggu",
+        "please give me a moment.": "Tolong beri saya waktu sebentar."
     ]
     
     private static let idToEnPhrases: [String: String] = [
@@ -60,16 +70,26 @@ public final class TranslationHelper {
         "saya sedang tidak baik-baik saja.": "I am not okay.",
         "selamat tinggal.": "Goodbye.",
         "selamat pagi.": "Good morning.",
-        "selamat malam.": "Good night."
+        "selamat malam.": "Good night.",
+        "apakah merasa sakit?": "Are you in pain?",
+        "apakah butuh minum atau makan?": "Do you need water or food?",
+        "apakah perlu ke kamar mandi?": "Do you need the restroom?",
+        "apakah merasa dingin atau panas?": "Are you feeling cold or warm?",
+        "apakah ingin istirahat atau tidur?": "Do you want to rest or sleep?",
+        "ya": "Yes",
+        "tidak": "No",
+        "ulangi": "Repeat",
+        "tunggu": "Wait",
+        "tolong beri saya waktu sebentar.": "Please give me a moment."
     ]
     
     /// Normalizes language code to standard 2-letter ISO code
     public static func normalizeLanguageCode(_ code: String) -> String {
-        let lower = code.lowercased()
-        if lower == "in" || lower.starts(with: "id") {
+        let lower = code.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        if lower == "in" || lower == "ind" || lower.starts(with: "id") {
             return "id"
         }
-        if lower.starts(with: "en") {
+        if lower == "eng" || lower.starts(with: "en") {
             return "en"
         }
         return lower

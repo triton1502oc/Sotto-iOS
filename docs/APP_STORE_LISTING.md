@@ -41,11 +41,14 @@ In normal mode, all editing and administrative buttons are completely hidden. Ta
 • Emergency Bystander Mode
 A dedicated hero card for verbal shutdowns and non-verbal episodes. Long-press or tap fullscreen to display a high-contrast amber banner explaining non-verbal episodes clearly to bystanders, doctors, or first responders.
 
-• Quick-Speak Bar
-Speak spontaneous, one-off thoughts instantly without altering your curated phrase grid. Includes speech-to-text voice dictation and instant fullscreen display.
+• Two-Way Caregiver Receptive Mode
+A dedicated receptive interface accessible via the ear icon (👂) allowing caregivers and medical partners to speak or present questions to non-speaking users. Features 180° face-to-face screen flip, read aloud audio for questions, preset question prompts (Care, Needs, Social, Emergency), and a dignified 4-button rapid response dock (Yes, No, Repeat, Wait) with instant voice and haptics.
+
+• Multi-Line Quick-Speak Bar
+Speak spontaneous thoughts without altering your phrase board. Features an expandable multi-line text input (1 to 4 lines), one-tap phrase saving to card (+), voice dictation (🎤), and instant fullscreen display.
 
 • Contextual Categories
-Organize and filter phrases by situation (Emergency, Needs, Social, General) with clean, subtle filter chips.
+Organize and filter phrases by situation (Emergency, Needs, Social, Care, General) with clean, subtle filter chips.
 
 • High-Visibility Fullscreen Mode
 In noisy, crowded, or overwhelming environments, view any phrase in giant, high-contrast text across your entire screen to silently communicate with others.
@@ -54,10 +57,10 @@ In noisy, crowded, or overwhelming environments, view any phrase in giant, high-
 Optionally sound a gentle, two-tone chime (D5 -> A5) and vibration before speaking to politely capture listener attention in noisy spaces.
 
 • Configurable Voice & Speed
-Fine-tune your speech output to your comfort. Adjust speech rate and pitch with a live voice preview.
+Fine-tune your speech output to your comfort. Adjust speech rate and pitch with a live voice preview. Always accessible via the settings gear icon (⚙️).
 
 • Dual-Language Speech & On-Device Auto-Translate
-Display cards in one language while speaking in another (e.g., English card text read aloud in Indonesian). Includes one-tap on-device auto-translation with zero cloud text transmission and dual-language speak controls in fullscreen view.
+Display cards in one language while speaking in another (e.g., English card text read aloud in Indonesian). Includes on-device auto-translation with zero cloud text transmission and dual-language speak controls in fullscreen view.
 
 • Fully Customizable
 Toggle "Edit List" when you want to add new phrases, edit existing text, delete phrases, or assign categories.

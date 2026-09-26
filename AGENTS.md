@@ -37,3 +37,5 @@ Before making changes, familiarize yourself with [CONTRIBUTING.md](CONTRIBUTING.
 5. **Environment & Secrets**:
    - Never commit signing keys, personal Apple Developer accounts, personal team IDs, or personal machine paths.
    - Use relative paths (`../Sotto`) instead of absolute user paths.
+6. **Pre-Release Device Verification Prompt (MANDATORY)**:
+   - When assisting with any release, version bump, or release preparation, AI agents **MUST ALWAYS explicitly ask and remind the user to install and test the Release build on a physical device or simulator** before creating the git tag or pushing the release. Never tag or finalize a release without prompting the user.
