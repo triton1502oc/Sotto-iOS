@@ -54,11 +54,13 @@ Sotto (meaning *"under one's breath"* / soft voice) is designed specifically for
 
 ---
 
-## 4. Release Process
+## 4. Release Process & Guides
 
 * Releases are tracked in [CHANGELOG.md](CHANGELOG.md) and published via GitHub Releases (`gh release create`).
+* User and caregiver workflows are documented in [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md).
 * App Store assets and metadata are documented in [docs/APP_STORE_LISTING.md](docs/APP_STORE_LISTING.md).
 * Cross-platform porting guidelines are documented in [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md).
+* Community standards are defined in our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 

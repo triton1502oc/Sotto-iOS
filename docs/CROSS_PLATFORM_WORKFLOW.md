@@ -19,10 +19,13 @@ Sotto features are developed first in the Android repository (`../Sotto`), and s
 | **Language Detection** | `util/LocaleHelper.kt` (word frequency matching) | `Sotto/Utils/LocaleHelper.swift` (word matching + `NaturalLanguage`) |
 | **Main Screen** | `MainActivity.kt` (`SottoApp`, `LazyVerticalGrid`) | `Sotto/Views/MainView.swift` (`LazyVStack` / 2-column chunks) |
 | **Phrase Card** | `MainActivity.kt` (`Card`, `isEmergency` hero card) | `Sotto/Views/PhraseCardView.swift` (`PhraseCardView`) |
-| **Quick-Speak Bar** | `MainActivity.kt` (`bottomBar`, `OutlinedTextField`) | `Sotto/Views/QuickSpeakBarView.swift` (`QuickSpeakBarView`) |
+| **Quick-Speak Bar** | `MainActivity.kt` (`bottomBar`, multiline, save-as-card) | `Sotto/Views/QuickSpeakBarView.swift` (`QuickSpeakBarView`) |
 | **Fullscreen Modal** | `MainActivity.kt` (`Dialog`, high-contrast text) | `Sotto/Views/FullscreenPhraseModal.swift` |
 | **Add / Edit Dialog**| `MainActivity.kt` (`AlertDialog`, category chips) | `Sotto/Views/PhraseEditModal.swift` |
 | **Voice Settings** | `ui/main/VoiceSettingsDialog.kt` | `Sotto/Views/VoiceSettingsModal.swift` |
+| **Two-Way Caregiver Mode** | `TwoWayConversationDialog.kt` | `Sotto/Views/TwoWayConversationModal.swift` |
+| **180° Screen Flip** | `Modifier.rotate(180f)` | `.rotationEffect(.degrees(180))` |
+| **Care Category** | `PhraseCategory.CARE` | `PhraseCategory.care` (`cross.case.fill`) |
 | **String Resources** | `res/values/strings.xml`, `values-in/strings.xml` | `PhraseRepository.defaultPhrases()`, `LocaleHelper` |
 
 ---
