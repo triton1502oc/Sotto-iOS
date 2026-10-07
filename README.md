@@ -18,16 +18,20 @@ This repository is the native iOS (SwiftUI) port of the original [Sotto Android 
 - **Modern Low-Stimulus UI**: Dark/Neutral theme (`#121212` background, `#1E1E1E` surface) with high contrast text (`#E0E0E0`), avoiding visual clutter.
 - **Zero-Distraction Layout**: The main communication screen has no administrative clutter, providing a safe, predictable environment.
 - **Emergency Bystander Mode**: Dedicated full-width hero card for non-verbal episodes and shutdowns. Features a distinct `🚨 Emergency` badge and a specialized fullscreen view with high-contrast amber styling (`#251E14` / `#FFB74D`) for bystanders, doctors, or first responders.
-- **Two-Way Caregiver Receptive Mode (`👂`)**: Dedicated receptive HUD for caregivers, family members, and medical personnel. Includes real-time speech transcription (`🎤 Listen & Read`), offline TTS read aloud (`🔊 Read Aloud`), categorized question prompts (`Care`, `Needs`, `Social`, `Emergency`), and a dignified 4-button rapid response dock (`✓ Yes`, `✕ No`, `🔁 Repeat`, `⏳ Wait`) with instant speech and haptic feedback.
-- **180° Face-to-Face Screen Flip**: One-tap display inversion (`🔄 Flip`) in Caregiver mode that rotates the question prompt and response buttons upside down for a partner sitting across a table, while keeping caregiver controls upright.
+- **Unified Caregiver Mode & Why Finder (`👂` / `🤝`)**: Dedicated receptive HUD for caregivers, family members, and medical personnel featuring two integrated modes:
+  - **Talk**: Receptive speech-to-text dictation (`🎤 Listen`), card prompt picker, offline TTS read-aloud, and 180° face-to-face screen flip (`🔄 Flip`) for partners sitting across a table.
+  - **Why Finder Guided Crisis Tree**: Step-by-step calm yes/no branching tree designed specifically for meltdowns and verbal shutdowns. Navigates physical comfort, sensory input, emotional overwhelm, and environmental friction with a 4-card tactile response dock (`✓ Yes`, `✕ No`, `? Not Sure`, `⏹ Stop`), body part location grid, and 1-5 intensity scale.
+- **Private Why Log & 30-Day Trend Insights**: Local-only de-escalation session log with pattern analytics showing category percentage shares, top specific triggers, and peak time-of-day crisis clusters to help families identify environmental stressors.
+- **Customizable Question Tree Editor**: Tree customizer dialog allowing families to edit questions, add personalized triggers, reorder with single-step ▲/▼ buttons, dictate via speech recognition (`🎤`), or reset to clinical defaults with one tap.
+- **Backup & Restore Format v2**: Granular export/import engine to selectively backup phrases, custom Why trees, and private Why logs into JSON files with merge and replace restore strategies.
 - **Multi-Line Quick-Speak Bar & Card Saving**: Spontaneous communication bar docked at the bottom with multi-line text input (1 to 4 lines), instant speech (`🔊`), fullscreen expansion (`⛶`), voice dictation (`🎤`), smart clear toggle (`✕`), and 1-tap card saving (`+`).
-- **Contextual Categories**: Group and filter phrases with low-stimulus filter chips (**All**, **Emergency**, **Needs**, **Social**, **Care**, **General**).
+- **Contextual Categories & Reordering**: Full custom category management with fine-motor single-step ▲/▼ reordering, protected system safety categories (`Emergency`, `General`), and safe fallback reassignment upon deletion.
 - **Instant Speech**: Tap any phrase card to speak immediately using `AVSpeechSynthesizer` with automatic language detection (English and Bahasa Indonesia).
 - **High-Visibility Display**: Long press any card or tap the fullscreen button on the quick bar to open a full-screen, high-contrast modal for silent communication.
 - **Attention Chime & Haptics**: Native two-tone musical chime (D5 at 587.33 Hz for 90ms followed by A5 at 880.00 Hz for 160ms with harmonic overtone and exponential decay) and haptic alert to capture listener attention before speech begins.
-- **Customizable Phrase Grid**: Toggle "Edit List" to add new phrases, edit text & categories, delete, and manage phrases.
 - **Configurable Voice & Language**: Permanent settings gear icon (`⚙️`) to select app language, fine-tune speech rate (0.5x to 2.0x) and pitch (0.7x to 1.3x) with live "Test Voice" preview.
 - **Dual-Language Speech & On-Device Translation**: Display cards in one language (e.g. English) while speaking in another (e.g. Indonesian) with a subtle indicator (`🗣️`). Features on-device auto-translation (100% private, zero user text sent to the cloud) and dual-language speak controls in fullscreen view.
+- **Privacy-Preserving Telemetry v2 (Opt-In)**: Optional, zero-PII usability telemetry measuring accessibility latency and hesitation to assess product-market fit, complete with category scrubbing (`custom`), payload inspection preview sheet, and a 14-day PMF survey modal.
 - **100% Native & Private**: Built entirely using native Apple frameworks (`SwiftUI`, `AVFoundation`, `Speech`, `Translation`). Completely local processing with zero tracking, zero accounts, and 100% offline privacy.
 
 ---
@@ -74,30 +78,42 @@ Sotto-iOS/
 ├── Sotto/
 │   ├── SottoApp.swift              # Main SwiftUI App entry point
 │   ├── Models/
+│   │   ├── BackupData.swift        # Backup & restore v2 serialization models
 │   │   ├── Phrase.swift            # Phrase & PhraseCategory data models
-│   │   └── VoiceSettings.swift     # Speech rate, pitch, voice & chime settings
+│   │   ├── VoiceSettings.swift     # Speech rate, pitch, telemetry & role settings
+│   │   └── WhyFinder.swift         # Why Finder tree, questions, and log models
 │   ├── Data/
 │   │   ├── PhraseRepository.swift  # UserDefaults persistence & default seed data
-│   │   └── VoiceSettingsRepository.swift
+│   │   ├── VoiceSettingsRepository.swift # Settings, install ID & active day tracking
+│   │   └── WhyFinderRepository.swift # Why tree & private offline session logs
 │   ├── Services/
 │   │   ├── ChimePlayer.swift       # In-memory D5->A5 chime PCM synthesizer & haptics
+│   │   ├── PhraseBackupHelper.swift # Backup v2 exporter, importer & log merger
 │   │   ├── SpeechService.swift     # AVSpeechSynthesizer management & rate mapping
 │   │   ├── SpeechRecognizerService.swift # SFSpeechRecognizer dictation service
-│   │   └── TranslationHelper.swift # Offline phrase dictionary & language normalization
+│   │   ├── TranslationHelper.swift # Offline phrase dictionary & language normalization
+│   │   └── UsabilityTracker.swift  # Privacy-preserving usability telemetry v2
 │   ├── Utils/
 │   │   └── LocaleHelper.swift      # Language detection & locale helpers
 │   ├── Theme/
-│   │   └── Theme.swift             # Low-stimulus dark theme palette
+│   │   └── Theme.swift             # Centralized low-stimulus dark theme palette
 │   ├── ViewModels/
-│   │   └── MainViewModel.swift     # Reactive state management
+│   │   ├── MainViewModel.swift     # Reactive state management
+│   │   └── WhyFinderSession.swift  # Why Finder crisis branching state machine
 │   ├── Views/
-│   │   ├── MainView.swift          # Main container screen
-│   │   ├── PhraseCardView.swift    # Standard & Emergency card components
-│   │   ├── QuickSpeakBarView.swift # Bottom spontaneous communication bar
+│   │   ├── ExportBackupModal.swift # Backup v2 export dialog with checkboxes
 │   │   ├── FullscreenPhraseModal.swift # High-visibility modal
+│   │   ├── ImportBackupModal.swift # Backup v2 import review & merge/replace dialog
+│   │   ├── MainView.swift          # Main container screen
+│   │   ├── ManageCategoriesModal.swift # Category manager with single-step reordering
+│   │   ├── PhraseCardView.swift    # Standard & Emergency card components
 │   │   ├── PhraseEditModal.swift   # Add/Edit phrase dialog
-│   │   ├── TwoWayConversationModal.swift # Caregiver Receptive HUD & 180° flip view
-│   │   └── VoiceSettingsModal.swift # Voice & Language configuration sheet
+│   │   ├── PmfSurveyModal.swift    # 14-day low-stimulus PMF survey dialog
+│   │   ├── QuickSpeakBarView.swift # Bottom spontaneous communication bar
+│   │   ├── TwoWayConversationModal.swift # Unified Caregiver HUD (Talk & Why Finder)
+│   │   ├── VoiceSettingsModal.swift # Voice & Language configuration sheet
+│   │   ├── WhyLogModal.swift       # Private Why Log & 30-day pattern insights
+│   │   └── WhyTreeEditorModal.swift# Question Tree customizer dialog
 │   └── Resources/
 │       ├── Info.plist              # Privacy descriptions & configuration
 │       └── Assets.xcassets/        # AppIcon & AccentColor assets

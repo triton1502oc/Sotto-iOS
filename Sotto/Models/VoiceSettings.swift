@@ -8,6 +8,35 @@ public struct VoiceSettings: Codable, Equatable {
     public var playAttentionChime: Bool
     public var showLanguageSwitcher: Bool
     public var secondaryLanguage: String
+    public var shareUsabilityMetrics: Bool
+    public var userRole: String
+    
+    public static let roleUnset = "unset"
+    public static let roleCaregiver = "caregiver"
+    public static let roleSelf = "self"
+    public static let roleProfessional = "professional"
+    
+    public init(
+        speechRate: Float = 1.0,
+        speechPitch: Float = 1.0,
+        voiceIdentifier: String? = nil,
+        appLanguage: String = "system",
+        playAttentionChime: Bool = false,
+        showLanguageSwitcher: Bool = false,
+        secondaryLanguage: String = "id",
+        shareUsabilityMetrics: Bool = false,
+        userRole: String = "unset"
+    ) {
+        self.speechRate = speechRate
+        self.speechPitch = speechPitch
+        self.voiceIdentifier = voiceIdentifier
+        self.appLanguage = appLanguage
+        self.playAttentionChime = playAttentionChime
+        self.showLanguageSwitcher = showLanguageSwitcher
+        self.secondaryLanguage = secondaryLanguage
+        self.shareUsabilityMetrics = shareUsabilityMetrics
+        self.userRole = userRole
+    }
     
     public init(
         speechRate: Float = 1.0,
@@ -18,17 +47,21 @@ public struct VoiceSettings: Codable, Equatable {
         showLanguageSwitcher: Bool = false,
         secondaryLanguage: String = "id"
     ) {
-        self.speechRate = speechRate
-        self.speechPitch = speechPitch
-        self.voiceIdentifier = voiceIdentifier
-        self.appLanguage = appLanguage
-        self.playAttentionChime = playAttentionChime
-        self.showLanguageSwitcher = showLanguageSwitcher
-        self.secondaryLanguage = secondaryLanguage
+        self.init(
+            speechRate: speechRate,
+            speechPitch: speechPitch,
+            voiceIdentifier: voiceIdentifier,
+            appLanguage: appLanguage,
+            playAttentionChime: playAttentionChime,
+            showLanguageSwitcher: showLanguageSwitcher,
+            secondaryLanguage: secondaryLanguage,
+            shareUsabilityMetrics: false,
+            userRole: "unset"
+        )
     }
     
     enum CodingKeys: String, CodingKey {
-        case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage
+        case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage, shareUsabilityMetrics, userRole
     }
     
     public init(from decoder: Decoder) throws {
@@ -40,5 +73,7 @@ public struct VoiceSettings: Codable, Equatable {
         self.playAttentionChime = try container.decodeIfPresent(Bool.self, forKey: .playAttentionChime) ?? false
         self.showLanguageSwitcher = try container.decodeIfPresent(Bool.self, forKey: .showLanguageSwitcher) ?? false
         self.secondaryLanguage = try container.decodeIfPresent(String.self, forKey: .secondaryLanguage) ?? "id"
+        self.shareUsabilityMetrics = try container.decodeIfPresent(Bool.self, forKey: .shareUsabilityMetrics) ?? false
+        self.userRole = try container.decodeIfPresent(String.self, forKey: .userRole) ?? "unset"
     }
 }

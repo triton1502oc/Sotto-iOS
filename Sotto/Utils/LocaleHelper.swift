@@ -130,4 +130,55 @@ public enum LocaleHelper {
             return getLocaleForLanguage(phraseLang)
         }
     }
+    
+    public static func getCategoryDisplayName(_ catKey: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch catKey.uppercased() {
+        case "ALL": return isIndonesian ? "Semua" : "All"
+        case "EMERGENCY": return isIndonesian ? "Darurat" : "Emergency"
+        case "NEEDS": return isIndonesian ? "Kebutuhan" : "Needs"
+        case "SOCIAL": return isIndonesian ? "Sosial" : "Social"
+        case "CARE": return isIndonesian ? "Perawatan" : "Care"
+        case "GENERAL": return isIndonesian ? "Umum" : "General"
+        default: return catKey
+        }
+    }
+    
+    public static func getAreaDisplayName(_ areaId: String?, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch areaId {
+        case UserDefaultsWhyFinderRepository.areaBody:
+            return isIndonesian ? "Fisik / Tubuh" : "Physical / Body"
+        case UserDefaultsWhyFinderRepository.areaSenses:
+            return isIndonesian ? "Indra / Lingkungan" : "Senses / Environment"
+        case UserDefaultsWhyFinderRepository.areaFeelings:
+            return isIndonesian ? "Perasaan / Emosi" : "Feelings / Emotions"
+        case UserDefaultsWhyFinderRepository.areaPerson:
+            return isIndonesian ? "Seseorang" : "A Person"
+        case UserDefaultsWhyFinderRepository.areaHappened:
+            return isIndonesian ? "Sesuatu Terjadi" : "Something Happened"
+        case UserDefaultsWhyFinderRepository.areaComingUp:
+            return isIndonesian ? "Akan Datang" : "Coming Up"
+        default:
+            return areaId ?? ""
+        }
+    }
+    
+    public static func getBodyRegionLabel(_ regionKey: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch regionKey {
+        case BodyRegions.head: return isIndonesian ? "Kepala" : "Head"
+        case BodyRegions.eyes: return isIndonesian ? "Mata" : "Eyes"
+        case BodyRegions.ears: return isIndonesian ? "Telinga" : "Ears"
+        case BodyRegions.teeth: return isIndonesian ? "Gigi / Mulut" : "Teeth / Mouth"
+        case BodyRegions.throat: return isIndonesian ? "Tenggorokan" : "Throat"
+        case BodyRegions.chest: return isIndonesian ? "Dada" : "Chest"
+        case BodyRegions.stomach: return isIndonesian ? "Perut" : "Stomach"
+        case BodyRegions.back: return isIndonesian ? "Punggung" : "Back"
+        case BodyRegions.armsHands: return isIndonesian ? "Lengan / Tangan" : "Arms / Hands"
+        case BodyRegions.legsFeet: return isIndonesian ? "Kaki" : "Legs / Feet"
+        case BodyRegions.skin: return isIndonesian ? "Kulit" : "Skin"
+        default: return regionKey
+        }
+    }
 }

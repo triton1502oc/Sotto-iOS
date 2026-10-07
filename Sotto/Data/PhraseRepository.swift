@@ -3,12 +3,19 @@ import Foundation
 public protocol PhraseRepositoryProtocol {
     func getPhrases() -> [Phrase]
     func savePhrases(_ phrases: [Phrase])
+    func getCategories() -> [String]
+    func saveCategories(_ categories: [String])
+    func getCustomCategories() -> [String]
+    func saveCustomCategories(_ categories: [String])
 }
 
 public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
     private let userDefaults: UserDefaults
     private let keyPhrases = "saved_phrases"
+    private let keyCustomCategories = "saved_custom_categories"
+    private let keyCategoryOrder = "saved_category_order"
     private let keyMigrated = "v2_migrated"
+    private let keyCareMigrated = "care_migrated"
     
     public init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -58,7 +65,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             let defaults = Self.defaultPhrases()
             savePhrases(defaults)
             userDefaults.set(true, forKey: keyMigrated)
-            userDefaults.set(true, forKey: "care_migrated")
+            userDefaults.set(true, forKey: keyCareMigrated)
             return defaults
         }
         
@@ -87,7 +94,6 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             }
             
             // Check Care category migration
-            let keyCareMigrated = "care_migrated"
             let isCareMigrated = userDefaults.bool(forKey: keyCareMigrated)
             if !isCareMigrated {
                 if !phrases.contains(where: { $0.category == .care }) {
@@ -114,6 +120,84 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             userDefaults.set(data, forKey: keyPhrases)
         } catch {
             // Ignore encoding errors
+        }
+    }
+    
+    public func getCategories() -> [String] {
+        guard let data = userDefaults.data(forKey: keyCategoryOrder),
+              let list = try? JSONDecoder().decode([String].self, from: data) else {
+            let legacyCustom = getCustomCategories()
+            var result = PhraseCategory.defaultCategoryNames
+            for custom in legacyCustom {
+                if !result.contains(where: { $0.caseInsensitiveCompare(custom) == .orderedSame }) {
+                    result.append(custom)
+                }
+            }
+            saveCategories(result)
+            return result
+        }
+        
+        var cleanList: [String] = []
+        for cat in list {
+            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && trimmed.uppercased() != "ALL" && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                cleanList.append(trimmed)
+            }
+        }
+        if !cleanList.contains(where: { $0.caseInsensitiveCompare("Emergency") == .orderedSame }) {
+            cleanList.insert("Emergency", at: 0)
+        }
+        if !cleanList.contains(where: { $0.caseInsensitiveCompare("General") == .orderedSame }) {
+            cleanList.append("General")
+        }
+        return cleanList
+    }
+    
+    public func saveCategories(_ categories: [String]) {
+        var cleanList: [String] = []
+        for cat in categories {
+            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && trimmed.uppercased() != "ALL" && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                cleanList.append(trimmed)
+            }
+        }
+        if !cleanList.contains(where: { $0.caseInsensitiveCompare("Emergency") == .orderedSame }) {
+            cleanList.insert("Emergency", at: 0)
+        }
+        if !cleanList.contains(where: { $0.caseInsensitiveCompare("General") == .orderedSame }) {
+            cleanList.append("General")
+        }
+        
+        if let data = try? JSONEncoder().encode(cleanList) {
+            userDefaults.set(data, forKey: keyCategoryOrder)
+        }
+    }
+    
+    public func getCustomCategories() -> [String] {
+        guard let data = userDefaults.data(forKey: keyCustomCategories),
+              let list = try? JSONDecoder().decode([String].self, from: data) else {
+            return []
+        }
+        var result: [String] = []
+        for cat in list {
+            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && !PhraseCategory.isUndeletableCategory(trimmed) && !result.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                result.append(trimmed)
+            }
+        }
+        return result
+    }
+    
+    public func saveCustomCategories(_ categories: [String]) {
+        var cleanList: [String] = []
+        for cat in categories {
+            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && !PhraseCategory.isUndeletableCategory(trimmed) && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                cleanList.append(trimmed)
+            }
+        }
+        if let data = try? JSONEncoder().encode(cleanList) {
+            userDefaults.set(data, forKey: keyCustomCategories)
         }
     }
 }

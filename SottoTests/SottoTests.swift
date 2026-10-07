@@ -268,4 +268,263 @@ final class SottoTests: XCTestCase {
         let waitEn = TranslationHelper.dictionaryTranslation(for: waitId, sourceLang: "id", targetLang: "en")
         XCTAssertEqual(waitEn, "Please give me a moment.")
     }
+    
+    // MARK: - Category Management Tests (v1.5.8)
+    
+    func testCategoryProtectedRules() {
+        XCTAssertTrue(Phrase.isUndeletableCategory("Emergency"))
+        XCTAssertTrue(Phrase.isUndeletableCategory("General"))
+        XCTAssertFalse(Phrase.isUndeletableCategory("Needs"))
+        XCTAssertFalse(Phrase.isUndeletableCategory("Social"))
+        XCTAssertFalse(Phrase.isUndeletableCategory("Care"))
+        XCTAssertFalse(Phrase.isUndeletableCategory("Custom Category"))
+        
+        XCTAssertTrue(Phrase.isUnrenamableCategory("Emergency"))
+        XCTAssertFalse(Phrase.isUnrenamableCategory("General"))
+        XCTAssertFalse(Phrase.isUnrenamableCategory("Needs"))
+        XCTAssertFalse(Phrase.isUnrenamableCategory("Custom Category"))
+    }
+    
+    func testCategoryOperationsInMainViewModel() {
+        let suite = "test_categories_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let phraseRepo = UserDefaultsPhraseRepository(userDefaults: defaults)
+        let vm = MainViewModel(phraseRepository: phraseRepo)
+        
+        // Add valid category
+        XCTAssertTrue(vm.addCategory("Hobbies"))
+        XCTAssertTrue(vm.categories.contains("Hobbies"))
+        
+        // Disallow duplicate (case-insensitive)
+        XCTAssertFalse(vm.addCategory("hobbies"))
+        // Disallow ALL
+        XCTAssertFalse(vm.addCategory("ALL"))
+        
+        // Add phrase under Hobbies
+        let hobbyPhrase = Phrase(text: "I want to paint.", category: "Hobbies")
+        vm.addPhrase(hobbyPhrase)
+        
+        // Rename category
+        XCTAssertTrue(vm.renameCategory(oldName: "Hobbies", newName: "Art"))
+        XCTAssertTrue(vm.categories.contains("Art"))
+        XCTAssertFalse(vm.categories.contains("Hobbies"))
+        let updatedPhrase = vm.phrases.first { $0.text == "I want to paint." }
+        XCTAssertEqual(updatedPhrase?.category.rawValue, "Art")
+        
+        // Reorder categories
+        let oldFirst = vm.categories[0]
+        let oldSecond = vm.categories[1]
+        vm.reorderCategories(fromIndex: 0, toIndex: 1)
+        XCTAssertEqual(vm.categories[0], oldSecond)
+        XCTAssertEqual(vm.categories[1], oldFirst)
+        
+        // Delete category -> phrases fallback to General
+        XCTAssertTrue(vm.deleteCategory("Art"))
+        XCTAssertFalse(vm.categories.contains("Art"))
+        let fallbackPhrase = vm.phrases.first { $0.text == "I want to paint." }
+        XCTAssertEqual(fallbackPhrase?.category.rawValue, PhraseCategory.general.rawValue)
+        
+        // Cannot delete undeletable category
+        XCTAssertFalse(vm.deleteCategory("General"))
+        XCTAssertFalse(vm.deleteCategory("Emergency"))
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
+    
+    // MARK: - Why Finder Session State Machine Tests (v1.6.0)
+    
+    func testWhyFinderSessionFullFlow() {
+        let defaultTree = UserDefaultsWhyFinderRepository.defaultTree(forLanguage: "en")
+        let session = WhyFinderSession(tree: defaultTree)
+        
+        // 1. Initial State: AskingArea (Body)
+        guard case .askingArea(_, let area) = session.currentState else {
+            XCTFail("Initial state should be AskingArea")
+            return
+        }
+        XCTAssertEqual(area.id, "body")
+        
+        // Answer Yes to Area -> enters first question of Body area
+        session.answerYes()
+        guard case .askingQuestion(_, _, let q) = session.currentState else {
+            XCTFail("Should transition to AskingQuestion")
+            return
+        }
+        XCTAssertEqual(q.type, .bodyPart)
+        
+        // Answer Yes to question with bodyPart -> transitions to selectingBodyPart
+        session.answerYes()
+        guard case .selectingBodyPart = session.currentState else {
+            XCTFail("Should transition to SelectingBodyPart")
+            return
+        }
+        
+        // Select body part -> transitions to intensity scale
+        session.selectBodyPart(BodyRegions.head)
+        guard case .selectingIntensity = session.currentState else {
+            XCTFail("Should transition to SelectingIntensity")
+            return
+        }
+        
+        // Select intensity -> transitions to confirmingCause
+        session.selectIntensity(4)
+        guard case .confirmingCause(_, _, let cause, let part, let intensity) = session.currentState else {
+            XCTFail("Should transition to ConfirmingCause")
+            return
+        }
+        XCTAssertEqual(part, BodyRegions.head)
+        XCTAssertEqual(intensity, 4)
+        XCTAssertFalse(cause.isEmpty)
+        
+        // Confirm Yes -> Finished with outcome .found
+        session.answerYes()
+        guard case .finished(let outcome, _, let finalCause, let finalPart, let finalIntensity, _, _, _) = session.currentState else {
+            XCTFail("Should transition to Finished")
+            return
+        }
+        XCTAssertEqual(outcome, .found)
+        XCTAssertEqual(finalPart, BodyRegions.head)
+        XCTAssertEqual(finalIntensity, 4)
+        XCTAssertEqual(finalCause, cause)
+        
+        // Verify session can produce log entry
+        let log = session.toLogEntry(privateNote: "Testing log")
+        XCTAssertNotNil(log)
+        XCTAssertEqual(log?.outcome, .found)
+        XCTAssertEqual(log?.bodyPart, BodyRegions.head)
+        XCTAssertEqual(log?.intensity, 4)
+        XCTAssertEqual(log?.privateNote, "Testing log")
+        XCTAssertFalse(log?.steps.isEmpty ?? true)
+    }
+    
+    func testWhyFinderSessionStepBackAndStop() {
+        let defaultTree = UserDefaultsWhyFinderRepository.defaultTree(forLanguage: "en")
+        let session = WhyFinderSession(tree: defaultTree)
+        
+        XCTAssertFalse(session.canStepBack())
+        session.answerNo() // Skips to next area (Sensory)
+        XCTAssertTrue(session.canStepBack())
+        
+        session.stepBack() // Back to Body
+        if case .askingArea(_, let area) = session.currentState {
+            XCTAssertEqual(area.id, "body")
+        } else {
+            XCTFail("Should be back at body")
+        }
+        
+        // Stop session early
+        session.stop()
+        if case .finished(let outcome, _, _, _, _, _, _, _) = session.currentState {
+            XCTAssertEqual(outcome, .stopped)
+        } else {
+            XCTFail("Should be in Finished with stopped outcome")
+        }
+    }
+    
+    // MARK: - Why Finder Repository Persistence Tests
+    
+    func testWhyFinderRepositoryPersistence() {
+        let suite = "test_why_repo_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let repo = UserDefaultsWhyFinderRepository(userDefaults: defaults)
+        
+        let initialTree = repo.getTree()
+        XCTAssertEqual(initialTree.areas.count, 6)
+        
+        let entry = WhyLogEntry(
+            id: UUID().uuidString,
+            startedAt: 1000,
+            endedAt: 2000,
+            outcome: .found,
+            areaId: "pain",
+            causeText: "Headache",
+            bodyPart: BodyRegions.head,
+            intensity: 3,
+            privateNote: "Rest needed",
+            steps: [WhyStep(questionText: "Does something hurt?", answer: "yes")]
+        )
+        repo.addLog(entry)
+        let logs = repo.getLogs()
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(logs.first?.causeText, "Headache")
+        
+        repo.deleteLog(id: entry.id)
+        XCTAssertTrue(repo.getLogs().isEmpty)
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
+    
+    // MARK: - Backup V2 JSON Serialization & Helper Tests
+    
+    func testBackupExportAndImportMergeReplace() throws {
+        let phrases = [
+            Phrase(text: "Emergency card", isEmergency: true, category: .emergency),
+            Phrase(text: "I want water.", category: .needs)
+        ]
+        let categories = ["Emergency", "General", "Needs", "Custom1"]
+        let defaultTree = UserDefaultsWhyFinderRepository.defaultTree(forLanguage: "en")
+        let testLog = [
+            WhyLogEntry(
+                id: "log-1",
+                startedAt: 100,
+                endedAt: 200,
+                outcome: .found,
+                areaId: "physical",
+                causeText: "Thirsty",
+                steps: []
+            )
+        ]
+        
+        // 1. Export JSON v2
+        let json = PhraseBackupHelper.exportToJson(
+            phrases: phrases,
+            categories: categories,
+            whyTree: defaultTree,
+            whyLog: testLog
+        )
+        XCTAssertTrue(json.contains("\"version\"") && json.contains("2"))
+        
+        // 2. Parse JSON
+        let parsed = PhraseBackupHelper.parseJson(json)
+        XCTAssertNotNil(parsed)
+        XCTAssertEqual(parsed?.phrases.count, 2)
+        XCTAssertEqual(parsed?.categories.count, 4)
+        XCTAssertNotNil(parsed?.whyTree)
+        XCTAssertEqual(parsed?.whyLog?.count, 1)
+        
+        // 3. Merge test
+        let existingPhrases = [Phrase(text: "Emergency card", isEmergency: true, category: .emergency)]
+        let existingCategories = ["Emergency", "General"]
+        let mergeResult = PhraseBackupHelper.mergeData(
+            currentPhrases: existingPhrases,
+            currentCategories: existingCategories,
+            backup: parsed!
+        )
+        XCTAssertEqual(mergeResult.0.count, 2) // "Emergency card" deduplicated, "I want water." added
+        XCTAssertTrue(mergeResult.1.contains("Custom1"))
+        
+        // 4. Replace test (preserves existing emergency phrases)
+        let replaceResult = PhraseBackupHelper.replaceData(
+            currentPhrases: existingPhrases,
+            backup: parsed!
+        )
+        XCTAssertTrue(replaceResult.0.contains { $0.isEmergency })
+        XCTAssertEqual(replaceResult.1, parsed!.categories)
+    }
+    
+    // MARK: - Usability Tracker Telemetry V2 Scrubber Tests
+    
+    func testTelemetryPrivacyScrubber() {
+        // System categories should be kept as-is
+        XCTAssertEqual(UsabilityTracker.categoryType("General"), "general")
+        XCTAssertEqual(UsabilityTracker.categoryType("Emergency"), "emergency")
+        XCTAssertEqual(UsabilityTracker.categoryType("Needs"), "needs")
+        XCTAssertEqual(UsabilityTracker.categoryType("Care"), "care")
+        XCTAssertEqual(UsabilityTracker.categoryType("Social"), "social")
+        
+        // Custom user category name MUST be scrubbed to "custom"
+        XCTAssertEqual(UsabilityTracker.categoryType("My Private Medicine"), "custom")
+        XCTAssertEqual(UsabilityTracker.categoryType("Doctor Smith Routine"), "custom")
+    }
 }
+

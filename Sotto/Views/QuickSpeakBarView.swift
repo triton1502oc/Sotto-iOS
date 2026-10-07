@@ -5,6 +5,7 @@ public struct QuickSpeakBarView: View {
     public let onSpeak: (String) -> Void
     public let onFullscreen: (String) -> Void
     public var onSaveAsCard: ((String) -> Void)?
+    public var onClear: (() -> Void)?
     
     @StateObject private var speechRecognizer = SpeechRecognizerService()
     @FocusState private var isFocused: Bool
@@ -13,12 +14,14 @@ public struct QuickSpeakBarView: View {
         text: Binding<String>,
         onSpeak: @escaping (String) -> Void,
         onFullscreen: @escaping (String) -> Void,
-        onSaveAsCard: ((String) -> Void)? = nil
+        onSaveAsCard: ((String) -> Void)? = nil,
+        onClear: (() -> Void)? = nil
     ) {
         self._text = text
         self.onSpeak = onSpeak
         self.onFullscreen = onFullscreen
         self.onSaveAsCard = onSaveAsCard
+        self.onClear = onClear
     }
     
     private var isNotEmpty: Bool {
@@ -45,7 +48,10 @@ public struct QuickSpeakBarView: View {
                 
                 // Smart Trailing Icon: Clear when text present, Dictation mic when empty
                 if isNotEmpty {
-                    Button(action: { text = "" }) {
+                    Button(action: {
+                        onClear?()
+                        text = ""
+                    }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(SottoTheme.textSecondary)
                             .font(.system(size: 17))

@@ -3,6 +3,21 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.0] - 2026-10-07
+
+### Added
+- **Why Finder Guided Crisis Tree**: Step-by-step calm yes/no branching tree designed specifically for meltdowns and verbal shutdowns. Guides caregivers and individuals through physical discomfort, sensory overload, emotional overwhelm, and routine friction with large binary touch targets and zero open-ended cognitive demands.
+- **Private Why Log & 30-Day Trend Insights**: Local-only crisis logging engine that tracks resolved de-escalation sessions. Automatically generates 30-day pattern insights showing category percentage shares, top specific triggers, and peak time-of-day crisis clusters to help families and therapists identify environmental stressors.
+- **Customizable Question Tree Editor**: Dedicated crisis tree customizer dialog allowing families to edit questions, add personalized triggers, create custom crisis areas, or reset to clinical defaults with one tap. Supports voice dictation (`🎤`), fine-motor single-step ▲/▼ reordering, and interaction type selection (`Yes/No`, `Body Part Grid`, `Intensity Scale 1-5`).
+- **Backup & Restore Format v2**: Enhanced backup engine with granular checkboxes to selectively export phrases, Why trees, and Why logs. Enables safe sharing of custom trees with therapists or schools while keeping private crisis logs strictly excluded by default. Supports both Merge and Replace restore strategies.
+- **Anonymous Usability Telemetry v2 for Product-Market Fit**: Enhanced privacy-preserving usability monitoring engine featuring anonymous app-assigned install IDs, coarse temporal bucketing (day-of-week and hour window), optional user role selection (`Caregiver`, `Self`, `Professional`), category privacy scrubber (`custom`), 500-event local buffer, and a transparent payload preview sheet in Voice Settings.
+- **14-Day In-App Product-Market Fit Survey**: Low-stimulus Sean Ellis PMF survey prompted after 14 days and at least 5 active days for opted-in users during calm idle states to evaluate product value and core benefits.
+
+### Changed
+- **Unified Caregiver Mode**: Merged Why Finder and Two-Way Receptive Mode into a single cohesive Caregiver HUD featuring **Talk** (receptive speech-to-text dictation, card prompt picker, 180° screen flip) and **Why Finder** (crisis branching tree with 4-card response dock, interactive body part grid, and 1-5 intensity scale).
+- **Semantic Low-Stimulus Color Tokens**: Centralized all colors into semantic tokens in `Theme.swift` with low-stimulus palettes, dark neutral surfaces, and high contrast compliance.
+- **Category Management**: Full custom category support with single-step ▲/▼ reordering, protected system categories (`Emergency`, `General`), safe fallback reassignment to `General` upon deletion, and dynamic category pickers across all views.
+
 ## [v1.5.7] - 2026-09-26
 
 ### Added

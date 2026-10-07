@@ -45,7 +45,7 @@ public final class SpeechRecognizerService: ObservableObject {
     
     public func startRecording(
         locale: Locale = Locale.current,
-        onUpdate: @escaping (String) -> Void
+        onUpdate: ((String) -> Void)? = nil
     ) {
         // Stop any active task
         stopRecording()
@@ -89,7 +89,7 @@ public final class SpeechRecognizerService: ObservableObject {
                     let text = result.bestTranscription.formattedString
                     DispatchQueue.main.async {
                         self.transcribedText = text
-                        onUpdate(text)
+                        onUpdate?(text)
                     }
                 }
                 

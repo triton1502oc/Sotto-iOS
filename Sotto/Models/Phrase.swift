@@ -1,24 +1,63 @@
 import Foundation
 
-public enum PhraseCategory: String, Codable, CaseIterable, Identifiable {
-    case all = "ALL"
-    case emergency = "Emergency"
-    case needs = "Needs"
-    case social = "Social"
-    case care = "Care"
-    case general = "General"
+public struct PhraseCategory: RawRepresentable, Codable, Hashable, Identifiable, ExpressibleByStringLiteral, CustomStringConvertible {
+    public let rawValue: String
+    
+    public init(rawValue: String) {
+        self.rawValue = rawValue
+    }
+    
+    public init(_ rawValue: String) {
+        self.rawValue = rawValue
+    }
+    
+    public init(stringLiteral value: String) {
+        self.rawValue = value
+    }
     
     public var id: String { rawValue }
+    public var description: String { rawValue }
+    
+    public static let all: PhraseCategory = "ALL"
+    public static let emergency: PhraseCategory = "Emergency"
+    public static let needs: PhraseCategory = "Needs"
+    public static let social: PhraseCategory = "Social"
+    public static let care: PhraseCategory = "Care"
+    public static let general: PhraseCategory = "General"
+    
+    public static let defaultCategories: [PhraseCategory] = [
+        .emergency, .needs, .social, .care, .general
+    ]
+    
+    public static let defaultCategoryNames: [String] = [
+        "Emergency", "Needs", "Social", "Care", "General"
+    ]
     
     public var displayName: String {
-        switch self {
-        case .all: return "All"
-        case .emergency: return "Emergency"
-        case .needs: return "Needs"
-        case .social: return "Social"
-        case .care: return "Care"
-        case .general: return "General"
+        switch rawValue.uppercased() {
+        case "ALL": return "All"
+        case "EMERGENCY": return "Emergency"
+        case "NEEDS": return "Needs"
+        case "SOCIAL": return "Social"
+        case "CARE": return "Care"
+        case "GENERAL": return "General"
+        default: return rawValue
         }
+    }
+    
+    public static func isSystemCategory(_ category: String) -> Bool {
+        let lower = category.lowercased()
+        return lower == "all" || lower == "emergency" || lower == "general"
+    }
+    
+    public static func isUndeletableCategory(_ category: String) -> Bool {
+        let lower = category.lowercased()
+        return lower == "all" || lower == "emergency" || lower == "general"
+    }
+    
+    public static func isUnrenamableCategory(_ category: String) -> Bool {
+        let lower = category.lowercased()
+        return lower == "all" || lower == "emergency"
     }
     
     /// Categories available for assignment to a phrase (excludes "All")
@@ -72,10 +111,30 @@ public struct Phrase: Identifiable, Codable, Equatable, Hashable {
         self.language = try container.decodeIfPresent(String.self, forKey: .language) ?? "auto"
         let emergency = try container.decodeIfPresent(Bool.self, forKey: .isEmergency) ?? false
         self.isEmergency = emergency
-        if let catString = try container.decodeIfPresent(String.self, forKey: .category) {
-            self.category = PhraseCategory(rawValue: catString) ?? (emergency ? .emergency : .general)
+        if let catString = try container.decodeIfPresent(String.self, forKey: .category), !catString.isEmpty {
+            self.category = PhraseCategory(rawValue: catString)
         } else {
             self.category = emergency ? .emergency : .general
         }
+    }
+}
+
+public extension Phrase {
+    static let categoryGeneral = PhraseCategory.general.rawValue
+    static let categoryEmergency = PhraseCategory.emergency.rawValue
+    static let categoryNeeds = PhraseCategory.needs.rawValue
+    static let categorySocial = PhraseCategory.social.rawValue
+    static let categoryCare = PhraseCategory.care.rawValue
+    
+    static func isSystemCategory(_ category: String) -> Bool {
+        PhraseCategory.isSystemCategory(category)
+    }
+    
+    static func isUndeletableCategory(_ category: String) -> Bool {
+        PhraseCategory.isUndeletableCategory(category)
+    }
+    
+    static func isUnrenamableCategory(_ category: String) -> Bool {
+        PhraseCategory.isUnrenamableCategory(category)
     }
 }

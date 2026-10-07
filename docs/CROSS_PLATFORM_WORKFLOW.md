@@ -24,6 +24,13 @@ Sotto features are developed first in the Android repository (`../Sotto`), and s
 | **Add / Edit Dialog**| `MainActivity.kt` (`AlertDialog`, category chips) | `Sotto/Views/PhraseEditModal.swift` |
 | **Voice Settings** | `ui/main/VoiceSettingsDialog.kt` | `Sotto/Views/VoiceSettingsModal.swift` |
 | **Two-Way Caregiver Mode** | `TwoWayConversationDialog.kt` | `Sotto/Views/TwoWayConversationModal.swift` |
+| **Why Finder Crisis Tree** | `WhyFinderSession.kt`, `WhyFinderRepository.kt` | `WhyFinderSession.swift`, `WhyFinderRepository.swift` |
+| **Why Tree Editor** | `WhyTreeEditorDialog.kt` | `Sotto/Views/WhyTreeEditorModal.swift` |
+| **Private Why Log** | `WhyLogDialog.kt` | `Sotto/Views/WhyLogModal.swift` |
+| **Backup & Restore v2** | `PhraseBackupHelper.kt` | `Sotto/Services/PhraseBackupHelper.swift`, `ExportBackupModal.swift`, `ImportBackupModal.swift` |
+| **Category Management** | `ManageCategoriesDialog.kt` | `Sotto/Views/ManageCategoriesModal.swift` |
+| **Usability Telemetry v2** | `UsabilityTracker.kt` | `Sotto/Services/UsabilityTracker.swift` |
+| **14-Day PMF Survey** | `PmfSurveyDialog.kt` | `Sotto/Views/PmfSurveyModal.swift` |
 | **180° Screen Flip** | `Modifier.rotate(180f)` | `.rotationEffect(.degrees(180))` |
 | **Care Category** | `PhraseCategory.CARE` | `PhraseCategory.care` (`cross.case.fill`) |
 | **String Resources** | `res/values/strings.xml`, `values-in/strings.xml` | `PhraseRepository.defaultPhrases()`, `LocaleHelper` |

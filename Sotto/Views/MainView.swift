@@ -1,7 +1,18 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 public struct MainView: View {
     @StateObject private var viewModel: MainViewModel
+    
+    @State private var showAddCategoryAlert: Bool = false
+    @State private var newCategoryNameInput: String = ""
+    @State private var categoryToRename: String? = nil
+    @State private var categoryRenameInput: String = ""
+    @State private var categoryToDelete: String? = nil
+    
+    @State private var showFileImporter: Bool = false
+    @State private var shareUrl: URL? = nil
+    @State private var showShareSheet: Bool = false
     
     public init(viewModel: MainViewModel = MainViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -37,6 +48,9 @@ public struct MainView: View {
                         onSaveAsCard: { text in
                             viewModel.initialAddText = text
                             viewModel.showAddPhraseDialog = true
+                        },
+                        onClear: {
+                            viewModel.onQuickTextCleared()
                         }
                     )
                 }
@@ -72,10 +86,14 @@ public struct MainView: View {
         .fullScreenCover(isPresented: $viewModel.showTwoWayDialog) {
             TwoWayConversationModal(
                 allPhrases: viewModel.phrases,
+                categories: viewModel.categories,
+                whyFinderRepository: viewModel.whyFinderRepository,
                 onSpeakResponse: { text in
+                    viewModel.onTwoWayResponseSpoken()
                     viewModel.speakText(text, language: LocaleHelper.langAuto)
                 },
                 onDismiss: {
+                    viewModel.onTwoWayDismissed()
                     viewModel.showTwoWayDialog = false
                 }
             )
@@ -138,12 +156,175 @@ public struct MainView: View {
                 onTestVoice: { testSettings in
                     viewModel.testVoice(with: testSettings)
                 },
+                onOpenWhyLog: {
+                    viewModel.showWhyLogDialog = true
+                },
+                onOpenWhyTreeEditor: {
+                    viewModel.showWhyTreeEditorDialog = true
+                },
+                onExportPhrases: {
+                    viewModel.showExportBackupDialog = true
+                },
+                onImportPhrases: {
+                    showFileImporter = true
+                },
                 onDismiss: {
                     viewModel.showVoiceSettingsDialog = false
                 }
             )
         }
+        .sheet(isPresented: $viewModel.showManageCategoriesDialog) {
+            ManageCategoriesModal(
+                viewModel: viewModel,
+                onDismiss: {
+                    viewModel.showManageCategoriesDialog = false
+                }
+            )
+        }
+        .sheet(isPresented: $viewModel.showWhyTreeEditorDialog) {
+            WhyTreeEditorModal(
+                repository: viewModel.whyFinderRepository,
+                onDismiss: {
+                    viewModel.showWhyTreeEditorDialog = false
+                }
+            )
+        }
+        .sheet(isPresented: $viewModel.showWhyLogDialog) {
+            WhyLogModal(
+                repository: viewModel.whyFinderRepository,
+                onDismiss: {
+                    viewModel.showWhyLogDialog = false
+                }
+            )
+        }
+        .sheet(isPresented: $viewModel.showExportBackupDialog) {
+            ExportBackupModal(
+                phraseCount: viewModel.phrases.count,
+                areaCount: viewModel.whyFinderRepository.getTree().areas.count,
+                logCount: viewModel.whyFinderRepository.getLogs().count,
+                onExport: { exportPhrases, exportTree, exportLog in
+                    let json = viewModel.exportBackup(exportPhrases: exportPhrases, exportTree: exportTree, exportLog: exportLog)
+                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent("sotto_backup_\(Int(Date().timeIntervalSince1970)).json")
+                    try? json.write(to: tempUrl, atomically: true, encoding: .utf8)
+                    shareUrl = tempUrl
+                    showShareSheet = true
+                    viewModel.showExportBackupDialog = false
+                },
+                onDismiss: {
+                    viewModel.showExportBackupDialog = false
+                }
+            )
+        }
+        .sheet(isPresented: Binding(
+            get: { viewModel.showImportBackupDialog && viewModel.backupDataToImport != nil },
+            set: { if !$0 { viewModel.showImportBackupDialog = false; viewModel.backupDataToImport = nil } }
+        )) {
+            if let backupData = viewModel.backupDataToImport {
+                ImportBackupModal(
+                    backupData: backupData,
+                    onMerge: {
+                        _ = viewModel.importBackup(backupData: backupData, replace: false)
+                        viewModel.backupDataToImport = nil
+                        viewModel.showImportBackupDialog = false
+                    },
+                    onReplace: {
+                        _ = viewModel.importBackup(backupData: backupData, replace: true)
+                        viewModel.backupDataToImport = nil
+                        viewModel.showImportBackupDialog = false
+                    },
+                    onDismiss: {
+                        viewModel.backupDataToImport = nil
+                        viewModel.showImportBackupDialog = false
+                    }
+                )
+            }
+        }
+        .sheet(isPresented: $viewModel.showPmfSurveyDialog) {
+            PmfSurveyModal(
+                initialRole: viewModel.voiceSettings.userRole,
+                onSubmit: { pmfScore, primaryBenefit, role in
+                    viewModel.onPmfSurveyAnswered(pmfScore: pmfScore, primaryBenefit: primaryBenefit, role: role) { s, b, r in
+                        UsabilityTracker.shared.recordSurvey(
+                            pmfScore: s,
+                            primaryBenefit: b,
+                            confirmedRole: r,
+                            voiceSettings: viewModel.voiceSettings
+                        )
+                    }
+                    viewModel.showPmfSurveyDialog = false
+                },
+                onDismiss: {
+                    viewModel.onPmfSurveyDismissed()
+                    viewModel.showPmfSurveyDialog = false
+                }
+            )
+        }
+        .sheet(isPresented: $showShareSheet) {
+            if let url = shareUrl {
+                ShareActivityView(activityItems: [url])
+            }
+        }
+        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.json]) { result in
+            if case .success(let url) = result {
+                if url.startAccessingSecurityScopedResource() {
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    if let data = try? Data(contentsOf: url),
+                       let jsonString = String(data: data, encoding: .utf8),
+                       let backup = PhraseBackupHelper.parseJson(jsonString) {
+                        viewModel.backupDataToImport = backup
+                        viewModel.showImportBackupDialog = true
+                    }
+                }
+            }
+        }
+        // Alerts for In-Row Category Editing
+        .alert("Add Category", isPresented: $showAddCategoryAlert) {
+            TextField("Category name", text: $newCategoryNameInput)
+            Button("Add") {
+                viewModel.addCategory(newCategoryNameInput)
+                newCategoryNameInput = ""
+            }
+            Button("Cancel", role: .cancel) {
+                newCategoryNameInput = ""
+            }
+        }
+        .alert("Rename Category", isPresented: Binding(
+            get: { categoryToRename != nil },
+            set: { if !$0 { categoryToRename = nil } }
+        )) {
+            TextField("Category name", text: $categoryRenameInput)
+            Button("Save") {
+                if let oldName = categoryToRename {
+                    viewModel.renameCategory(oldName: oldName, newName: categoryRenameInput)
+                }
+                categoryToRename = nil
+            }
+            Button("Cancel", role: .cancel) {
+                categoryToRename = nil
+            }
+        }
+        .alert("Delete Category?", isPresented: Binding(
+            get: { categoryToDelete != nil },
+            set: { if !$0 { categoryToDelete = nil } }
+        )) {
+            Button("Delete", role: .destructive) {
+                if let cat = categoryToDelete {
+                    viewModel.deleteCategory(cat)
+                }
+                categoryToDelete = nil
+            }
+            Button("Cancel", role: .cancel) {
+                categoryToDelete = nil
+            }
+        } message: {
+            if let cat = categoryToDelete {
+                Text("Phrases in \"\(cat)\" will be moved to General.")
+            }
+        }
         .onAppear {
+            if viewModel.shouldPromptPmfSurvey() {
+                viewModel.showPmfSurveyDialog = true
+            }
             if DemoAutomationRunner.shared.isDemoRequested {
                 DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: geometry.size)
             }
@@ -265,20 +446,59 @@ public struct MainView: View {
     private var categoryFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(PhraseCategory.filterCategories, id: \.self) { category in
-                    let isSelected = viewModel.selectedCategory == category
-                    let isEmergency = category == .emergency
+                // "ALL" Category Chip
+                let isAllSelected = viewModel.selectedCategory == .all
+                Button(action: {
+                    viewModel.selectedCategory = .all
+                }) {
+                    Text("All")
+                        .font(.system(size: 14, weight: isAllSelected ? .bold : .regular))
+                        .foregroundColor(isAllSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(isAllSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                        .cornerRadius(20)
+                }
+                .demoTarget("chip_all")
+                
+                // Dynamic Categories from Repository
+                ForEach(viewModel.categories, id: \.self) { catName in
+                    let catObj = PhraseCategory(catName)
+                    let isSelected = viewModel.selectedCategory == catObj
+                    let isEmergency = catObj == .emergency
+                    let isProtectedFromDelete = Phrase.isUndeletableCategory(catName)
+                    let isProtectedFromRename = Phrase.isUnrenamableCategory(catName)
                     
                     Button(action: {
-                        viewModel.selectedCategory = category
+                        if viewModel.isEditMode && !isProtectedFromRename {
+                            categoryRenameInput = catName
+                            categoryToRename = catName
+                        } else {
+                            viewModel.selectedCategory = catObj
+                        }
                     }) {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 6) {
                             if isEmergency {
                                 Text("🚨")
                                     .font(.system(size: 12))
                             }
-                            Text(category.displayName)
+                            Text(LocaleHelper.getCategoryDisplayName(catName))
                                 .font(.system(size: 14, weight: isSelected ? .bold : .regular))
+                            
+                            if viewModel.isEditMode && !isProtectedFromRename {
+                                Text("✏️")
+                                    .font(.system(size: 11))
+                            }
+                            
+                            if viewModel.isEditMode && !isProtectedFromDelete {
+                                Button(action: {
+                                    categoryToDelete = catName
+                                }) {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(SottoTheme.destructiveRed)
+                                }
+                            }
                         }
                         .foregroundColor(
                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedText :
@@ -296,7 +516,51 @@ public struct MainView: View {
                                 .stroke(isEmergency && isSelected ? SottoTheme.emergencyBorder : Color.clear, lineWidth: 1)
                         )
                     }
-                    .demoTarget("chip_\(category.rawValue)")
+                    .demoTarget("chip_\(catName)")
+                }
+                
+                // In Edit Mode: Manage Categories & Add Category Chips
+                if viewModel.isEditMode {
+                    Button(action: {
+                        viewModel.showManageCategoriesDialog = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Text("↕")
+                                .font(.system(size: 14, weight: .bold))
+                            Text("Manage")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(SottoTheme.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(SottoTheme.surface)
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(SottoTheme.primary.opacity(0.4), lineWidth: 1)
+                        )
+                    }
+                    
+                    Button(action: {
+                        newCategoryNameInput = ""
+                        showAddCategoryAlert = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Text("+")
+                                .font(.system(size: 14, weight: .bold))
+                            Text("Add")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(SottoTheme.primary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(SottoTheme.surface)
+                        .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(SottoTheme.primary.opacity(0.4), lineWidth: 1)
+                        )
+                    }
                 }
             }
             .padding(.horizontal, 16)
@@ -398,4 +662,17 @@ public struct MainView: View {
         
         return rows
     }
+}
+
+// MARK: - Activity View for File Sharing
+
+struct ShareActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]? = nil
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
