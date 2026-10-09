@@ -18,6 +18,8 @@ public struct VoiceSettingsModal: View {
     @State private var secondaryLanguage: String
     @State private var shareUsabilityMetrics: Bool
     @State private var userRole: String
+    @State private var appTheme: String
+    @State private var showSafetyCards: Bool
     @State private var showSharedDataSheet: Bool = false
     @State private var availableLanguages: [(code: String, name: String)] = []
     
@@ -46,6 +48,8 @@ public struct VoiceSettingsModal: View {
         _secondaryLanguage = State(initialValue: settings.wrappedValue.secondaryLanguage)
         _shareUsabilityMetrics = State(initialValue: settings.wrappedValue.shareUsabilityMetrics)
         _userRole = State(initialValue: settings.wrappedValue.userRole)
+        _appTheme = State(initialValue: settings.wrappedValue.appTheme)
+        _showSafetyCards = State(initialValue: settings.wrappedValue.showSafetyCards)
     }
     
     private var speedLabel: String {
@@ -193,7 +197,9 @@ public struct VoiceSettingsModal: View {
                                     showLanguageSwitcher: showLanguageSwitcher,
                                     secondaryLanguage: secondaryLanguage,
                                     shareUsabilityMetrics: shareUsabilityMetrics,
-                                    userRole: userRole
+                                    userRole: userRole,
+                                    appTheme: appTheme,
+                                    showSafetyCards: showSafetyCards
                                 )
                                 onTestVoice(current)
                             }) {
@@ -210,6 +216,94 @@ public struct VoiceSettingsModal: View {
                                     )
                             }
                             .demoTarget("voice_testVoiceButton")
+                        }
+                        
+                        Divider().background(Color.white.opacity(0.12))
+                        
+                        // Section 2: Appearance (Sensory Color Themes)
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("🎨 Appearance")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(SottoTheme.textPrimary)
+                            
+                            VStack(spacing: 8) {
+                                ForEach(SottoPalettes.all, id: \.key) { palette in
+                                    let isSelected = appTheme == palette.key
+                                    Button(action: {
+                                        appTheme = palette.key
+                                        applyChanges()
+                                        UsabilityTracker.shared.recordThemeSelected(theme: palette.key, voiceSettings: settings)
+                                    }) {
+                                        HStack(spacing: 12) {
+                                            // Preview swatch box
+                                            ZStack {
+                                                RoundedRectangle(cornerRadius: 8)
+                                                    .fill(palette.background)
+                                                    .frame(width: 28, height: 28)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 8)
+                                                            .stroke(palette.outlineVariant, lineWidth: 1)
+                                                    )
+                                                RoundedRectangle(cornerRadius: 3)
+                                                    .fill(palette.accent)
+                                                    .frame(width: 10, height: 10)
+                                            }
+                                            
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(palette.name)
+                                                    .font(.system(size: 15, weight: isSelected ? .bold : .medium))
+                                                    .foregroundColor(SottoTheme.textPrimary)
+                                                Text(palette.description)
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(SottoTheme.textSecondary)
+                                            }
+                                            
+                                            Spacer()
+                                            
+                                            if isSelected {
+                                                Image(systemName: "checkmark.circle.fill")
+                                                    .font(.system(size: 18))
+                                                    .foregroundColor(SottoTheme.primary)
+                                            }
+                                        }
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 10)
+                                        .background(isSelected ? SottoTheme.primary.opacity(0.12) : SottoTheme.background)
+                                        .cornerRadius(12)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .stroke(isSelected ? SottoTheme.primary : palette.outlineVariant.opacity(0.4), lineWidth: isSelected ? 2 : 1)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        
+                        Divider().background(Color.white.opacity(0.12))
+                        
+                        // Section 3: Safety & Bystander
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("🛡️ Safety & Bystander")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(SottoTheme.textPrimary)
+                            
+                            Toggle(isOn: Binding(
+                                get: { showSafetyCards },
+                                set: { newValue in
+                                    showSafetyCards = newValue
+                                    applyChanges()
+                                }
+                            )) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text("Show Safety cards on Home")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(SottoTheme.textPrimary)
+                                    Text("Display safety and contact cards at the top of the All phrases grid")
+                                        .font(.system(size: 13))
+                                        .foregroundColor(SottoTheme.textSecondary)
+                                }
+                            }
+                            .tint(SottoTheme.primary)
                         }
                         
                         Divider().background(Color.white.opacity(0.12))
@@ -493,8 +587,10 @@ public struct VoiceSettingsModal: View {
                         }
                     }
                 }
+                .navigationViewStyle(.stack)
             }
         }
+        .navigationViewStyle(.stack)
         .onAppear {
             let locales = SpeechService.shared.getAvailableLocales()
             availableLanguages = LocaleHelper.getAvailableLanguages(installedLocales: locales)
@@ -511,7 +607,9 @@ public struct VoiceSettingsModal: View {
             showLanguageSwitcher: showLanguageSwitcher,
             secondaryLanguage: secondaryLanguage,
             shareUsabilityMetrics: shareUsabilityMetrics,
-            userRole: userRole
+            userRole: userRole,
+            appTheme: appTheme,
+            showSafetyCards: showSafetyCards
         )
         settings = updated
     }

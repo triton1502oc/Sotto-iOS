@@ -30,6 +30,10 @@ public final class UsabilityTracker {
     private var lastAppOpenHour: Int = -1
     private var recordedActivations: Set<String> = []
 
+    private var inMemoryTapCounts: [String: Int] = [:]
+    private var inMemoryAggDay: String? = nil
+    private var inMemoryAggHour: Int = -1
+
     public struct UsabilityEvent: Codable, Equatable {
         public let intent: String
         public let durationMs: Int
@@ -55,6 +59,32 @@ public final class UsabilityTracker {
             self.contextTag = contextTag
             self.day = day
             self.hourBucket = hourBucket
+        }
+
+        public func toJsonArray() -> [Any] {
+            return [intent, durationMs, outcome, frictionTag, contextTag, day, hourBucket]
+        }
+
+        public static func fromJsonArray(_ arr: [Any]) -> UsabilityEvent? {
+            guard arr.count >= 7,
+                  let intent = arr[0] as? String,
+                  let outcome = arr[2] as? String else {
+                return nil
+            }
+            let durationMs = (arr[1] as? NSNumber)?.intValue ?? 0
+            let frictionTag = (arr[3] as? String) ?? "none"
+            let contextTag = (arr[4] as? String) ?? ""
+            let day = (arr[5] as? String) ?? getTodayDate()
+            let hourBucket = (arr[6] as? NSNumber)?.intValue ?? getCurrentHourBucket()
+            return UsabilityEvent(
+                intent: intent,
+                durationMs: durationMs,
+                outcome: outcome,
+                frictionTag: frictionTag,
+                contextTag: contextTag,
+                day: day,
+                hourBucket: hourBucket
+            )
         }
     }
 
@@ -146,19 +176,70 @@ public final class UsabilityTracker {
             self.lastTapTime = now
             self.lastTapTarget = phraseId
 
-            let outcome = isRapid ? "rapid_tap" : "completed"
-            let friction = isRapid ? "rapid_clicking" : "none"
-            let intervalMs = min(Int(intervalNs / 1_000_000), 30_000)
             let catType = Self.categoryType(category: category, isEmergency: isEmergency)
 
-            let event = UsabilityEvent(
-                intent: "SpeakCard",
-                durationMs: intervalMs,
-                outcome: outcome,
-                frictionTag: friction,
-                contextTag: "cat_\(catType)"
+            if isRapid {
+                let intervalMs = min(Int(intervalNs / 1_000_000), 30_000)
+                let event = UsabilityEvent(
+                    intent: "SpeakCard",
+                    durationMs: intervalMs,
+                    outcome: "rapid_tap",
+                    frictionTag: "rapid_clicking",
+                    contextTag: "cat_\(catType)"
+                )
+                self.appendAndSync(event, voiceSettings: voiceSettings)
+            } else {
+                self.recordAggregatedTap(catType: catType, voiceSettings: voiceSettings)
+            }
+        }
+    }
+
+    private func recordAggregatedTap(catType: String, voiceSettings: VoiceSettings) {
+        let today = Self.getTodayDate()
+        let currentHour = Self.getCurrentHourBucket()
+
+        if let aggDay = inMemoryAggDay, (aggDay != today || inMemoryAggHour != currentHour) {
+            flushAggregatedTapsLocked(voiceSettings: voiceSettings)
+        }
+
+        inMemoryAggDay = today
+        inMemoryAggHour = currentHour
+        inMemoryTapCounts[catType, default: 0] += 1
+    }
+
+    public func flushAggregatedTaps(voiceSettings: VoiceSettings) {
+        queue.async {
+            self.flushAggregatedTapsLocked(voiceSettings: voiceSettings)
+        }
+    }
+
+    private func flushAggregatedTapsLocked(voiceSettings: VoiceSettings) {
+        guard let storedDay = inMemoryAggDay, inMemoryAggHour != -1 else { return }
+        let storedHour = inMemoryAggHour
+        let categories = ["emergency", "needs", "social", "care", "general", "custom"]
+        var nonZeroTags: [String] = []
+        for cat in categories {
+            let count = inMemoryTapCounts[cat] ?? 0
+            if count > 0 {
+                nonZeroTags.append("\(cat)=\(count)")
+            }
+        }
+
+        inMemoryTapCounts.removeAll()
+        inMemoryAggDay = nil
+        inMemoryAggHour = -1
+
+        if !nonZeroTags.isEmpty {
+            let summaryEvent = UsabilityEvent(
+                intent: "CardTapsSummary",
+                durationMs: 0,
+                outcome: "completed",
+                frictionTag: "none",
+                contextTag: nonZeroTags.joined(separator: ";"),
+                day: storedDay,
+                hourBucket: storedHour
             )
-            self.appendAndSync(event, voiceSettings: voiceSettings)
+            appendAndSync(summaryEvent, voiceSettings: voiceSettings)
         }
     }
 
@@ -294,34 +375,64 @@ public final class UsabilityTracker {
         }
     }
 
-    public func getPendingEvents() -> [UsabilityEvent] {
-        return queue.sync {
-            self.eventBuffer
+    public func recordThemeSelected(theme: String, voiceSettings: VoiceSettings) {
+        guard voiceSettings.shareUsabilityMetrics else { return }
+        queue.async {
+            let event = UsabilityEvent(intent: "ThemeSelected", durationMs: 0, outcome: theme)
+            self.appendAndSync(event, voiceSettings: voiceSettings)
         }
     }
 
-    public func generatePreviewPayload(installId: String, role: String, uiLang: String) -> String {
-        let events = getPendingEvents()
+    public func recordSettingsState(settings: VoiceSettings, customPhraseCount: Int) {
+        guard settings.shareUsabilityMetrics else { return }
+        queue.async {
+            let chime = settings.playAttentionChime ? 1 : 0
+            let bilingual = settings.showLanguageSwitcher ? 1 : 0
+            let secLang = (settings.showLanguageSwitcher && !settings.secondaryLanguage.isEmpty) ? settings.secondaryLanguage : "none"
+            let rateBucket: String
+            if settings.speechRate < 0.9 { rateBucket = "slow" }
+            else if settings.speechRate > 1.1 { rateBucket = "fast" }
+            else { rateBucket = "normal" }
+            let customBucket: String
+            switch customPhraseCount {
+            case 0: customBucket = "0"
+            case 1...5: customBucket = "1_5"
+            case 6...20: customBucket = "6_20"
+            default: customBucket = "20_plus"
+            }
+            let safety = settings.showSafetyCards ? 1 : 0
+            let tag = "chime=\(chime);bi=\(bilingual);sec=\(secLang);rate=\(rateBucket);cust=\(customBucket);theme=\(settings.appTheme);safety_cards_visible=\(safety)"
+            let event = UsabilityEvent(
+                intent: "SettingsState",
+                durationMs: 0,
+                outcome: "active",
+                contextTag: tag
+            )
+            self.appendAndSync(event, voiceSettings: settings)
+        }
+    }
+
+    public func getPendingEvents(voiceSettings: VoiceSettings? = nil) -> [UsabilityEvent] {
+        return queue.sync {
+            if let settings = voiceSettings {
+                self.flushAggregatedTapsLocked(voiceSettings: settings)
+            }
+            return self.eventBuffer
+        }
+    }
+
+    public func generatePreviewPayload(installId: String, role: String, uiLang: String, voiceSettings: VoiceSettings? = nil) -> String {
+        let events = getPendingEvents(voiceSettings: voiceSettings)
         let payload: [String: Any] = [
-            "schema": 2,
+            "schema": 3,
             "installId": installId,
             "role": role,
             "uiLang": uiLang,
-            "appVersion": "v1.6.0",
+            "appVersion": "v1.7.0",
             "platform": "iOS",
             "sessionId": sessionId,
             "eventsCount": events.count,
-            "events": events.map { e in
-                [
-                    "intent": e.intent,
-                    "durationMs": e.durationMs,
-                    "outcome": e.outcome,
-                    "frictionTag": e.frictionTag,
-                    "contextTag": e.contextTag,
-                    "day": e.day,
-                    "hourBucket": e.hourBucket
-                ]
-            }
+            "events": events.map { $0.toJsonArray() }
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
               let str = String(data: data, encoding: .utf8) else {
@@ -334,12 +445,15 @@ public final class UsabilityTracker {
         let repo = UserDefaultsVoiceSettingsRepository()
         let installId = repo.getInstallId() ?? "not_assigned"
         let uiLang = LocaleHelper.getEffectiveLanguage(appLanguage: LocaleHelper.langSystem)
-        return generatePreviewPayload(installId: installId, role: voiceSettings.userRole, uiLang: uiLang)
+        return generatePreviewPayload(installId: installId, role: voiceSettings.userRole, uiLang: uiLang, voiceSettings: voiceSettings)
     }
 
     public func clearBuffer() {
         queue.async {
             self.eventBuffer.removeAll()
+            self.inMemoryTapCounts.removeAll()
+            self.inMemoryAggDay = nil
+            self.inMemoryAggHour = -1
         }
     }
 
@@ -359,22 +473,12 @@ public final class UsabilityTracker {
         guard let url = URL(string: Self.defaultWebhookURL) else { return }
 
         let payload: [String: Any] = [
-            "schema": 2,
-            "appVersion": "v1.6.0",
+            "schema": 3,
+            "appVersion": "v1.7.0",
             "platform": "iOS",
             "sessionId": sessionId,
             "role": voiceSettings.userRole,
-            "events": events.map { e in
-                [
-                    "intent": e.intent,
-                    "durationMs": e.durationMs,
-                    "outcome": e.outcome,
-                    "frictionTag": e.frictionTag,
-                    "contextTag": e.contextTag,
-                    "day": e.day,
-                    "hourBucket": e.hourBucket
-                ]
-            }
+            "events": events.map { $0.toJsonArray() }
         ]
 
         guard let httpBody = try? JSONSerialization.data(withJSONObject: payload) else { return }

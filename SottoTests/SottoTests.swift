@@ -65,7 +65,7 @@ final class SottoTests: XCTestCase {
         
         let emergencyCard = indoDefaults.first { $0.isEmergency }
         XCTAssertNotNil(emergencyCard)
-        XCTAssertTrue(emergencyCard?.text.contains("bicara") == true)
+        XCTAssertTrue(emergencyCard?.text.contains("kontak darurat") == true)
     }
     
     func testEmergencyMigrationPrependsEmergencyCard() {
@@ -245,6 +245,7 @@ final class SottoTests: XCTestCase {
         testDefaults.set(data, forKey: "saved_phrases")
         testDefaults.set(true, forKey: "v2_migrated")
         testDefaults.set(true, forKey: "care_migrated")
+        testDefaults.set(true, forKey: "safety_consolidated_migrated")
         
         let repo = UserDefaultsPhraseRepository(userDefaults: testDefaults)
         let loaded = repo.getPhrases()
@@ -525,6 +526,151 @@ final class SottoTests: XCTestCase {
         // Custom user category name MUST be scrubbed to "custom"
         XCTAssertEqual(UsabilityTracker.categoryType("My Private Medicine"), "custom")
         XCTAssertEqual(UsabilityTracker.categoryType("Doctor Smith Routine"), "custom")
+    }
+    
+    // MARK: - Sensory Color Palettes & Themes Tests
+    
+    func testSottoPalettes() {
+        XCTAssertEqual(SottoPalettes.all.count, 5)
+        
+        let charcoal = SottoPalettes.palette(for: VoiceSettings.themeCharcoal)
+        XCTAssertEqual(charcoal.key, "charcoal")
+        XCTAssertEqual(charcoal.name, "Charcoal")
+        
+        let oledBlack = SottoPalettes.palette(for: VoiceSettings.themeOledBlack)
+        XCTAssertEqual(oledBlack.key, "oled_black")
+        XCTAssertEqual(oledBlack.name, "OLED Black")
+        
+        let warmAmber = SottoPalettes.palette(for: VoiceSettings.themeWarmAmber)
+        XCTAssertEqual(warmAmber.key, "warm_amber")
+        XCTAssertEqual(warmAmber.name, "Warm Amber")
+        
+        let slateNavy = SottoPalettes.palette(for: VoiceSettings.themeSlateNavy)
+        XCTAssertEqual(slateNavy.key, "slate_navy")
+        XCTAssertEqual(slateNavy.name, "Slate Navy")
+        
+        let softParchment = SottoPalettes.palette(for: VoiceSettings.themeSoftParchment)
+        XCTAssertEqual(softParchment.key, "soft_parchment")
+        XCTAssertEqual(softParchment.name, "Soft Parchment")
+        
+        // Dynamic accessors
+        XCTAssertEqual(SottoTheme.background(for: VoiceSettings.themeCharcoal), charcoal.background)
+        XCTAssertEqual(SottoTheme.surface(for: VoiceSettings.themeOledBlack), oledBlack.surface)
+    }
+    
+    // MARK: - Safety Reframing & Consolidated Migration Tests
+    
+    func testSafetyCategoryReframing() {
+        XCTAssertEqual(PhraseCategory.safety.rawValue, "Emergency")
+        XCTAssertEqual(PhraseCategory.safety.displayName, "Safety")
+        XCTAssertEqual(PhraseCategory.emergency.displayName, "Safety")
+        XCTAssertEqual(Phrase.categorySafety, "Emergency")
+        
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("Emergency", appLanguage: "en"), "Safety")
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("Emergency", appLanguage: "id"), "Keselamatan")
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("Safety", appLanguage: "en"), "Safety")
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("Safety", appLanguage: "id"), "Keselamatan")
+    }
+    
+    func testSafetyConsolidatedMigration() {
+        let suite = "test_sotto_safety_migration_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suite)!
+        
+        // Seed with old default safety cards
+        let oldPhrases = [
+            Phrase(text: "I cannot speak right now. Please read my screen.", isEmergency: true, category: .emergency),
+            Phrase(text: "Please call my emergency contact: [Phone Number]", isEmergency: true, category: .emergency),
+            Phrase(text: "I need a quiet space.", category: .needs)
+        ]
+        let data = try! JSONEncoder().encode(oldPhrases)
+        testDefaults.set(data, forKey: "saved_phrases")
+        testDefaults.set(true, forKey: "v2_migrated")
+        testDefaults.set(true, forKey: "care_migrated")
+        testDefaults.set(false, forKey: "safety_consolidated_migrated")
+        
+        let repo = UserDefaultsPhraseRepository(userDefaults: testDefaults)
+        let loaded = repo.getPhrases()
+        
+        // Old safety cards should be replaced with single consolidated card
+        let emergencyCards = loaded.filter { $0.isEmergency }
+        XCTAssertEqual(emergencyCards.count, 1)
+        XCTAssertTrue(emergencyCards[0].text.contains("please call my emergency contact") || emergencyCards[0].text.contains("tolong hubungi kontak darurat"))
+        XCTAssertTrue(testDefaults.bool(forKey: "safety_consolidated_migrated"))
+        
+        testDefaults.removePersistentDomain(forName: suite)
+    }
+    
+    // MARK: - Voice Settings Theme & Safety Toggle Tests
+    
+    func testVoiceSettingsSensoryThemesAndSafetyCards() throws {
+        var settings = VoiceSettings()
+        XCTAssertEqual(settings.appTheme, "charcoal")
+        XCTAssertTrue(settings.showSafetyCards)
+        
+        settings.appTheme = "warm_amber"
+        settings.showSafetyCards = false
+        
+        let encoder = JSONEncoder()
+        let data = try encoder.encode(settings)
+        let decoded = try JSONDecoder().decode(VoiceSettings.self, from: data)
+        
+        XCTAssertEqual(decoded.appTheme, "warm_amber")
+        XCTAssertFalse(decoded.showSafetyCards)
+    }
+    
+    func testMainViewModelShowSafetyCardsFiltering() {
+        let suite = "test_sotto_filter_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suite)!
+        
+        let repo = UserDefaultsPhraseRepository(userDefaults: testDefaults)
+        let voiceRepo = UserDefaultsVoiceSettingsRepository(userDefaults: testDefaults)
+        
+        let vm = MainViewModel(phraseRepository: repo, voiceSettingsRepository: voiceRepo)
+        
+        // By default showSafetyCards is true: all includes emergency
+        vm.selectedCategory = .all
+        XCTAssertTrue(vm.filteredPhrases.contains { $0.isEmergency })
+        
+        // When showSafetyCards is false: all excludes emergency
+        var updated = vm.voiceSettings
+        updated.showSafetyCards = false
+        vm.updateVoiceSettings(updated)
+        
+        XCTAssertFalse(vm.filteredPhrases.contains { $0.isEmergency })
+        
+        // But selecting emergency category directly still shows it
+        vm.selectedCategory = .emergency
+        XCTAssertTrue(vm.filteredPhrases.contains { $0.isEmergency })
+        
+        testDefaults.removePersistentDomain(forName: suite)
+    }
+    
+    // MARK: - Telemetry Schema 3 & Tap Aggregation Tests
+    
+    func testUsabilityTrackerSchema3EventSerialization() {
+        let event = UsabilityTracker.UsabilityEvent(
+            intent: "SpeakCard",
+            durationMs: 120,
+            outcome: "completed",
+            frictionTag: "none",
+            contextTag: "cat_needs",
+            day: "2026-10-09",
+            hourBucket: 3
+        )
+        
+        let arr = event.toJsonArray()
+        XCTAssertEqual(arr.count, 7)
+        XCTAssertEqual(arr[0] as? String, "SpeakCard")
+        XCTAssertEqual(arr[1] as? Int, 120)
+        XCTAssertEqual(arr[2] as? String, "completed")
+        XCTAssertEqual(arr[3] as? String, "none")
+        XCTAssertEqual(arr[4] as? String, "cat_needs")
+        XCTAssertEqual(arr[5] as? String, "2026-10-09")
+        XCTAssertEqual(arr[6] as? Int, 3)
+        
+        let restored = UsabilityTracker.UsabilityEvent.fromJsonArray(arr)
+        XCTAssertNotNil(restored)
+        XCTAssertEqual(event, restored)
     }
 }
 

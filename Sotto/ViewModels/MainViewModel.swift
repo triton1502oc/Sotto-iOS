@@ -60,7 +60,7 @@ public final class MainViewModel: ObservableObject {
     public var filteredPhrases: [Phrase] {
         switch selectedCategory {
         case .all:
-            return phrases
+            return voiceSettings.showSafetyCards ? phrases : phrases.filter { !$0.isEmergency }
         case .emergency:
             return phrases.filter { $0.isEmergency }
         default:
@@ -218,6 +218,8 @@ public final class MainViewModel: ObservableObject {
     public func updateVoiceSettings(_ settings: VoiceSettings) {
         self.voiceSettings = settings
         voiceSettingsRepository.saveVoiceSettings(settings)
+        let customCount = phrases.filter { !PhraseCategory.defaultCategories.contains($0.category) }.count
+        UsabilityTracker.shared.recordSettingsState(settings: settings, customPhraseCount: customCount)
     }
     
     // MARK: - Metrics, Role, & Survey

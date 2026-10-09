@@ -10,11 +10,19 @@ public struct VoiceSettings: Codable, Equatable {
     public var secondaryLanguage: String
     public var shareUsabilityMetrics: Bool
     public var userRole: String
+    public var appTheme: String
+    public var showSafetyCards: Bool
     
     public static let roleUnset = "unset"
     public static let roleCaregiver = "caregiver"
     public static let roleSelf = "self"
     public static let roleProfessional = "professional"
+
+    public static let themeCharcoal = "charcoal"
+    public static let themeOledBlack = "oled_black"
+    public static let themeWarmAmber = "warm_amber"
+    public static let themeSlateNavy = "slate_navy"
+    public static let themeSoftParchment = "soft_parchment"
     
     public init(
         speechRate: Float = 1.0,
@@ -25,7 +33,9 @@ public struct VoiceSettings: Codable, Equatable {
         showLanguageSwitcher: Bool = false,
         secondaryLanguage: String = "id",
         shareUsabilityMetrics: Bool = false,
-        userRole: String = "unset"
+        userRole: String = "unset",
+        appTheme: String = VoiceSettings.themeCharcoal,
+        showSafetyCards: Bool = true
     ) {
         self.speechRate = speechRate
         self.speechPitch = speechPitch
@@ -36,6 +46,8 @@ public struct VoiceSettings: Codable, Equatable {
         self.secondaryLanguage = secondaryLanguage
         self.shareUsabilityMetrics = shareUsabilityMetrics
         self.userRole = userRole
+        self.appTheme = appTheme
+        self.showSafetyCards = showSafetyCards
     }
     
     public init(
@@ -56,12 +68,14 @@ public struct VoiceSettings: Codable, Equatable {
             showLanguageSwitcher: showLanguageSwitcher,
             secondaryLanguage: secondaryLanguage,
             shareUsabilityMetrics: false,
-            userRole: "unset"
+            userRole: "unset",
+            appTheme: VoiceSettings.themeCharcoal,
+            showSafetyCards: true
         )
     }
     
     enum CodingKeys: String, CodingKey {
-        case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage, shareUsabilityMetrics, userRole
+        case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage, shareUsabilityMetrics, userRole, appTheme, showSafetyCards
     }
     
     public init(from decoder: Decoder) throws {
@@ -75,5 +89,7 @@ public struct VoiceSettings: Codable, Equatable {
         self.secondaryLanguage = try container.decodeIfPresent(String.self, forKey: .secondaryLanguage) ?? "id"
         self.shareUsabilityMetrics = try container.decodeIfPresent(Bool.self, forKey: .shareUsabilityMetrics) ?? false
         self.userRole = try container.decodeIfPresent(String.self, forKey: .userRole) ?? "unset"
+        self.appTheme = try container.decodeIfPresent(String.self, forKey: .appTheme) ?? VoiceSettings.themeCharcoal
+        self.showSafetyCards = try container.decodeIfPresent(Bool.self, forKey: .showSafetyCards) ?? true
     }
 }

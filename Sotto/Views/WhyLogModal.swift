@@ -94,6 +94,7 @@ public struct WhyLogModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     // MARK: - Empty State

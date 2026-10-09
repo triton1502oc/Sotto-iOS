@@ -21,7 +21,7 @@ public struct MainView: View {
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
-                SottoTheme.background
+                SottoTheme.background(for: viewModel.voiceSettings.appTheme)
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -33,7 +33,7 @@ public struct MainView: View {
                         .padding(.vertical, 8)
                     
                     // Phrases Grid / List
-                    phrasesContent
+                    phrasesContent(width: geometry.size.width)
                     
                     // Quick Speak Bar (docked at bottom)
                     QuickSpeakBarView(
@@ -322,6 +322,10 @@ public struct MainView: View {
             }
         }
         .onAppear {
+            UsabilityTracker.shared.recordAppOpen(voiceSettings: viewModel.voiceSettings)
+            let customCount = viewModel.phrases.filter { !PhraseCategory.defaultCategories.contains($0.category) }.count
+            UsabilityTracker.shared.recordSettingsState(settings: viewModel.voiceSettings, customPhraseCount: customCount)
+            
             if viewModel.shouldPromptPmfSurvey() {
                 viewModel.showPmfSurveyDialog = true
             }
@@ -329,6 +333,7 @@ public struct MainView: View {
                 DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: geometry.size)
             }
         }
+        .preferredColorScheme(viewModel.voiceSettings.appTheme == VoiceSettings.themeSoftParchment ? .light : .dark)
     }
 }
     
@@ -438,7 +443,7 @@ public struct MainView: View {
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 6)
-        .background(SottoTheme.background)
+        .background(SottoTheme.background(for: viewModel.voiceSettings.appTheme))
     }
     
     // MARK: - Category Filter Row
@@ -461,8 +466,9 @@ public struct MainView: View {
                 }
                 .demoTarget("chip_all")
                 
-                // Dynamic Categories from Repository
-                ForEach(viewModel.categories, id: \.self) { catName in
+                // Dynamic Categories from Repository (Safety chip hidden on main bar to reduce visual clutter)
+                let mainBarCategories = viewModel.categories.filter { PhraseCategory($0) != .emergency }
+                ForEach(mainBarCategories, id: \.self) { catName in
                     let catObj = PhraseCategory(catName)
                     let isSelected = viewModel.selectedCategory == catObj
                     let isEmergency = catObj == .emergency
@@ -569,13 +575,14 @@ public struct MainView: View {
     
     // MARK: - Phrases Grid Content
     
-    private var phrasesContent: some View {
-        ScrollView {
+    private func phrasesContent(width: CGFloat) -> some View {
+        let columnsCount = width >= 900 ? 4 : (width >= 600 ? 3 : 2)
+        let items = viewModel.filteredPhrases
+        let chunkedRows = chunkPhrases(items, columnsCount: columnsCount)
+        
+        return ScrollView {
             LazyVStack(spacing: 16) {
-                // Render items: emergency cards full-width, regular cards in 2-column rows
-                let items = viewModel.filteredPhrases
-                let chunkedRows = chunkPhrases(items)
-                
+                // Render items: emergency cards full-width, regular cards in N-column rows
                 ForEach(0..<chunkedRows.count, id: \.self) { rowIndex in
                     let row = chunkedRows[rowIndex]
                     if row.isEmergency, let phrase = row.items.first {
@@ -615,10 +622,12 @@ public struct MainView: View {
                                 )
                                 .demoTarget(phrase.spokenText != nil ? "dualLanguageCard" : (colIndex == 0 && rowIndex <= 1 ? "firstRegularCard" : (colIndex == 1 && rowIndex <= 1 ? "secondRegularCard" : "regularCard_\(phrase.id)")))
                             }
-                            // If row has only 1 item, pad the other half
-                            if row.items.count == 1 {
-                                Spacer()
-                                    .frame(maxWidth: .infinity)
+                            // If row has fewer items than columnsCount, pad the other cells
+                            if row.items.count < columnsCount {
+                                ForEach(0..<(columnsCount - row.items.count), id: \.self) { _ in
+                                    Spacer()
+                                        .frame(maxWidth: .infinity)
+                                }
                             }
                         }
                     }
@@ -630,13 +639,13 @@ public struct MainView: View {
         }
     }
     
-    // Helper to group phrases into full-width emergency rows and 2-item regular rows
+    // Helper to group phrases into full-width emergency rows and N-item regular rows
     private struct PhraseRow {
         let isEmergency: Bool
         let items: [Phrase]
     }
     
-    private func chunkPhrases(_ phrases: [Phrase]) -> [PhraseRow] {
+    private func chunkPhrases(_ phrases: [Phrase], columnsCount: Int = 2) -> [PhraseRow] {
         var rows: [PhraseRow] = []
         var regularBuffer: [Phrase] = []
         
@@ -649,7 +658,7 @@ public struct MainView: View {
                 rows.append(PhraseRow(isEmergency: true, items: [phrase]))
             } else {
                 regularBuffer.append(phrase)
-                if regularBuffer.count == 2 {
+                if regularBuffer.count == columnsCount {
                     rows.append(PhraseRow(isEmergency: false, items: regularBuffer))
                     regularBuffer.removeAll()
                 }

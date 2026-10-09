@@ -119,6 +119,7 @@ public struct ManageCategoriesModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     @ViewBuilder

@@ -460,6 +460,7 @@ public struct TwoWayConversationModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
 }
 

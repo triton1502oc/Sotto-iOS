@@ -207,6 +207,7 @@ public struct WhyTreeEditorModal: View {
                 Text("This will restore the default Why Finder questions.")
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     // MARK: - Subviews
@@ -417,6 +418,7 @@ public struct WhyTreeEditorModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     // MARK: - Mutators

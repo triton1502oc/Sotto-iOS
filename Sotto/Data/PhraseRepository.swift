@@ -16,6 +16,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
     private let keyCategoryOrder = "saved_category_order"
     private let keyMigrated = "v2_migrated"
     private let keyCareMigrated = "care_migrated"
+    private let keySafetyConsolidatedMigrated = "safety_consolidated_migrated"
     
     public init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -25,7 +26,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
         let isIndonesian = (language == "id" || language == "in")
         if isIndonesian {
             return [
-                Phrase(text: "Saya tidak bisa bicara sekarang. Tolong baca layar saya.", language: LocaleHelper.langAuto, isEmergency: true, category: .emergency),
+                Phrase(text: "Saya tinggal di sekitar [Area / Lingkungan], tolong hubungi kontak darurat saya: [nomor telepon]", language: LocaleHelper.langAuto, isEmergency: true, category: .emergency),
                 Phrase(text: "Saya butuh tempat tenang.", language: LocaleHelper.langAuto, isEmergency: false, category: .needs),
                 Phrase(text: "Tolong beri saya waktu.", language: LocaleHelper.langAuto, isEmergency: false, category: .needs),
                 Phrase(text: "Saya harus pergi sekarang.", language: LocaleHelper.langAuto, isEmergency: false, category: .needs),
@@ -42,7 +43,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             ]
         } else {
             return [
-                Phrase(text: "I cannot speak right now. Please read my screen.", language: LocaleHelper.langAuto, isEmergency: true, category: .emergency),
+                Phrase(text: "I live around [Area/Neighborhood], please call my emergency contact: [phone number]", language: LocaleHelper.langAuto, isEmergency: true, category: .emergency),
                 Phrase(text: "I need a quiet space.", language: LocaleHelper.langAuto, isEmergency: false, category: .needs),
                 Phrase(text: "Please give me time.", language: LocaleHelper.langAuto, isEmergency: false, category: .needs),
                 Phrase(text: "I need to leave now.", language: LocaleHelper.langAuto, isEmergency: false, category: .needs),
@@ -66,6 +67,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             savePhrases(defaults)
             userDefaults.set(true, forKey: keyMigrated)
             userDefaults.set(true, forKey: keyCareMigrated)
+            userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
             return defaults
         }
         
@@ -101,6 +103,35 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                     phrases.append(contentsOf: careDefaults)
                 }
                 userDefaults.set(true, forKey: keyCareMigrated)
+                needsSave = true
+            }
+
+            // One-time upgrade: Consolidate default Safety cards into single contact/area card
+            let isSafetyConsolidated = userDefaults.bool(forKey: keySafetyConsolidatedMigrated)
+            if !isSafetyConsolidated {
+                let oldDefaultSafetyTexts: Set<String> = [
+                    "I cannot speak right now. Please read my screen.",
+                    "Please call my emergency contact: [Phone Number]",
+                    "I live around [Area / Neighborhood]. Please call my contact.",
+                    "Saya tidak bisa bicara sekarang. Tolong baca layar saya.",
+                    "Tolong hubungi kontak darurat saya: [Nomor Telepon]",
+                    "Saya tinggal di sekitar [Area / Lingkungan]. Tolong hubungi kontak saya."
+                ]
+                let newSafetyDefault = Self.defaultPhrases().first { $0.isEmergency }
+                if let newSafetyDefault = newSafetyDefault {
+                    let hadOldDefaults = phrases.contains { $0.isEmergency && oldDefaultSafetyTexts.contains($0.text) }
+                    if hadOldDefaults {
+                        let firstEmergencyIdx = phrases.firstIndex { $0.isEmergency } ?? 0
+                        phrases.removeAll { $0.isEmergency && oldDefaultSafetyTexts.contains($0.text) }
+                        let insertIdx = min(max(firstEmergencyIdx, 0), phrases.count)
+                        if !phrases.contains(where: { $0.isEmergency }) {
+                            phrases.insert(newSafetyDefault, at: insertIdx)
+                        }
+                    } else if !phrases.contains(where: { $0.isEmergency }) {
+                        phrases.insert(newSafetyDefault, at: 0)
+                    }
+                }
+                userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
                 needsSave = true
             }
             

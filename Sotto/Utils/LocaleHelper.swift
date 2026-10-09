@@ -135,7 +135,7 @@ public enum LocaleHelper {
         let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
         switch catKey.uppercased() {
         case "ALL": return isIndonesian ? "Semua" : "All"
-        case "EMERGENCY": return isIndonesian ? "Darurat" : "Emergency"
+        case "EMERGENCY", "SAFETY": return isIndonesian ? "Keselamatan" : "Safety"
         case "NEEDS": return isIndonesian ? "Kebutuhan" : "Needs"
         case "SOCIAL": return isIndonesian ? "Sosial" : "Social"
         case "CARE": return isIndonesian ? "Perawatan" : "Care"

@@ -54,23 +54,23 @@ public struct PhraseCardView: View {
     @ViewBuilder
     private var emergencyCardContent: some View {
         VStack(spacing: 8) {
-            // Emergency Badge
+            // Safety Badge
             HStack(spacing: 4) {
-                Text("🚨")
+                Text("🛡️")
                     .font(.system(size: 13))
-                Text("Emergency")
+                Text(LocaleHelper.getCategoryDisplayName("EMERGENCY"))
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(SottoTheme.emergencyBadgeText)
+                    .foregroundColor(SottoTheme.safetyBadgeText)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(SottoTheme.emergencyBadgeBg)
+            .background(SottoTheme.safetyBadgeBg)
             .cornerRadius(6)
             
-            // Emergency Phrase Text
+            // Safety Phrase Text
             Text(phrase.text)
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(SottoTheme.emergencyText)
+                .foregroundColor(SottoTheme.safetyText)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .padding(.horizontal, 12)
@@ -91,11 +91,11 @@ public struct PhraseCardView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 16)
-        .background(isEditMode ? SottoTheme.surfaceVariant : SottoTheme.emergencyBackground)
+        .background(isEditMode ? SottoTheme.surfaceVariant : SottoTheme.safetyBackground)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(SottoTheme.emergencyBorder, lineWidth: 1.5)
+                .stroke(SottoTheme.safetyBorder, lineWidth: 1.5)
         )
     }
     

@@ -58,6 +58,7 @@ public struct ImportBackupModal: View {
                 Text("This will replace all non-emergency phrases with the imported backup file. Emergency phrases are always preserved.")
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     // MARK: - Tree Only Content

@@ -266,6 +266,7 @@ public struct PhraseEditModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     private func savePhrase() {

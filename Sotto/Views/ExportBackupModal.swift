@@ -130,5 +130,6 @@ public struct ExportBackupModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
 }

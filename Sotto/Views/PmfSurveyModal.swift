@@ -135,6 +135,7 @@ public struct PmfSurveyModal: View {
                 }
             }
         }
+        .navigationViewStyle(.stack)
     }
     
     private func optionCard(label: String, isSelected: Bool, onSelect: @escaping () -> Void) -> some View {

@@ -36,6 +36,23 @@ public enum SottoTheme {
     public static let emergencyChipBg = Color(hex: 0x3E2723)
     public static let emergencyChipSelectedBg = Color(hex: 0x4E342E)
     public static let emergencyChipSelectedText = Color(hex: 0xFFCC80)
+    public static let emergencyTranslucent = Color(hex: 0xFFB74D, alpha: 0.2)
+    
+    // Safety semantic tokens (aliases for emergency)
+    public static let safetyAccent = emergencyAccent
+    public static let safetyContainer = emergencyContainer
+    public static let safetyBackground = emergencyBackground
+    public static let safetyBorder = emergencyBorder
+    public static let safetyText = emergencyText
+    public static let safetyTextSecondary = emergencyTextSecondary
+    public static let safetyBadgeBg = emergencyBadgeBg
+    public static let safetyBadgeText = emergencyBadgeText
+    public static let safetyChipBackground = emergencyChipBackground
+    public static let safetyChipBackgroundDark = emergencyChipBackgroundDark
+    public static let safetyChipBg = emergencyChipBg
+    public static let safetyChipSelectedBg = emergencyChipSelectedBg
+    public static let safetyChipSelectedText = emergencyChipSelectedText
+    public static let safetyTranslucent = emergencyTranslucent
     
     // Actions & States
     public static let confirm = Color(hex: 0x4CAF50)
@@ -74,4 +91,111 @@ public enum SottoTheme {
     public static let intensityModerate = Color(hex: 0xF9A825)
     public static let intensityHigh = Color(hex: 0xE65100)
     public static let intensitySevere = Color(hex: 0xB71C1C)
+    
+    // Dynamic Theme Accessors
+    public static func palette(for key: String) -> SottoPalette {
+        SottoPalettes.palette(for: key)
+    }
+    
+    public static func background(for theme: String) -> Color { palette(for: theme).background }
+    public static func surface(for theme: String) -> Color { palette(for: theme).surface }
+    public static func surfaceVariant(for theme: String) -> Color { palette(for: theme).surfaceVariant }
+    public static func textPrimary(for theme: String) -> Color { palette(for: theme).textPrimary }
+    public static func textSecondary(for theme: String) -> Color { palette(for: theme).textSecondary }
+    public static func outline(for theme: String) -> Color { palette(for: theme).outlineVariant }
+    public static func accent(for theme: String) -> Color { palette(for: theme).accent }
+}
+
+public struct SottoPalette: Equatable {
+    public let key: String
+    public let name: String
+    public let description: String
+    public let background: Color
+    public let surface: Color
+    public let surfaceVariant: Color
+    public let textPrimary: Color
+    public let textSecondary: Color
+    public let outlineVariant: Color
+    public let accent: Color
+}
+
+public enum SottoPalettes {
+    public static let charcoal = SottoPalette(
+        key: VoiceSettings.themeCharcoal,
+        name: "Charcoal",
+        description: "Balanced low-stimulus dark",
+        background: Color(hex: 0x121212),
+        surface: Color(hex: 0x1E1E1E),
+        surfaceVariant: Color(hex: 0x2A2A2A),
+        textPrimary: Color(hex: 0xE0E0E0),
+        textSecondary: Color(hex: 0xAAAAAA),
+        outlineVariant: Color(hex: 0x424242),
+        accent: Color(hex: 0xE0E0E0)
+    )
+    
+    public static let oledBlack = SottoPalette(
+        key: VoiceSettings.themeOledBlack,
+        name: "OLED Black",
+        description: "Pure black, maximum contrast",
+        background: Color(hex: 0x000000),
+        surface: Color(hex: 0x121212),
+        surfaceVariant: Color(hex: 0x1E1E1E),
+        textPrimary: Color(hex: 0xFFFFFF),
+        textSecondary: Color(hex: 0xB0B0B0),
+        outlineVariant: Color(hex: 0x333333),
+        accent: Color(hex: 0xFFFFFF)
+    )
+    
+    public static let warmAmber = SottoPalette(
+        key: VoiceSettings.themeWarmAmber,
+        name: "Warm Amber",
+        description: "Low blue light, reduced strain",
+        background: Color(hex: 0x191512),
+        surface: Color(hex: 0x241E1A),
+        surfaceVariant: Color(hex: 0x322A24),
+        textPrimary: Color(hex: 0xEAE0D5),
+        textSecondary: Color(hex: 0xBFAFA0),
+        outlineVariant: Color(hex: 0x483C34),
+        accent: Color(hex: 0xD4A373)
+    )
+    
+    public static let slateNavy = SottoPalette(
+        key: VoiceSettings.themeSlateNavy,
+        name: "Slate Navy",
+        description: "Cool slate, calm focus",
+        background: Color(hex: 0x0F141C),
+        surface: Color(hex: 0x161E2A),
+        surfaceVariant: Color(hex: 0x202A3A),
+        textPrimary: Color(hex: 0xDEE3EB),
+        textSecondary: Color(hex: 0xA8B4C4),
+        outlineVariant: Color(hex: 0x2B3A50),
+        accent: Color(hex: 0x8FA8C8)
+    )
+    
+    public static let softParchment = SottoPalette(
+        key: VoiceSettings.themeSoftParchment,
+        name: "Soft Parchment",
+        description: "Daylight reading, anti-halation",
+        background: Color(hex: 0xF5F2EB),
+        surface: Color(hex: 0xEAE5DB),
+        surfaceVariant: Color(hex: 0xDFD9CE),
+        textPrimary: Color(hex: 0x1A1A1A),
+        textSecondary: Color(hex: 0x5A5752),
+        outlineVariant: Color(hex: 0xCCC5B8),
+        accent: Color(hex: 0x4A463F)
+    )
+    
+    public static let all: [SottoPalette] = [
+        charcoal, oledBlack, warmAmber, slateNavy, softParchment
+    ]
+    
+    public static func palette(for key: String) -> SottoPalette {
+        switch key {
+        case VoiceSettings.themeOledBlack: return oledBlack
+        case VoiceSettings.themeWarmAmber: return warmAmber
+        case VoiceSettings.themeSlateNavy: return slateNavy
+        case VoiceSettings.themeSoftParchment: return softParchment
+        default: return charcoal
+        }
+    }
 }

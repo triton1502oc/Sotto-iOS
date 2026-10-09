@@ -3,6 +3,19 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.1] - 2026-10-09
+
+### Added
+- **Sensory-Minded Color Themes**: Curated sensory-friendly color palettes accessible from Voice & Language Settings (`Appearance` section) to accommodate neurodivergent needs, photophobia, and astigmatism halation while upholding WCAG 2.1 AAA contrast: **Charcoal** (default low-stimulus dark neutral), **OLED Pure Black** (maximum contrast and power efficiency), **Warm Amber / Low Strain** (low blue light dark sepia), **Slate Navy** (calm focus), and **Soft Parchment** (anti-halation muted daylight). Automatic dynamic light/dark status bar and window styling based on theme. Safety semantics remain invariant and distinct across all themes.
+- **Dignified Safety System & Personal Safety Card Templates**: Reframed the emergency system into a dignified, low-stimulus **Safety** system (`🛡️ Safety`). Added personal safety phrase templates for caregiver phone numbers and general neighborhood/locality orientation to protect user residential privacy. Added a "Show Safety Cards on Home" toggle in Settings to allow freeing 100% of the Home grid for everyday communication.
+- **iPad Universal Support & Adaptive Grid**: Full universal iPad optimization with responsive dynamic grid layouts (up to 4 columns on large screens), navigation stack preservation on all modal sheets, and full orientation support (Portrait, Upside-Down, Landscape Left/Right) compliant with Apple App Store guidelines.
+- **Two-Way HUD Streamlined Triage**: Streamlined caregiver triage controls in Two-Way Receptive Mode HUD with tactile 4-card response dock (`Yes`, `No`, `Not Sure`, `Stop`).
+- **Telemetry Schema v3 & Tap Event Aggregation**: Optimized privacy-preserving usability tracking with schema v3, aggregating routine tap events to minimize payload size and device overhead, alongside privacy-preserving intent tracking and Settings adoption snapshots.
+
+### Changed
+- **Category Bar Streamlining**: Removed the redundant Safety filter chip from the main screen's horizontal category bar to reduce visual clutter, while keeping Safety manageable in Edit Mode.
+- **Default Emergency Consolidation Migration**: Automatically consolidates legacy emergency cards into the single privacy-safe emergency template on update.
+
 ## [v1.6.0] - 2026-10-07
 
 ### Added

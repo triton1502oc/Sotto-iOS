@@ -20,6 +20,7 @@ public struct PhraseCategory: RawRepresentable, Codable, Hashable, Identifiable,
     
     public static let all: PhraseCategory = "ALL"
     public static let emergency: PhraseCategory = "Emergency"
+    public static let safety: PhraseCategory = "Emergency"
     public static let needs: PhraseCategory = "Needs"
     public static let social: PhraseCategory = "Social"
     public static let care: PhraseCategory = "Care"
@@ -36,7 +37,7 @@ public struct PhraseCategory: RawRepresentable, Codable, Hashable, Identifiable,
     public var displayName: String {
         switch rawValue.uppercased() {
         case "ALL": return "All"
-        case "EMERGENCY": return "Emergency"
+        case "EMERGENCY", "SAFETY": return "Safety"
         case "NEEDS": return "Needs"
         case "SOCIAL": return "Social"
         case "CARE": return "Care"
@@ -47,17 +48,17 @@ public struct PhraseCategory: RawRepresentable, Codable, Hashable, Identifiable,
     
     public static func isSystemCategory(_ category: String) -> Bool {
         let lower = category.lowercased()
-        return lower == "all" || lower == "emergency" || lower == "general"
+        return lower == "all" || lower == "emergency" || lower == "safety" || lower == "general"
     }
     
     public static func isUndeletableCategory(_ category: String) -> Bool {
         let lower = category.lowercased()
-        return lower == "all" || lower == "emergency" || lower == "general"
+        return lower == "all" || lower == "emergency" || lower == "safety" || lower == "general"
     }
     
     public static func isUnrenamableCategory(_ category: String) -> Bool {
         let lower = category.lowercased()
-        return lower == "all" || lower == "emergency"
+        return lower == "all" || lower == "emergency" || lower == "safety"
     }
     
     /// Categories available for assignment to a phrase (excludes "All")
@@ -122,6 +123,7 @@ public struct Phrase: Identifiable, Codable, Equatable, Hashable {
 public extension Phrase {
     static let categoryGeneral = PhraseCategory.general.rawValue
     static let categoryEmergency = PhraseCategory.emergency.rawValue
+    static let categorySafety = PhraseCategory.emergency.rawValue
     static let categoryNeeds = PhraseCategory.needs.rawValue
     static let categorySocial = PhraseCategory.social.rawValue
     static let categoryCare = PhraseCategory.care.rawValue
