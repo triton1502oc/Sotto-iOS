@@ -38,6 +38,7 @@ Sotto features are developed first in the Android repository (`../Sotto`), and s
 | **Care Category** | `PhraseCategory.CARE` | `PhraseCategory.care` (`cross.case.fill`) |
 | **Safety Category** | `PhraseCategory.EMERGENCY` / Safety | `PhraseCategory.emergency` (`shield.fill`) |
 | **String Resources** | `res/values/strings.xml`, `values-in/strings.xml` | `PhraseRepository.defaultPhrases()`, `LocaleHelper` |
+| **CI/CD Workflows** | `.github/workflows/android.yml`, `release.yml` | `.github/workflows/ios.yml`, `release.yml` |
 
 ---
 
