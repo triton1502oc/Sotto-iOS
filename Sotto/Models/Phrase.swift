@@ -139,9 +139,4 @@ public extension Phrase {
     static func isUnrenamableCategory(_ category: String) -> Bool {
         PhraseCategory.isUnrenamableCategory(category)
     }
-    
-    var isUnconfiguredEmergency: Bool {
-        guard isEmergency else { return false }
-        return LocaleHelper.isEmergencyPlaceholder(text: text)
-    }
 }

@@ -6,7 +6,6 @@ public struct VoiceSettingsModal: View {
     public let onTestVoice: (VoiceSettings) -> Void
     public var onOpenWhyLog: (() -> Void)?
     public var onOpenWhyTreeEditor: (() -> Void)?
-    public var onOpenEmergencySetup: (() -> Void)?
     public var onOpenQRScanner: (() -> Void)?
     public var onExportPhrases: (() -> Void)?
     public var onImportPhrases: (() -> Void)?
@@ -32,7 +31,6 @@ public struct VoiceSettingsModal: View {
         onTestVoice: @escaping (VoiceSettings) -> Void,
         onOpenWhyLog: (() -> Void)? = nil,
         onOpenWhyTreeEditor: (() -> Void)? = nil,
-        onOpenEmergencySetup: (() -> Void)? = nil,
         onOpenQRScanner: (() -> Void)? = nil,
         onExportPhrases: (() -> Void)? = nil,
         onImportPhrases: (() -> Void)? = nil,
@@ -42,7 +40,6 @@ public struct VoiceSettingsModal: View {
         self.onTestVoice = onTestVoice
         self.onOpenWhyLog = onOpenWhyLog
         self.onOpenWhyTreeEditor = onOpenWhyTreeEditor
-        self.onOpenEmergencySetup = onOpenEmergencySetup
         self.onOpenQRScanner = onOpenQRScanner
         self.onExportPhrases = onExportPhrases
         self.onImportPhrases = onImportPhrases
@@ -411,26 +408,6 @@ public struct VoiceSettingsModal: View {
                                 }
                             }
                             .tint(SottoTheme.primary)
-                            
-                            Button(action: {
-                                onDismiss()
-                                onOpenEmergencySetup?()
-                            }) {
-                                HStack(spacing: 6) {
-                                    Text("✏️")
-                                    Text("Configure Emergency Contact Card")
-                                        .font(.system(size: 14, weight: .medium))
-                                }
-                                .foregroundColor(SottoTheme.safetyText)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 42)
-                                .background(SottoTheme.safetyBackground)
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(SottoTheme.safetyBorder.opacity(0.6), lineWidth: 1)
-                                )
-                            }
                         }
                         
                         Divider().background(Color.white.opacity(0.12))

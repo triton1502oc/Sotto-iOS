@@ -402,10 +402,8 @@ public final class MainViewModel: ObservableObject {
             }
         } else {
             let textToSpeak: String
-            if phrase.isEmergency, let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
+            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
                 textToSpeak = spoken
-            } else if phrase.isUnconfiguredEmergency {
-                textToSpeak = LocaleHelper.formatEmergencyPhraseForSpeech(area: "", contact: "", appLanguage: voiceSettings.appLanguage)
             } else {
                 textToSpeak = phrase.text
             }

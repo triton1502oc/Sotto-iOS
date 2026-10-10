@@ -20,7 +20,6 @@ public struct MainView: View {
     @State private var showFileImporter: Bool = false
     @State private var shareUrl: URL? = nil
     @State private var showShareSheet: Bool = false
-    @State private var showEmergencySetupWizard: Bool = false
     @State private var activeQRShareItem: QRShareItem? = nil
     @State private var showQRScanner: Bool = false
     
@@ -136,12 +135,9 @@ public struct MainView: View {
             PhraseEditModal(
                 initialText: viewModel.initialAddText,
                 voiceSettings: viewModel.voiceSettings,
-                onOpenEmergencyWizard: {
-                    showEmergencySetupWizard = true
-                },
                 onSave: { newPhrase in
                     viewModel.addPhrase(newPhrase)
-                    if newPhrase.isEmergency && !newPhrase.isUnconfiguredEmergency {
+                    if newPhrase.isEmergency {
                         UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
                     }
                     viewModel.initialAddText = ""
@@ -157,12 +153,9 @@ public struct MainView: View {
             PhraseEditModal(
                 existingPhrase: phrase,
                 voiceSettings: viewModel.voiceSettings,
-                onOpenEmergencyWizard: {
-                    showEmergencySetupWizard = true
-                },
                 onSave: { updated in
                     viewModel.editPhrase(old: phrase, new: updated)
-                    if updated.isEmergency && !updated.isUnconfiguredEmergency {
+                    if updated.isEmergency {
                         UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
                     }
                     viewModel.phraseToEdit = nil
@@ -190,9 +183,6 @@ public struct MainView: View {
                 },
                 onOpenWhyTreeEditor: {
                     viewModel.showWhyTreeEditorDialog = true
-                },
-                onOpenEmergencySetup: {
-                    showEmergencySetupWizard = true
                 },
                 onOpenQRScanner: {
                     showQRScanner = true
@@ -317,38 +307,6 @@ public struct MainView: View {
             if case .success(let url) = result {
                 handleIncomingDeckUrl(url)
             }
-        }
-        .sheet(isPresented: $showEmergencySetupWizard) {
-            let currentEmergency = viewModel.phrases.first(where: { $0.isEmergency })
-            let details = LocaleHelper.extractEmergencyDetails(phraseText: currentEmergency?.text ?? "", appLanguage: viewModel.voiceSettings.appLanguage)
-            EmergencySetupWizardModal(
-                appLanguage: viewModel.voiceSettings.appLanguage,
-                initialArea: details.area,
-                initialContact: details.contact,
-                onSave: { visualText, spokenText in
-                    if let existing = viewModel.phrases.first(where: { $0.isEmergency }) {
-                        var updated = existing
-                        updated.text = visualText
-                        updated.spokenText = spokenText
-                        viewModel.editPhrase(old: existing, new: updated)
-                    } else {
-                        let newEmergency = Phrase(
-                            text: visualText,
-                            spokenText: spokenText,
-                            isEmergency: true,
-                            category: .emergency
-                        )
-                        viewModel.addPhrase(newEmergency)
-                    }
-                    UserDefaults.standard.set(true, forKey: "has_completed_emergency_setup")
-                    UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
-                    showEmergencySetupWizard = false
-                },
-                onSkip: {
-                    UserDefaults.standard.set(true, forKey: "has_completed_emergency_setup")
-                    showEmergencySetupWizard = false
-                }
-            )
         }
         .sheet(item: $activeQRShareItem) { item in
             QRCodeModal(
@@ -820,19 +778,13 @@ public struct MainView: View {
                             appLanguage: viewModel.voiceSettings.appLanguage,
                             onTap: {
                                 if viewModel.isEditMode {
-                                    showEmergencySetupWizard = true
-                                } else if phrase.isUnconfiguredEmergency {
-                                    showEmergencySetupWizard = true
+                                    viewModel.phraseToEdit = phrase
                                 } else {
                                     viewModel.speak(phrase: phrase)
                                 }
                             },
                             onLongPress: {
-                                if viewModel.isEditMode {
-                                    viewModel.phraseToEdit = phrase
-                                } else {
-                                    viewModel.activeFullscreenPhrase = phrase
-                                }
+                                viewModel.activeFullscreenPhrase = phrase
                             }
                         )
                         .demoTarget("emergencyCard")

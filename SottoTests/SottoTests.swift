@@ -825,25 +825,7 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(persistentEmergency?.text, "Emergency SOS Contact")
     }
     
-    // MARK: - Batch 3 Tests (Issues #12, #13, #14)
-    
-    func testEmergencyPhraseFormatting() {
-        // Full English
-        let enFull = LocaleHelper.formatEmergencyPhrase(area: "Seattle, WA", contact: "Dad: 555-0199", appLanguage: "en")
-        XCTAssertEqual(enFull, "I live around Seattle, WA, please call my emergency contact: Dad: 555-0199")
-        
-        // Blank English fallback
-        let enFallback = LocaleHelper.formatEmergencyPhrase(area: "", contact: "", appLanguage: "en")
-        XCTAssertEqual(enFallback, "I live around [Area/Neighborhood], please call my emergency contact: [phone number]")
-        
-        // Full Indonesian
-        let idFull = LocaleHelper.formatEmergencyPhrase(area: "Jakarta Selatan", contact: "Ibu: 0812-3456", appLanguage: "id")
-        XCTAssertEqual(idFull, "Saya tinggal di sekitar Jakarta Selatan, tolong hubungi kontak darurat saya: Ibu: 0812-3456")
-        
-        // Blank Indonesian fallback
-        let idFallback = LocaleHelper.formatEmergencyPhrase(area: "", contact: "", appLanguage: "id")
-        XCTAssertEqual(idFallback, "Saya tinggal di sekitar [Area / Lingkungan], tolong hubungi kontak darurat saya: [nomor telepon]")
-    }
+    // MARK: - Batch 3 Tests (Issues #13, #14)
     
     func testAppDelegateOrientationLockToggle() {
         XCTAssertEqual(AppDelegate.orientationLock, .all)
@@ -900,11 +882,11 @@ final class SottoTests: XCTestCase {
         let unchanged = LocaleHelper.formatDigitsForSpeech(normalText)
         XCTAssertEqual(unchanged, normalText)
         
-        // Emergency phrase speech generation
-        let idSpeech = LocaleHelper.formatEmergencyPhraseForSpeech(area: "Kebayoran", contact: "Ibu: 081234567890", appLanguage: "id")
+        // Phone numbers and contact digits speech generation
+        let idSpeech = LocaleHelper.formatDigitsForSpeech("Ibu: 081234567890")
         XCTAssertTrue(idSpeech.contains("0 8 1 2 3 4 5 6 7 8 9 0"))
         
-        let enSpeech = LocaleHelper.formatEmergencyPhraseForSpeech(area: "Seattle", contact: "Mom: 555-019-2831", appLanguage: "en")
+        let enSpeech = LocaleHelper.formatDigitsForSpeech("Mom: 555-019-2831")
         XCTAssertTrue(enSpeech.contains("5 5 5 - 0 1 9 - 2 8 3 1"))
     }
     
@@ -1002,77 +984,32 @@ final class SottoTests: XCTestCase {
         XCTAssertFalse(recognizer.isRecording)
     }
     
-    // MARK: - Issue #15 Tests: In-Grid Soft Discovery & Emergency Card Setup
+    // MARK: - Issue #16 Tests: Standard Safety Category & Multi-Card Support
     
-    func testEmergencyPlaceholderDetection() {
-        // Unconfigured English defaults
-        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "I live around [Area/Neighborhood], please call my emergency contact: [phone number]"))
-        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "Please call my emergency contact: [Phone Number]"))
-        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "[Area / Neighborhood]"))
-        
-        // Unconfigured Indonesian defaults
-        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "Saya tinggal di sekitar [Area / Lingkungan], tolong hubungi kontak darurat saya: [nomor telepon]"))
-        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "Tolong hubungi kontak darurat saya: [Nomor Telepon]"))
-        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "[nomor telepon]"))
-        
-        // Configured safety card texts
-        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "I live around Brooklyn, NY, please call my emergency contact: Mom: 555-019-2831"))
-        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "Saya tinggal di sekitar Jakarta Selatan, tolong hubungi kontak darurat saya: Ibu: 0812-3456-7890"))
-        
-        // Regular phrases without brackets
-        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "I need a quiet space."))
-        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "Saya butuh tempat tenang."))
-    }
-    
-    func testPhraseIsUnconfiguredEmergency() {
-        let unconfiguredCard = Phrase(
+    func testSafetyCardsAsStandardCategory() {
+        let defaultSafetyCard = Phrase(
             text: "I live around [Area/Neighborhood], please call my emergency contact: [phone number]",
             isEmergency: true,
             category: .emergency
         )
-        XCTAssertTrue(unconfiguredCard.isUnconfiguredEmergency)
+        XCTAssertTrue(defaultSafetyCard.isEmergency)
+        XCTAssertEqual(defaultSafetyCard.category, .emergency)
         
-        let configuredCard = Phrase(
-            text: "I live around Brooklyn, NY, please call my emergency contact: Mom: 555-019-2831",
+        let customSafetyCard = Phrase(
+            text: "I am having an autistic shutdown. Please give me space.",
             isEmergency: true,
             category: .emergency
         )
-        XCTAssertFalse(configuredCard.isUnconfiguredEmergency)
+        XCTAssertTrue(customSafetyCard.isEmergency)
+        XCTAssertEqual(customSafetyCard.category, .emergency)
         
         let regularPhrase = Phrase(
             text: "I need a quiet space.",
             isEmergency: false,
             category: .needs
         )
-        XCTAssertFalse(regularPhrase.isUnconfiguredEmergency)
-    }
-    
-    func testExtractEmergencyDetailsRoundtrip() {
-        // English configured
-        let enConfigured = "I live around Capitol Hill, Seattle, please call my emergency contact: Mom: 555-019-2831"
-        let (enArea, enContact) = LocaleHelper.extractEmergencyDetails(phraseText: enConfigured, appLanguage: "en")
-        XCTAssertEqual(enArea, "Capitol Hill, Seattle")
-        XCTAssertEqual(enContact, "Mom: 555-019-2831")
-        
-        // Indonesian configured
-        let idConfigured = "Saya tinggal di sekitar Kebayoran Baru, tolong hubungi kontak darurat saya: Ayah: 0812-3456-7890"
-        let (idArea, idContact) = LocaleHelper.extractEmergencyDetails(phraseText: idConfigured, appLanguage: "id")
-        XCTAssertEqual(idArea, "Kebayoran Baru")
-        XCTAssertEqual(idContact, "Ayah: 0812-3456-7890")
-        
-        // Unconfigured placeholders should extract empty strings
-        let unconfigured = "I live around [Area/Neighborhood], please call my emergency contact: [phone number]"
-        let (blankArea, blankContact) = LocaleHelper.extractEmergencyDetails(phraseText: unconfigured, appLanguage: "en")
-        XCTAssertEqual(blankArea, "")
-        XCTAssertEqual(blankContact, "")
-    }
-    
-    func testSafetySetupHintLocalization() {
-        let enHint = LocaleHelper.getSafetySetupHint(appLanguage: "en")
-        XCTAssertEqual(enHint, "Tap to set up emergency contact")
-        
-        let idHint = LocaleHelper.getSafetySetupHint(appLanguage: "id")
-        XCTAssertEqual(idHint, "Ketuk untuk atur kontak darurat")
+        XCTAssertFalse(regularPhrase.isEmergency)
+        XCTAssertEqual(regularPhrase.category, .needs)
     }
     
     func testUsabilityTrackerRecordSafetyCardSaved() {

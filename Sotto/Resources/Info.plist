@@ -6,30 +6,6 @@
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
 	<string>Sotto</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
-	<key>CFBundlePackageType</key>
-	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
-	<key>CFBundleShortVersionString</key>
-	<string>1.6.2</string>
-	<key>CFBundleVersion</key>
-	<string>6</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Sotto uses your microphone to transcribe speech when using the voice input button or Partner Mode.</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Sotto uses your camera to scan communication deck QR codes shared by caregivers or partners.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Sotto uses speech recognition to convert spoken words into text for Quick-Speak, custom phrases, and Partner Mode.</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -45,6 +21,18 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.6.2</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -56,28 +44,18 @@
 			</array>
 		</dict>
 	</array>
-	<key>UTExportedTypeDeclarations</key>
-	<array>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string>public.json</string>
-				<string>public.data</string>
-			</array>
-			<key>UTTypeDescription</key>
-			<string>Sotto Communication Deck</string>
-			<key>UTTypeIdentifier</key>
-			<string>com.amh.sotto.deck</string>
-			<key>UTTypeTagSpecification</key>
-			<dict>
-				<key>public.filename-extension</key>
-				<array>
-					<string>sotto</string>
-					<string>sottodeck</string>
-				</array>
-			</dict>
-		</dict>
-	</array>
+	<key>CFBundleVersion</key>
+	<string>6</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Sotto uses your camera to scan communication deck QR codes shared by caregivers or partners.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Sotto uses your microphone to transcribe speech when using the voice input button or Partner Mode.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Sotto uses speech recognition to convert spoken words into text for Quick-Speak, custom phrases, and Partner Mode.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -106,5 +84,27 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Dark</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Sotto Communication Deck</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.amh.sotto.deck</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sotto</string>
+					<string>sottodeck</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

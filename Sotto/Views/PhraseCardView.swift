@@ -33,19 +33,15 @@ public struct PhraseCardView: View {
     
     private var accessibilityLabelText: String {
         let typePrefix = phrase.isEmergency ? "Safety phrase, \(phrase.category.displayName)" : "\(phrase.category.displayName) phrase"
-        let unconfiguredHint = phrase.isUnconfiguredEmergency ? " (\(LocaleHelper.getSafetySetupHint(appLanguage: appLanguage)))" : ""
         if hasSpokenText, let spoken = phrase.spokenText {
-            return "\(typePrefix): \(phrase.text)\(unconfiguredHint). Alternate speech: \(spoken)"
+            return "\(typePrefix): \(phrase.text). Alternate speech: \(spoken)"
         }
-        return "\(typePrefix): \(phrase.text)\(unconfiguredHint)"
+        return "\(typePrefix): \(phrase.text)"
     }
     
     private var accessibilityHintText: String {
         if isEditMode {
             return "Double tap to edit card."
-        }
-        if phrase.isUnconfiguredEmergency {
-            return "Double tap to configure emergency contact card. Double tap and hold to show fullscreen."
         }
         return "Double tap to speak aloud. Double tap and hold to show fullscreen."
     }
@@ -62,7 +58,7 @@ public struct PhraseCardView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabelText)
         .accessibilityHint(accessibilityHintText)
-        .accessibilityAction(named: phrase.isUnconfiguredEmergency ? "Configure Emergency Contact" : "Speak Aloud") {
+        .accessibilityAction(named: "Speak Aloud") {
             onTap()
         }
         .accessibilityAction(named: "Show Fullscreen") {
@@ -106,21 +102,6 @@ public struct PhraseCardView: View {
                 .lineSpacing(4)
                 .minimumScaleFactor(0.7)
                 .padding(.horizontal, 12)
-            
-            // In-grid gentle hint for unconfigured safety card
-            if phrase.isUnconfiguredEmergency {
-                HStack(spacing: 5) {
-                    Image(systemName: "pencil.circle")
-                        .font(.system(size: 13))
-                    Text(LocaleHelper.getSafetySetupHint(appLanguage: appLanguage))
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .foregroundColor(SottoTheme.safetyBadgeText)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(SottoTheme.safetyBadgeBg.opacity(0.85))
-                .cornerRadius(6)
-            }
             
             if hasSpokenText, let spoken = phrase.spokenText {
                 HStack(spacing: 4) {

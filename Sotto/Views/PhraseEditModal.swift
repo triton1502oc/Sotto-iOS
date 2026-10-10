@@ -6,7 +6,6 @@ import Translation
 public struct PhraseEditModal: View {
     public let existingPhrase: Phrase?
     public let voiceSettings: VoiceSettings
-    public let onOpenEmergencyWizard: (() -> Void)?
     public let onSave: (Phrase) -> Void
     public let onDelete: ((Phrase) -> Void)?
     public let onCancel: () -> Void
@@ -29,14 +28,12 @@ public struct PhraseEditModal: View {
         existingPhrase: Phrase? = nil,
         initialText: String = "",
         voiceSettings: VoiceSettings = VoiceSettings(),
-        onOpenEmergencyWizard: (() -> Void)? = nil,
         onSave: @escaping (Phrase) -> Void,
         onDelete: ((Phrase) -> Void)? = nil,
         onCancel: @escaping () -> Void
     ) {
         self.existingPhrase = existingPhrase
         self.voiceSettings = voiceSettings
-        self.onOpenEmergencyWizard = onOpenEmergencyWizard
         self.onSave = onSave
         self.onDelete = onDelete
         self.onCancel = onCancel
@@ -281,28 +278,6 @@ public struct PhraseEditModal: View {
                                         )
                                     }
                                 }
-                            }
-                        }
-                        
-                        if selectedCategory == .emergency, let onOpenEmergencyWizard = onOpenEmergencyWizard {
-                            Button(action: {
-                                onCancel()
-                                onOpenEmergencyWizard()
-                            }) {
-                                HStack(spacing: 6) {
-                                    Text("🛡️")
-                                    Text("Open Safety Card Setup Wizard")
-                                        .font(.system(size: 14, weight: .medium))
-                                }
-                                .foregroundColor(SottoTheme.safetyText)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 42)
-                                .background(SottoTheme.safetyBackground)
-                                .cornerRadius(10)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(SottoTheme.safetyBorder.opacity(0.6), lineWidth: 1)
-                                )
                             }
                         }
                         

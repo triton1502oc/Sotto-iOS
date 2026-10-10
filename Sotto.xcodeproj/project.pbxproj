@@ -31,7 +31,6 @@
 		B8DBDA2DA4EA50A7D98BC8A4 /* WhyTreeEditorModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3DE72B916FD4F83893C0BD /* WhyTreeEditorModal.swift */; };
 		BE82EAB0A2D329BB278464B3 /* WhyFinderSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6A5ED44F61CAB49BDB1B73 /* WhyFinderSession.swift */; };
 		C29C742EE41D319C3149A2B4 /* PhraseCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E81F2622E53599603D99FE8 /* PhraseCardView.swift */; };
-		CBC70DE21A660D316904DC1A /* EmergencySetupWizardModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D44A2BF8BB65F351A383231 /* EmergencySetupWizardModal.swift */; };
 		D3EA2EC4CCE185B808EC9BC0 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787EE0C858C2EF6B6815D85B /* MainView.swift */; };
 		DA7CE9AD75CD9E56B3DD93A9 /* PhraseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92208DF5C41416FDAE7DD8C9 /* PhraseRepository.swift */; };
 		DB6B73CD6F36992D2FB9BD3C /* VoiceSettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 378FC8A333BBE8CBF711C792 /* VoiceSettingsRepository.swift */; };
@@ -64,7 +63,6 @@
 		19EA034914959BAF2965EE1F /* Phrase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phrase.swift; sourceTree = "<group>"; };
 		1A24908333DE146E3D8CF491 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		1CE7FF09E1BA5B0DF67CCD3C /* ImportBackupModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportBackupModal.swift; sourceTree = "<group>"; };
-		1D44A2BF8BB65F351A383231 /* EmergencySetupWizardModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencySetupWizardModal.swift; sourceTree = "<group>"; };
 		1E2E3A64F01B1861CC2D84A9 /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerModal.swift; sourceTree = "<group>"; };
 		28BFAA6B00121FA865BF4353 /* QRCodeModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeModal.swift; sourceTree = "<group>"; };
 		2A94A254F9B50269EE1EAB8A /* Sotto.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Sotto.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -152,7 +150,6 @@
 		8F1DC9F74E195FE611C2BBF1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				1D44A2BF8BB65F351A383231 /* EmergencySetupWizardModal.swift */,
 				BFCB269166351DC98A174384 /* ExportBackupModal.swift */,
 				933C92FEFEE7ED36415AAE2D /* FullscreenPhraseModal.swift */,
 				1CE7FF09E1BA5B0DF67CCD3C /* ImportBackupModal.swift */,
@@ -338,7 +335,6 @@
 				1261DEC94E9AFB324AC2D8D7 /* BackupData.swift in Sources */,
 				691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */,
 				14C9F014A6BC00133503B046 /* DemoAutomationRunner.swift in Sources */,
-				CBC70DE21A660D316904DC1A /* EmergencySetupWizardModal.swift in Sources */,
 				6012A55B5746CBF6A9D0461A /* ExportBackupModal.swift in Sources */,
 				F2D9D9BA1300747675205C36 /* FullscreenPhraseModal.swift in Sources */,
 				F589BC25642BB973091C779C /* ImportBackupModal.swift in Sources */,
