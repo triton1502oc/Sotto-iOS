@@ -82,7 +82,8 @@ Sotto-iOS/
 │   ├── CAREGIVER_GUIDE.md          # User & Caregiver Guide (Two-Way Mode, cards, emergency)
 │   ├── CROSS_PLATFORM_WORKFLOW.md  # Android-to-iOS porting guide & checklist
 │   ├── LANGUAGE_AND_LOCALIZATION.md# Language models, TTS voice data, and offline translation
-│   └── RUNNING_ON_DEVICE.md        # Physical device installation instructions
+│   ├── RUNNING_ON_DEVICE.md        # Physical device installation instructions
+│   └── SCENARIO_DECKS.md           # Curated situational phrase packs & scannable QR codes
 ├── scripts/                        # Automation & recording pipeline scripts
 │   ├── record_demo_en.sh           # Automated English screen recording & muxing
 │   ├── record_demo_id.sh           # Automated Indonesian screen recording & muxing
@@ -167,6 +168,7 @@ Sotto-iOS/
 ## Documentation & Development
 
 - **Running on Physical Device**: See [docs/RUNNING_ON_DEVICE.md](docs/RUNNING_ON_DEVICE.md) for signing and installation instructions.
+- **Curated Scenario Decks**: See [docs/SCENARIO_DECKS.md](docs/SCENARIO_DECKS.md) for scannable QR codes and printable phrase packs (Medical, Transit, School, Dental).
 - **Contributing & Architecture**: See [CONTRIBUTING.md](CONTRIBUTING.md) for design philosophy, architectural guardrails, and verification rules.
 - **Cross-Platform Workflow**: See [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md) for the Android-to-iOS porting guide and checklist.
 - **AI Agent Guidelines**: See [AGENTS.md](AGENTS.md) for universal flight rules for AI coding assistants.

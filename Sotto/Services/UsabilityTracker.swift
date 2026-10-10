@@ -282,6 +282,15 @@ public final class UsabilityTracker {
         }
     }
 
+    public func recordEmergencyShortcutLaunched(target: String, voiceSettings: VoiceSettings) {
+        guard voiceSettings.shareUsabilityMetrics else { return }
+        queue.async {
+            let event = UsabilityEvent(intent: "EmergencyShortcut", durationMs: 0, outcome: target)
+            self.appendAndSync(event, voiceSettings: voiceSettings)
+        }
+        recordActivation(key: "emergency_shortcut_launched", voiceSettings: voiceSettings)
+    }
+
     public func recordSafetyCardSaved(voiceSettings: VoiceSettings) {
         guard voiceSettings.shareUsabilityMetrics else { return }
         queue.async {

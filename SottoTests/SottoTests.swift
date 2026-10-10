@@ -1023,6 +1023,44 @@ final class SottoTests: XCTestCase {
         settings.shareUsabilityMetrics = false
         UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: settings)
     }
+    
+    // MARK: - Emergency Shortcut & Intent Tests (Issue #18)
+    
+    func testEmergencyLaunchManagerTrigger() {
+        let manager = EmergencyLaunchManager.shared
+        manager.pendingAction = nil
+        
+        let expectation = expectation(description: "Notification posted")
+        var receivedAction: EmergencyLaunchManager.Action? = nil
+        
+        let observer = NotificationCenter.default.addObserver(
+            forName: .sottoEmergencyAction,
+            object: nil,
+            queue: .main
+        ) { notification in
+            receivedAction = notification.object as? EmergencyLaunchManager.Action
+            expectation.fulfill()
+        }
+        
+        manager.trigger(.triage)
+        
+        wait(for: [expectation], timeout: 2.0)
+        XCTAssertEqual(receivedAction, .triage)
+        
+        NotificationCenter.default.removeObserver(observer)
+        manager.pendingAction = nil
+    }
+    
+    func testUsabilityTrackerRecordEmergencyShortcut() {
+        var settings = VoiceSettings()
+        settings.shareUsabilityMetrics = true
+        
+        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "triage", voiceSettings: settings)
+        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "safety_card", voiceSettings: settings)
+        
+        settings.shareUsabilityMetrics = false
+        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "triage", voiceSettings: settings)
+    }
 }
 
 

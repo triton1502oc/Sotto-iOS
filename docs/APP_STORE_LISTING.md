@@ -9,31 +9,34 @@ Ready-to-use metadata, descriptions, keywords, screenshot specifications, and pr
 
 ### App Details
 * **App Name:** `Sotto - Assistive AAC Speech` *(29 / 30 characters)*
-* **Subtitle:** `Dignified Low-Stimulus AAC` *(26 / 30 characters)*
+* **Subtitle:** `Calm Crisis Triage & Adult AAC` *(30 / 30 characters)*
 * **Primary Category:** `Medical` or `Utilities`
 * **Secondary Category:** `Productivity`
 * **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)
 
-### Promotional Text *(137 / 170 characters)*
+### Promotional Text *(159 / 170 characters)*
 ```text
-Calm yes/no crisis tool for caregivers to reach autistic teens & adults in meltdowns, paired with a dignified, low-stim AAC speech board.
+Calm yes/no crisis triage for caregivers reaching autistic loved ones in shutdowns, paired with a dignified low-stimulus AAC speech board & Action Button launch.
 ```
 
-### Keywords *(Comma-separated, no spaces after commas, 96 / 100 characters)*
+### Keywords *(Comma-separated, no spaces after commas, 97 / 100 characters)*
 ```text
-aac,autism,speech,caregiver,meltdown,shutdown,assistive,talk,tts,nonverbal,communication,safety
+shutdown,meltdown,deescalation,sensory,mutism,nonverbal,crisis,triage,aphasia,overload,aac,autism,speech
 ```
 
-### Full Description *(Markdown & Plain Text compliant, ~3,150 / 4,000 characters)*
+### Full Description *(Markdown & Plain Text compliant, ~3,400 / 4,000 characters)*
 ```text
 Sotto is a calm yes/no crisis navigation tool for caregivers, parents, and therapists to connect with autistic teens and adults during sensory overload, meltdowns, and verbal shutdowns — paired with a dignified, low-stimulation AAC speech board for daily self-expression and unclear speech support.
 
-Created by a father of two autistic sons (ages 22 and 15), Sotto is built around a simple reality: during a meltdown or verbal shutdown, processing complex questions or speaking is exhausting. Sotto bridges this divide with gentle binary choices, speech clarity support, and zero open-ended demands.
+Created by a father of two autistic sons (ages 22 and 15), Sotto is built around a simple reality: during a meltdown or verbal shutdown, processing complex questions or speaking is exhausting. Sotto bridges this divide with gentle binary choices, speech clarity support, zero open-ended demands, and instant hardware Action Button launch.
 
 FOR CAREGIVERS, FAMILIES & THERAPISTS:
 
 • Two-Way Speak HUD & 180° Tabletop Flip (Immediate Emergency Triage)
 During acute sensory overload or verbal shutdowns, processing complex questions or branching trees worsens distress. Caregivers can speak naturally or pick an urgent prompt, flip the iPad or iPhone 180° face-to-face on a table, and let their loved one tap giant, dignified response targets (Yes, No, Not sure, Stop) with instant voice confirmation. Zero cognitive load.
+
+• 1-Press Hardware Action Button & Siri Shortcuts (Instant Emergency Access)
+During an acute shutdown or motor freeze, navigating screen menus is impossible. Users and caregivers can map the physical iPhone Action Button, iOS Accessibility Back Tap (double-tap back of phone), or Siri Shortcuts ("Open Sotto Emergency") to immediately launch crisis triage or the emergency safety card without looking.
 
 • Why Finder (Guided Root-Cause Discovery Tree)
 When the source of distress is unknown, Why Finder provides a gentle, step-by-step yes/no branching tree to systematically uncover hidden physical pain (with body part & intensity locator), sensory overload, emotional fatigue, or routine disruption without open-ended interrogation.
@@ -118,6 +121,25 @@ When submitting for App Review, provide this note for the reviewer:
 Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
 - Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
 - Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
+- App Intents and Siri Shortcuts (Open Emergency Triage, Show Safety Card) provide hands-free and hardware Action Button emergency navigation for users during sensory shutdowns and acute freezes.
 - No login or account is required. All data is stored locally on the device in UserDefaults.
 - Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
 ```
+
+---
+
+## 5. Apple Accessibility & Inclusivity Editorial Pitch
+
+Submit this pitch to Apple Developer Relations / App Store Editorial under the **Inclusivity & Accessibility** nomination:
+
+### Pitch Summary:
+* **App:** Sotto - Assistive AAC Speech
+* **Category:** Accessibility, Medical, Utilities
+* **Target Audience:** Autistic teens & adults, situational non-speaking users, parents & caregivers navigating meltdowns.
+
+### What Makes Sotto Unique:
+1. **Crisis-First Interaction Design**: Traditional AAC apps assume calm, continuous symbol communication. Sotto is purpose-built for the acute verbal shutdown / sensory meltdown crisis loop. The Two-Way HUD with 180° tabletop rotation gives families an immediate, low-demand binary triage tool (`Yes`, `No`, `Not sure`, `Stop`) with zero cognitive pressure.
+2. **Adult Neurodivergent Dignity**: Mature typography, high-contrast sensory-calm palettes (Charcoal, OLED Pure Black, Warm Amber, Slate Navy, Soft Parchment), and zero patronizing pediatric cartoon icons.
+3. **Deep Apple Ecosystem Integration**: 1-press hardware launch via the iPhone Action Button, Accessibility Back Tap, and Siri Shortcuts using native `AppIntents`.
+4. **100% Offline Privacy Guarantee**: Zero cloud accounts, zero ads, zero trackers. Rated "Data Not Collected" on App Privacy labels. Features high-density offline QR deck sharing directly between devices without internet.
+

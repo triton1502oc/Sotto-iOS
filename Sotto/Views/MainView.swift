@@ -384,13 +384,37 @@ public struct MainView: View {
             if viewModel.shouldPromptPmfSurvey() {
                 viewModel.showPmfSurveyDialog = true
             }
+            if let pending = EmergencyLaunchManager.shared.pendingAction {
+                handleEmergencyAction(pending)
+            }
             if DemoAutomationRunner.shared.isDemoRequested {
                 DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: geometry.size)
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .sottoEmergencyAction)) { notification in
+            if let action = notification.object as? EmergencyLaunchManager.Action {
+                handleEmergencyAction(action)
             }
         }
         .preferredColorScheme(viewModel.voiceSettings.appTheme == VoiceSettings.themeSoftParchment ? .light : .dark)
     }
 }
+
+    // MARK: - Emergency Shortcut Handler (Issue #18)
+
+    private func handleEmergencyAction(_ action: EmergencyLaunchManager.Action) {
+        EmergencyLaunchManager.shared.pendingAction = nil
+        switch action {
+        case .triage:
+            viewModel.showTwoWayDialog = true
+            UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "triage", voiceSettings: viewModel.voiceSettings)
+        case .safetyCard:
+            if let safetyCard = viewModel.phrases.first(where: { $0.isEmergency }) {
+                viewModel.activeFullscreenPhrase = safetyCard
+                UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "safety_card", voiceSettings: viewModel.voiceSettings)
+            }
+        }
+    }
     
     // MARK: - Deck File & QR Handlers (Issue #13)
     

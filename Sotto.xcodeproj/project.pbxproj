@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		05B3418EA6489E45985CF1EE /* UsabilityTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D717F43AE5A734412BEA896 /* UsabilityTracker.swift */; };
 		1261DEC94E9AFB324AC2D8D7 /* BackupData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD53981A09D731C3D34A2376 /* BackupData.swift */; };
+		13194355F7DC73021586698F /* SottoShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76510944EEF3B44580D288EA /* SottoShortcuts.swift */; };
 		14C9F014A6BC00133503B046 /* DemoAutomationRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93CC9160B7A08390A91875D2 /* DemoAutomationRunner.swift */; };
 		1748436BA521219B91977F19 /* WhyFinderRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CFFEFA0D925D2554BA78EC0 /* WhyFinderRepository.swift */; };
 		290623842587AC1412B281ED /* WhyLogModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A0CC169971418B967842472 /* WhyLogModal.swift */; };
@@ -71,6 +72,7 @@
 		4EB1831C4F14CA69F722554B /* WhyFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhyFinder.swift; sourceTree = "<group>"; };
 		560972E52962ED7AD92AC85A /* SpeechRecognizerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognizerService.swift; sourceTree = "<group>"; };
 		5CFFEFA0D925D2554BA78EC0 /* WhyFinderRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhyFinderRepository.swift; sourceTree = "<group>"; };
+		76510944EEF3B44580D288EA /* SottoShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoShortcuts.swift; sourceTree = "<group>"; };
 		7868CACEBF03455DD83199E4 /* PhraseBackupHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhraseBackupHelper.swift; sourceTree = "<group>"; };
 		787EE0C858C2EF6B6815D85B /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		7A6A5ED44F61CAB49BDB1B73 /* WhyFinderSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhyFinderSession.swift; sourceTree = "<group>"; };
@@ -192,6 +194,7 @@
 			children = (
 				7B55F23C484A0237DA644B35 /* ChimePlayer.swift */,
 				7868CACEBF03455DD83199E4 /* PhraseBackupHelper.swift */,
+				76510944EEF3B44580D288EA /* SottoShortcuts.swift */,
 				560972E52962ED7AD92AC85A /* SpeechRecognizerService.swift */,
 				A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */,
 				CB5E8E026AB8A20658DD8382 /* TranslationHelper.swift */,
@@ -352,6 +355,7 @@
 				A5FD6DB9CB856DA2C090046B /* QRScannerModal.swift in Sources */,
 				3DDC0BE5B1377078B0E6621C /* QuickSpeakBarView.swift in Sources */,
 				814A321F8CABF94168522D57 /* SottoApp.swift in Sources */,
+				13194355F7DC73021586698F /* SottoShortcuts.swift in Sources */,
 				4CD6302713AC84FEFD20215E /* SpeechRecognizerService.swift in Sources */,
 				473A4D1EF52751EC7BDC3A64 /* SpeechService.swift in Sources */,
 				E98802E5AF4F31B95ABBCAC6 /* Theme.swift in Sources */,
