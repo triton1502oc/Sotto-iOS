@@ -58,12 +58,14 @@ Provide non-speaking individuals, those with unclear or dysfluent speech, and an
 
 ## Demo Videos
 
-High-definition, synchronized demo videos showcasing Sotto's core features (Quick Speak, Emergency Hero Card, Contextual Categories, Card Reordering, Voice Settings with Attention Chime, and Dual-Language Speech):
+High-definition, synchronized demo videos showcasing Sotto's flagship assistive communication and crisis navigation features on iOS:
 
-- **English Demo**: [`demo/sotto_demo_en.mp4`](demo/sotto_demo_en.mp4) (64s, H.264, 192 kbps AAC audio)
-- **Indonesian Demo**: [`demo/sotto_demo_id.mp4`](demo/sotto_demo_id.mp4) (64s, H.264, 192 kbps AAC audio)
+- **App Store Preview (Master)**: [`demo/sotto_app_store_preview.mp4`](demo/sotto_app_store_preview.mp4) (60s, 1920×1080 Landscape, Neural Baritone + Andrew + Ambient Bed + Chime)
+- **Shorts / Reels / TikTok (Vertical)**: [`demo/sotto_vertical_preview.mp4`](demo/sotto_vertical_preview.mp4) (60s, 1080×1920 Portrait 9:16)
+- **English Simulator Demo**: [`demo/sotto_demo_en.mp4`](demo/sotto_demo_en.mp4) (~64s, 1206×2622 Portrait, Samantha & Damayanti)
+- **Indonesian Simulator Demo**: [`demo/sotto_demo_id.mp4`](demo/sotto_demo_id.mp4) (~64s, 1206×2622 Portrait, Damayanti & Samantha)
 
-For full details on the automated recording pipeline and reproduction instructions, see [demo/README.md](demo/README.md).
+For full details on the automated motion generator and reproduction instructions, see [demo/README.md](demo/README.md).
 
 ---
 
