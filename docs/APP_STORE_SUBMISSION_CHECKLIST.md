@@ -121,7 +121,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
    - App launches cleanly on both iPhone and iPad in Portrait and Landscape orientations.
    - Tap phrase cards to verify text-to-speech with natural voices (Samantha/Siri/Damayanti).
    - Test voice input (microphone & speech recognition permission dialogs).
-   - Test Safety bystander card (`🛡️ Safety`), setup wizard, fullscreen mode, and Partner Mode (`🤝`).
+   - Test Safety bystander cards (`🛡️ Safety`), fullscreen mode, and Partner Mode (`🤝`).
    - Test Why Finder guided crisis tree and 4-card response dock (`✓ Yes`, `✕ No`, `? Not Sure`, `⏹ Stop`).
    - Test offline QR Code deck export and camera scanner import.
    - Test sensory appearance themes in Settings.
