@@ -1,38 +1,54 @@
 # Sotto for iOS
 
-**TL;DR**: Sotto (meaning *"under one's breath"* or a soft voice) is an assistive communication iOS app designed for autistic teens and adults, speech-impaired individuals, and non-speaking users, featuring a dignified, low-stimulation UI and one-touch Text-to-Speech (TTS).
+**TL;DR**: Sotto (*"under one's breath"*) is a calm yes/no tool for caregivers to reach autistic teens & adults in meltdowns and verbal shutdowns, paired with a dignified, low-stimulation AAC speech board for self-expression.
 
-This repository is the native iOS (SwiftUI) port of the original [Sotto Android app](https://github.com/triton1502oc/Sotto) with 1:1 feature parity and zero third-party dependencies.
-
----
-
-## Who is Sotto For?
-- **Autistic Teens & Adults**: A sensory-friendly, mature dark-neutral interface with zero pediatric clutter, designed for routine communication, sensory overload, and verbal shutdowns.
-- **Speech-Impaired Individuals**: Accessible one-touch speech synthesis for individuals living with apraxia, dysarthria, ALS, cerebral palsy, vocal chord paralysis, or recovering from a stroke (aphasia).
-- **Situational & Temporary Speech Loss**: Anyone experiencing vocal strain, laryngitis, post-surgical recovery, severe fatigue, or needing silent communication in loud, overwhelming environments.
+This repository is the native iOS (SwiftUI) port of [Sotto Android](https://github.com/triton1502oc/Sotto) with 1:1 feature parity and zero third-party dependencies.
 
 ---
 
-## Features
+## Origin & Mission
+Sotto was created by a father to navigate overwhelming communication breakdowns and meltdowns with his autistic sons (ages 22 and 15). When sensory overload strikes, speaking, reading long sentences, or processing complex questions becomes exhausting or impossible.
 
-- **Modern Low-Stimulus UI**: Dark/Neutral theme (`#121212` background, `#1E1E1E` surface) with high contrast text (`#E0E0E0`), avoiding visual clutter.
-- **Zero-Distraction Layout**: The main communication screen has no administrative clutter, providing a safe, predictable environment.
-- **Emergency Bystander Mode**: Dedicated full-width hero card for non-verbal episodes and shutdowns. Features a distinct `🚨 Emergency` badge and a specialized fullscreen view with high-contrast amber styling (`#251E14` / `#FFB74D`) for bystanders, doctors, or first responders.
-- **Unified Caregiver Mode & Why Finder (`👂` / `🤝`)**: Dedicated receptive HUD for caregivers, family members, and medical personnel featuring two integrated modes:
-  - **Talk**: Receptive speech-to-text dictation (`🎤 Listen`), card prompt picker, offline TTS read-aloud, and 180° face-to-face screen flip (`🔄 Flip`) for partners sitting across a table.
-  - **Why Finder Guided Crisis Tree**: Step-by-step calm yes/no branching tree designed specifically for meltdowns and verbal shutdowns. Navigates physical comfort, sensory input, emotional overwhelm, and environmental friction with a 4-card tactile response dock (`✓ Yes`, `✕ No`, `? Not Sure`, `⏹ Stop`), body part location grid, and 1-5 intensity scale.
-- **Private Why Log & 30-Day Trend Insights**: Local-only de-escalation session log with pattern analytics showing category percentage shares, top specific triggers, and peak time-of-day crisis clusters to help families identify environmental stressors.
-- **Customizable Question Tree Editor**: Tree customizer dialog allowing families to edit questions, add personalized triggers, reorder with single-step ▲/▼ buttons, dictate via speech recognition (`🎤`), or reset to clinical defaults with one tap.
-- **Backup & Restore Format v2**: Granular export/import engine to selectively backup phrases, custom Why trees, and private Why logs into JSON files with merge and replace restore strategies.
+**Primary Mission (Crisis Navigation for Caregivers & Families):**  
+Provide parents, siblings, family members, caregivers, therapists, and educators with an immediate two-way receptive triage HUD and low-cognitive-load yes/no inquiry to reach loved ones during meltdowns and shutdowns without escalating distress.
+
+**Secondary Purpose (Dignified Voice for Non-Speaking & Unclear Speech):**  
+Provide non-speaking individuals, those with unclear or dysfluent speech, and anyone navigating verbal fatigue with a clean, mature text-to-speech board and spontaneous quick-speak bar—free of pediatric cartoons, patronizing symbols, and visual clutter.
+
+---
+
+## Target Audience
+- **Parents, Siblings, Family, Caregivers, Therapists & Teachers**: Reaching loved ones during verbal shutdowns, cognitive freezes, and meltdowns with immediate 1-tap de-escalation; discovering hidden root causes through structured inquiry.
+- **Autistic Teens & Adults**: Dignified self-advocacy and daily communication with high-contrast, low-stimulation phrase cards and giant fullscreen text.
+- **Individuals with Unclear, Fatigued, or Non-Speaking Speech**: Accessible one-touch speech for motor apraxia, dysarthria, cerebral palsy, ALS, stroke recovery (aphasia), quiet/strained voices, or situational speech loss.
+
+---
+
+## Key Features
+
+### 1. Emergency Triage & Crisis Navigation (Caregiver-First)
+- **Two-Way Speak HUD & 180° Flip (`🤝`)**: Immediate emergency de-escalation for acute meltdowns and verbal shutdowns. Caregivers speak naturally or pick urgent preset prompts, flip the display 180° on a table, and the individual responds with one tap (`Yes`, `No`, `Not sure`, `Stop`) with instant voice confirmation. Zero demand fatigue or cognitive load.
+- **Why Finder Diagnostic Tree (`🧭`)**: A guided, low-stimulus yes/no branching tree to uncover hidden root causes (acute physical pain, body part location, sensory overload, routine disruption) when triggers are unclear or during post-crisis recovery.
+- **Private Why Log & 30-Day Trend Insights**: Automatically logs resolved crisis events locally in private app storage. Highlights top 30-day root-cause patterns and peak time-of-day triggers to help families and therapists identify recurring environmental stressors.
+- **Customizable Why Tree (`🌳`)**: Personalize branching questions and resolution steps with voice dictation (`🎤`), sequence reordering, and one-tap clinical defaults reset.
+
+### 2. Dignified Self-Expression (AAC Phrase Board)
+- **Low-Stimulus UI & Sensory Color Themes**: Curated sensory-friendly color palettes accessible from Voice & Language Settings (`Appearance` section) to accommodate neurodivergent needs, photophobia, and astigmatism halation while upholding WCAG 2.1 AAA contrast: **Charcoal** (default low-stimulus dark neutral), **OLED Pure Black** (maximum contrast and power efficiency), **Warm Amber / Low Strain** (low blue light dark sepia), **Slate Navy** (calm focus), and **Soft Parchment** (anti-halation muted daylight).
+- **Universal iPad & iPhone Support**: Full universal iPad and iPhone support with adaptive multi-column grid layouts, smooth rotation support across all orientations (Portrait, Landscape, Upside-Down), and zero visual clutter.
+- **Zero-Distraction Mode**: The main communication screen has no administrative clutter, providing a safe, predictable environment. Administrative actions (add, edit, delete, reorder) remain hidden during communication.
+- **Safety Bystander Card & Setup Wizard**: Dedicated full-width hero card for non-verbal episodes and shutdowns. Features a distinct `🛡️ Safety` badge, a guided setup wizard for emergency contact information, digit-by-digit phone number TTS formatting so emergency numbers are read naturally, and a specialized fullscreen view with high-contrast amber styling (`#251E14` / `#FFB74D`) for bystanders, doctors, or first responders.
 - **Multi-Line Quick-Speak Bar & Card Saving**: Spontaneous communication bar docked at the bottom with multi-line text input (1 to 4 lines), instant speech (`🔊`), fullscreen expansion (`⛶`), voice dictation (`🎤`), smart clear toggle (`✕`), and 1-tap card saving (`+`).
-- **Contextual Categories & Reordering**: Full custom category management with fine-motor single-step ▲/▼ reordering, protected system safety categories (`Emergency`, `General`), and safe fallback reassignment upon deletion.
-- **Instant Speech**: Tap any phrase card to speak immediately using `AVSpeechSynthesizer` with automatic language detection (English and Bahasa Indonesia).
-- **High-Visibility Display**: Long press any card or tap the fullscreen button on the quick bar to open a full-screen, high-contrast modal for silent communication.
+- **Contextual Categories & Reordering**: Full custom category management with fine-motor single-step ▲/▼ reordering, protected system safety categories (**Safety**, **Needs**, **Social**, **Care**, **General**), and safe fallback reassignment upon deletion.
+- **High-Visibility Giant Fullscreen**: Long-press any card or tap the fullscreen button on the quick bar to open a full-screen, high-contrast modal for silent communication in loud spaces.
 - **Attention Chime & Haptics**: Native two-tone musical chime (D5 at 587.33 Hz for 90ms followed by A5 at 880.00 Hz for 160ms with harmonic overtone and exponential decay) and haptic alert to capture listener attention before speech begins.
-- **Configurable Voice & Language**: Permanent settings gear icon (`⚙️`) to select app language, fine-tune speech rate (0.5x to 2.0x) and pitch (0.7x to 1.3x) with live "Test Voice" preview.
+- **Dignified & Natural Speech Engine**: Tap any phrase card to speak immediately using `AVSpeechSynthesizer` with automatic language detection (English and Bahasa Indonesia). Features intelligent voice scoring prioritizing natural flagship voices (Samantha, Siri, Ava, Damayanti), novelty voice filtering, and in-app guidance for downloading Apple's free Enhanced and Premium neural voices.
 - **Dual-Language Speech & On-Device Translation**: Display cards in one language (e.g. English) while speaking in another (e.g. Indonesian) with a subtle indicator (`🗣️`). Features on-device auto-translation (100% private, zero user text sent to the cloud) and dual-language speak controls in fullscreen view.
-- **Privacy-Preserving Telemetry v2 (Opt-In)**: Optional, zero-PII usability telemetry measuring accessibility latency and hesitation to assess product-market fit, complete with category scrubbing (`custom`), payload inspection preview sheet, and a 14-day PMF survey modal.
-- **100% Native & Private**: Built entirely using native Apple frameworks (`SwiftUI`, `AVFoundation`, `Speech`, `Translation`). Completely local processing with zero tracking, zero accounts, and 100% offline privacy.
+
+### 3. Privacy & Offline Guarantee
+- **100% Offline Core**: Zero cloud accounts, zero ads, and zero third-party tracking SDKs. Audio, phrases, Why Finder trees, and Why logs stay strictly on-device.
+- **Instant Offline QR Code Deck Sharing**: Share and import phrase decks instantaneously offline using high-density QR codes (`SOTTO:v1:...`) and an integrated camera scanner between iOS and Android devices—zero accounts, cloud, or AirDrop required.
+- **Backup & Restore Format v2**: Granular export/import engine to selectively backup phrases, custom Why trees, and private Why logs into JSON files with merge and replace restore strategies. Easily export a customized tree to a therapist or teacher without sharing private crisis notes.
+- **Privacy-Preserving Telemetry v2/v3 (Opt-In)**: Optional, strictly opt-in (default OFF) anonymous interaction telemetry measuring accessibility latency and hesitation to assess product-market fit, complete with category scrubbing (`custom`), payload inspection preview sheet, and a 14-day PMF survey modal (zero text, audio, or phrase hashes collected).
 
 ---
 
@@ -62,6 +78,7 @@ Sotto-iOS/
 │   └── sotto_demo_id.mp4           # Indonesian demo video
 ├── docs/                           # Documentation and publishing guides
 │   ├── APP_STORE_LISTING.md        # App Store Connect metadata & review notes
+│   ├── APP_STORE_SUBMISSION_CHECKLIST.md # Step-by-step App Store publishing checklist
 │   ├── CAREGIVER_GUIDE.md          # User & Caregiver Guide (Two-Way Mode, cards, emergency)
 │   ├── CROSS_PLATFORM_WORKFLOW.md  # Android-to-iOS porting guide & checklist
 │   ├── LANGUAGE_AND_LOCALIZATION.md# Language models, TTS voice data, and offline translation
@@ -128,7 +145,7 @@ Sotto-iOS/
 ### Requirements
 - macOS 14.0+
 - Xcode 15.0+
-- iOS 17.0+ Deployment Target
+- iOS 16.0+ Deployment Target (iPhone & iPad)
 
 ### Steps
 1. Clone this repository:

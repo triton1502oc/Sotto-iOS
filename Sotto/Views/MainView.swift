@@ -1,6 +1,13 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+private struct QRShareItem: Identifiable {
+    let id = UUID()
+    let title: String
+    let subtitle: String
+    let data: String
+}
+
 public struct MainView: View {
     @StateObject private var viewModel: MainViewModel
     
@@ -13,6 +20,9 @@ public struct MainView: View {
     @State private var showFileImporter: Bool = false
     @State private var shareUrl: URL? = nil
     @State private var showShareSheet: Bool = false
+    @State private var showEmergencySetupWizard: Bool = false
+    @State private var activeQRShareItem: QRShareItem? = nil
+    @State private var showQRScanner: Bool = false
     
     public init(viewModel: MainViewModel = MainViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -31,6 +41,12 @@ public struct MainView: View {
                     // Category Filter Chips
                     categoryFilterRow
                         .padding(.vertical, 8)
+                    
+                    // Persistent Safety / SOS Quick-Action Banner when viewing sub-categories
+                    if viewModel.voiceSettings.showSafetyCards && viewModel.selectedCategory != .all && viewModel.selectedCategory != .emergency,
+                       let emergencyPhrase = viewModel.phrases.first(where: { $0.isEmergency }) {
+                        persistentEmergencyBanner(phrase: emergencyPhrase)
+                    }
                     
                     // Phrases Grid / List
                     phrasesContent(width: geometry.size.width)
@@ -88,6 +104,7 @@ public struct MainView: View {
                 allPhrases: viewModel.phrases,
                 categories: viewModel.categories,
                 whyFinderRepository: viewModel.whyFinderRepository,
+                appLanguage: viewModel.voiceSettings.appLanguage,
                 onSpeakResponse: { text in
                     viewModel.onTwoWayResponseSpoken()
                     viewModel.speakText(text, language: LocaleHelper.langAuto)
@@ -119,8 +136,14 @@ public struct MainView: View {
             PhraseEditModal(
                 initialText: viewModel.initialAddText,
                 voiceSettings: viewModel.voiceSettings,
+                onOpenEmergencyWizard: {
+                    showEmergencySetupWizard = true
+                },
                 onSave: { newPhrase in
                     viewModel.addPhrase(newPhrase)
+                    if newPhrase.isEmergency && !newPhrase.isUnconfiguredEmergency {
+                        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
+                    }
                     viewModel.initialAddText = ""
                     viewModel.showAddPhraseDialog = false
                 },
@@ -134,8 +157,14 @@ public struct MainView: View {
             PhraseEditModal(
                 existingPhrase: phrase,
                 voiceSettings: viewModel.voiceSettings,
+                onOpenEmergencyWizard: {
+                    showEmergencySetupWizard = true
+                },
                 onSave: { updated in
                     viewModel.editPhrase(old: phrase, new: updated)
+                    if updated.isEmergency && !updated.isUnconfiguredEmergency {
+                        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
+                    }
                     viewModel.phraseToEdit = nil
                 },
                 onDelete: { toDelete in
@@ -161,6 +190,12 @@ public struct MainView: View {
                 },
                 onOpenWhyTreeEditor: {
                     viewModel.showWhyTreeEditorDialog = true
+                },
+                onOpenEmergencySetup: {
+                    showEmergencySetupWizard = true
+                },
+                onOpenQRScanner: {
+                    showQRScanner = true
                 },
                 onExportPhrases: {
                     viewModel.showExportBackupDialog = true
@@ -204,11 +239,20 @@ public struct MainView: View {
                 logCount: viewModel.whyFinderRepository.getLogs().count,
                 onExport: { exportPhrases, exportTree, exportLog in
                     let json = viewModel.exportBackup(exportPhrases: exportPhrases, exportTree: exportTree, exportLog: exportLog)
-                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent("sotto_backup_\(Int(Date().timeIntervalSince1970)).json")
+                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent("sotto_deck_\(Int(Date().timeIntervalSince1970)).sotto")
                     try? json.write(to: tempUrl, atomically: true, encoding: .utf8)
                     shareUrl = tempUrl
                     showShareSheet = true
                     viewModel.showExportBackupDialog = false
+                },
+                onShareQR: { exportPhrases, exportTree, exportLog in
+                    let json = viewModel.exportCompactPhrasesForQR()
+                    viewModel.showExportBackupDialog = false
+                    activeQRShareItem = QRShareItem(
+                        title: "Sotto Vocabulary Deck",
+                        subtitle: "Scan with camera to import phrases",
+                        data: json
+                    )
                 },
                 onDismiss: {
                     viewModel.showExportBackupDialog = false
@@ -259,23 +303,76 @@ public struct MainView: View {
                 }
             )
         }
-        .sheet(isPresented: $showShareSheet) {
+        .sheet(isPresented: $showShareSheet, onDismiss: {
+            if let url = shareUrl {
+                try? FileManager.default.removeItem(at: url)
+                shareUrl = nil
+            }
+        }) {
             if let url = shareUrl {
                 ShareActivityView(activityItems: [url])
             }
         }
-        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.json]) { result in
+        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [UTType(filenameExtension: "sotto") ?? .json, .json]) { result in
             if case .success(let url) = result {
-                if url.startAccessingSecurityScopedResource() {
-                    defer { url.stopAccessingSecurityScopedResource() }
-                    if let data = try? Data(contentsOf: url),
-                       let jsonString = String(data: data, encoding: .utf8),
-                       let backup = PhraseBackupHelper.parseJson(jsonString) {
-                        viewModel.backupDataToImport = backup
-                        viewModel.showImportBackupDialog = true
-                    }
-                }
+                handleIncomingDeckUrl(url)
             }
+        }
+        .sheet(isPresented: $showEmergencySetupWizard) {
+            let currentEmergency = viewModel.phrases.first(where: { $0.isEmergency })
+            let details = LocaleHelper.extractEmergencyDetails(phraseText: currentEmergency?.text ?? "", appLanguage: viewModel.voiceSettings.appLanguage)
+            EmergencySetupWizardModal(
+                appLanguage: viewModel.voiceSettings.appLanguage,
+                initialArea: details.area,
+                initialContact: details.contact,
+                onSave: { visualText, spokenText in
+                    if let existing = viewModel.phrases.first(where: { $0.isEmergency }) {
+                        var updated = existing
+                        updated.text = visualText
+                        updated.spokenText = spokenText
+                        viewModel.editPhrase(old: existing, new: updated)
+                    } else {
+                        let newEmergency = Phrase(
+                            text: visualText,
+                            spokenText: spokenText,
+                            isEmergency: true,
+                            category: .emergency
+                        )
+                        viewModel.addPhrase(newEmergency)
+                    }
+                    UserDefaults.standard.set(true, forKey: "has_completed_emergency_setup")
+                    UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
+                    showEmergencySetupWizard = false
+                },
+                onSkip: {
+                    UserDefaults.standard.set(true, forKey: "has_completed_emergency_setup")
+                    showEmergencySetupWizard = false
+                }
+            )
+        }
+        .sheet(item: $activeQRShareItem) { item in
+            QRCodeModal(
+                title: item.title,
+                subtitle: item.subtitle,
+                dataString: item.data,
+                onDismiss: {
+                    activeQRShareItem = nil
+                }
+            )
+        }
+        .sheet(isPresented: $showQRScanner) {
+            QRScannerModal(
+                onScan: { scanned in
+                    showQRScanner = false
+                    handleIncomingDeckString(scanned)
+                },
+                onDismiss: {
+                    showQRScanner = false
+                }
+            )
+        }
+        .onOpenURL { url in
+            handleIncomingDeckUrl(url)
         }
         // Alerts for In-Row Category Editing
         .alert("Add Category", isPresented: $showAddCategoryAlert) {
@@ -337,6 +434,48 @@ public struct MainView: View {
     }
 }
     
+    // MARK: - Deck File & QR Handlers (Issue #13)
+    
+    private func handleIncomingDeckUrl(_ url: URL) {
+        if url.isFileURL {
+            if url.startAccessingSecurityScopedResource() {
+                defer { url.stopAccessingSecurityScopedResource() }
+                if let data = try? Data(contentsOf: url),
+                   let jsonString = String(data: data, encoding: .utf8),
+                   let backup = PhraseBackupHelper.parseJson(jsonString) {
+                    viewModel.backupDataToImport = backup
+                    viewModel.showImportBackupDialog = true
+                }
+            } else if let data = try? Data(contentsOf: url),
+                      let jsonString = String(data: data, encoding: .utf8),
+                      let backup = PhraseBackupHelper.parseJson(jsonString) {
+                viewModel.backupDataToImport = backup
+                viewModel.showImportBackupDialog = true
+            }
+        } else if url.scheme == "sotto" {
+            if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+               let dataParam = components.queryItems?.first(where: { $0.name == "data" })?.value {
+                handleIncomingDeckString(dataParam)
+            }
+        }
+    }
+    
+    private func handleIncomingDeckString(_ text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let data = Data(base64Encoded: trimmed),
+           let json = String(data: data, encoding: .utf8),
+           let backup = PhraseBackupHelper.parseJson(json) {
+            viewModel.backupDataToImport = backup
+            viewModel.showImportBackupDialog = true
+            return
+        }
+        if let backup = PhraseBackupHelper.parseJson(trimmed) {
+            viewModel.backupDataToImport = backup
+            viewModel.showImportBackupDialog = true
+            return
+        }
+    }
+    
     // MARK: - Top Bar
     
     private var topBar: some View {
@@ -371,10 +510,13 @@ public struct MainView: View {
                             .font(.system(size: 12, weight: isPrimary ? .bold : .regular))
                             .foregroundColor(isPrimary ? SottoTheme.onPrimary : SottoTheme.textSecondary)
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .frame(minWidth: 36, minHeight: 44)
                             .background(isPrimary ? SottoTheme.primary : Color.clear)
                             .cornerRadius(12)
+                            .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Speak in primary language, \(primaryCode)")
+                    .accessibilityAddTraits(isPrimary ? [.isSelected] : [])
                     .demoTarget("langSwitch_primary")
                     
                     Button(action: { viewModel.activeSpeechTarget = "secondary" }) {
@@ -382,10 +524,13 @@ public struct MainView: View {
                             .font(.system(size: 12, weight: !isPrimary ? .bold : .regular))
                             .foregroundColor(!isPrimary ? SottoTheme.onPrimary : SottoTheme.textSecondary)
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .frame(minWidth: 36, minHeight: 44)
                             .background(!isPrimary ? SottoTheme.primary : Color.clear)
                             .cornerRadius(12)
+                            .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Speak in secondary language, \(secondaryCode)")
+                    .accessibilityAddTraits(!isPrimary ? [.isSelected] : [])
                     .demoTarget("langSwitch_secondary")
                 }
                 .padding(2)
@@ -394,14 +539,16 @@ public struct MainView: View {
                 .padding(.trailing, 4)
             }
             
-            // Caregiver Receptive Mode (👂)
+            // Partner Mode (🤝)
             Button(action: {
                 viewModel.showTwoWayDialog = true
             }) {
-                Text("👂")
+                Text("🤝")
                     .font(.system(size: 20))
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Open Partner mode for communication partner")
             .demoTarget("topBar_listenModeButton")
             
             // Settings Gear Icon (Always accessible)
@@ -411,11 +558,13 @@ public struct MainView: View {
                 Image(systemName: "gearshape")
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(SottoTheme.textSecondary)
-                    .frame(width: 36, height: 36)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Settings")
             .demoTarget("topBar_voiceButton")
             
-            // Edit List / Done Button
+            // Edit / Done Button
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.isEditMode.toggle()
@@ -425,19 +574,21 @@ public struct MainView: View {
                     Text(viewModel.isEditMode ? "✓" : "✏️")
                         .font(.system(size: 13))
                         .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : SottoTheme.textPrimary)
-                    Text(viewModel.isEditMode ? "Done" : "Edit List")
+                    Text(LocaleHelper.getActionEdit(isEditMode: viewModel.isEditMode, appLanguage: viewModel.voiceSettings.appLanguage))
                         .font(.system(size: 14, weight: viewModel.isEditMode ? .bold : .medium))
                         .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : SottoTheme.textPrimary)
                 }
                 .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .frame(minHeight: 44)
                 .background(viewModel.isEditMode ? SottoTheme.confirm.opacity(0.15) : SottoTheme.surfaceVariant)
                 .cornerRadius(18)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
                         .stroke(viewModel.isEditMode ? SottoTheme.confirm : Color.white.opacity(0.1), lineWidth: 1)
                 )
+                .contentShape(Rectangle())
             }
+            .accessibilityLabel(viewModel.isEditMode ? "Done editing" : "Edit list")
             .demoTarget("topBar_editButton")
         }
         .padding(.horizontal, 16)
@@ -456,14 +607,17 @@ public struct MainView: View {
                 Button(action: {
                     viewModel.selectedCategory = .all
                 }) {
-                    Text("All")
+                    Text(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: viewModel.voiceSettings.appLanguage))
                         .font(.system(size: 14, weight: isAllSelected ? .bold : .regular))
                         .foregroundColor(isAllSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
+                        .frame(minHeight: 44)
                         .background(isAllSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
                         .cornerRadius(20)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: viewModel.voiceSettings.appLanguage))
+                .accessibilityAddTraits(isAllSelected ? [.isSelected] : [])
                 .demoTarget("chip_all")
                 
                 // Dynamic Categories from Repository (Safety chip hidden on main bar to reduce visual clutter)
@@ -485,10 +639,10 @@ public struct MainView: View {
                     }) {
                         HStack(spacing: 6) {
                             if isEmergency {
-                                Text("🚨")
+                                Text("🛡️")
                                     .font(.system(size: 12))
                             }
-                            Text(LocaleHelper.getCategoryDisplayName(catName))
+                            Text(LocaleHelper.getCategoryDisplayName(catName, appLanguage: viewModel.voiceSettings.appLanguage))
                                 .font(.system(size: 14, weight: isSelected ? .bold : .regular))
                             
                             if viewModel.isEditMode && !isProtectedFromRename {
@@ -503,7 +657,10 @@ public struct MainView: View {
                                     Image(systemName: "xmark")
                                         .font(.system(size: 11, weight: .bold))
                                         .foregroundColor(SottoTheme.destructiveRed)
+                                        .frame(width: 44, height: 44)
+                                        .contentShape(Rectangle())
                                 }
+                                .accessibilityLabel("Delete category \(catName)")
                             }
                         }
                         .foregroundColor(
@@ -511,7 +668,7 @@ public struct MainView: View {
                             (isSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
                         )
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
+                        .frame(minHeight: 44)
                         .background(
                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedBg :
                             (isSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
@@ -521,7 +678,10 @@ public struct MainView: View {
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(isEmergency && isSelected ? SottoTheme.emergencyBorder : Color.clear, lineWidth: 1)
                         )
+                        .contentShape(Rectangle())
                     }
+                    .accessibilityLabel(LocaleHelper.getCategoryDisplayName(catName, appLanguage: viewModel.voiceSettings.appLanguage))
+                    .accessibilityAddTraits(isSelected ? [.isSelected] : [])
                     .demoTarget("chip_\(catName)")
                 }
                 
@@ -538,14 +698,16 @@ public struct MainView: View {
                         }
                         .foregroundColor(SottoTheme.primary)
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .frame(minHeight: 44)
                         .background(SottoTheme.surface)
                         .cornerRadius(20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(SottoTheme.primary.opacity(0.4), lineWidth: 1)
                         )
+                        .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Manage categories")
                     
                     Button(action: {
                         newCategoryNameInput = ""
@@ -559,18 +721,83 @@ public struct MainView: View {
                         }
                         .foregroundColor(SottoTheme.primary)
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .frame(minHeight: 44)
                         .background(SottoTheme.surface)
                         .cornerRadius(20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(SottoTheme.primary.opacity(0.4), lineWidth: 1)
                         )
+                        .contentShape(Rectangle())
                     }
+                    .accessibilityLabel("Add new category")
                 }
             }
             .padding(.horizontal, 16)
         }
+    }
+    
+    // MARK: - Persistent Emergency Banner (Issue #11)
+    
+    @ViewBuilder
+    private func persistentEmergencyBanner(phrase: Phrase) -> some View {
+        Button(action: {
+            if viewModel.isEditMode {
+                viewModel.phraseToEdit = phrase
+            } else {
+                viewModel.speak(phrase: phrase)
+            }
+        }) {
+            HStack(spacing: 10) {
+                Text("🛡️")
+                    .font(.system(size: 16))
+                
+                Text(phrase.text)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundColor(SottoTheme.safetyText)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Image(systemName: "speaker.wave.2.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(SottoTheme.safetyBadgeText)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            .frame(minHeight: 44)
+            .background(SottoTheme.safetyBackground)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(SottoTheme.safetyBorder.opacity(0.8), lineWidth: 1)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(SottoCardButtonStyle())
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.5).onEnded { _ in
+                if !viewModel.isEditMode {
+                    #if canImport(UIKit)
+                    let feedback = UIImpactFeedbackGenerator(style: .medium)
+                    feedback.impactOccurred()
+                    #endif
+                    viewModel.activeFullscreenPhrase = phrase
+                }
+            }
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Quick Emergency Phrase: \(phrase.text)")
+        .accessibilityHint(viewModel.isEditMode ? "Double tap to edit emergency card." : "Double tap to speak aloud. Double tap and hold to show fullscreen.")
+        .accessibilityAction(named: "Speak Aloud") {
+            viewModel.speak(phrase: phrase)
+        }
+        .accessibilityAction(named: "Show Fullscreen") {
+            viewModel.activeFullscreenPhrase = phrase
+        }
+        .demoTarget("persistentEmergencyBanner")
     }
     
     // MARK: - Phrases Grid Content
@@ -590,15 +817,22 @@ public struct MainView: View {
                             phrase: phrase,
                             isEditMode: viewModel.isEditMode,
                             showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
+                            appLanguage: viewModel.voiceSettings.appLanguage,
                             onTap: {
                                 if viewModel.isEditMode {
-                                    viewModel.phraseToEdit = phrase
+                                    showEmergencySetupWizard = true
+                                } else if phrase.isUnconfiguredEmergency {
+                                    showEmergencySetupWizard = true
                                 } else {
                                     viewModel.speak(phrase: phrase)
                                 }
                             },
                             onLongPress: {
-                                viewModel.activeFullscreenPhrase = phrase
+                                if viewModel.isEditMode {
+                                    viewModel.phraseToEdit = phrase
+                                } else {
+                                    viewModel.activeFullscreenPhrase = phrase
+                                }
                             }
                         )
                         .demoTarget("emergencyCard")
@@ -609,6 +843,7 @@ public struct MainView: View {
                                     phrase: phrase,
                                     isEditMode: viewModel.isEditMode,
                                     showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
+                                    appLanguage: viewModel.voiceSettings.appLanguage,
                                     onTap: {
                                         if viewModel.isEditMode {
                                             viewModel.phraseToEdit = phrase

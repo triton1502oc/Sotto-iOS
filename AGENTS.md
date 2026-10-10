@@ -39,3 +39,13 @@ Before making changes, familiarize yourself with [CONTRIBUTING.md](CONTRIBUTING.
    - Use relative paths (`../Sotto`) instead of absolute user paths.
 6. **Pre-Release Device Verification Prompt (MANDATORY)**:
    - When assisting with any release, version bump, or release preparation, AI agents **MUST ALWAYS explicitly ask and remind the user to install and test the Release build on a physical device or simulator** before creating the git tag or pushing the release. Never tag or finalize a release without prompting the user.
+7. **Autonomous Asset Rebuilding**:
+   - When requested to update or rebuild demo assets, execute `./scripts/record_demo_en.sh` and `./scripts/record_demo_id.sh` directly without requiring multi-step approval.
+8. **Issue Assignment on Close**:
+   - When resolving, updating, or closing a GitHub issue or ticket, if the issue is unassigned, assign it to yourself (`gh issue edit <id> --add-assignee "@me"`) before or upon closing.
+9. **Simplicity, Brevity, Safety & Security (Zero Regressions)**:
+   - **Ensure Nothing Breaks**: Guarantee backwards compatibility for existing user data (saved phrases, preferences, custom trees) and verify test coverage.
+   - **Simpler Code & Shorter Lines of Code**: Emphasize minimal abstractions, direct logic, concise Swift idioms, and eliminating dead code over premature architecture.
+   - **Secure Code**: Maintain 100% offline privacy guarantees (zero covert analytics/leaks), sanitize imports, and adhere to secure iOS development standards.
+10. **Telemetry for New Features**:
+    - Every newly added user-facing feature or configurable capability MUST include corresponding privacy-preserving, opt-in telemetry via `UsabilityTracker` (e.g., activation marker, anonymous usage count, or state snapshot). Telemetry must strictly remain anonymous, zero PII/content, and gated behind user consent (`shareUsabilityMetrics`).

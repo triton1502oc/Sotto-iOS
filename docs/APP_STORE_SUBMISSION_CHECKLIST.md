@@ -14,7 +14,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 | **Export Compliance** | ✅ Done | `ITSAppUsesNonExemptEncryption: false` in `Info.plist` |
 | **Code Signing** | ✅ Done | `CODE_SIGN_STYLE: Automatic` configured in `project.yml` |
 | **Bundle Identifier** | ✅ Done | `com.amh.sotto` |
-| **Deployment Target** | ✅ Done | iOS 17.0+ (iPhone & iPad) |
+| **Deployment Target** | ✅ Done | iOS 16.0+ (iPhone & iPad) |
 
 ---
 
@@ -118,32 +118,35 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
    - Click **+** next to Internal Groups.
    - Add your Apple ID as an internal tester.
 4. On your iPhone/iPad, open the **TestFlight** app, install Sotto, and verify:
-   - App launches cleanly.
-   - Tap phrase cards to verify text-to-speech.
+   - App launches cleanly on both iPhone and iPad in Portrait and Landscape orientations.
+   - Tap phrase cards to verify text-to-speech with natural voices (Samantha/Siri/Damayanti).
    - Test voice input (microphone & speech recognition permission dialogs).
-   - Test Emergency bystander banner and fullscreen mode.
+   - Test Safety bystander card (`🛡️ Safety`), setup wizard, fullscreen mode, and Partner Mode (`🤝`).
+   - Test Why Finder guided crisis tree and 4-card response dock (`✓ Yes`, `✕ No`, `? Not Sure`, `⏹ Stop`).
+   - Test offline QR Code deck export and camera scanner import.
+   - Test sensory appearance themes in Settings.
 
 ---
 
 ## Step 6: App Store Listing & Review Submission
 
-1. In App Store Connect, go to **iOS App > 1.0.0 Prepare for Submission**.
+1. In App Store Connect, go to **iOS App > 1.6.2 Prepare for Submission**.
 2. Fill in the listing details using [APP_STORE_LISTING.md](APP_STORE_LISTING.md):
    - **Promotional Text**:
      ```text
-     Dignified, one-touch AAC speech communication for autistic teens, adults, and non-speaking individuals. Low-stimulus dark theme, emergency hero card, and 100% private.
+     Dignified, one-touch AAC speech communication for autistic teens, adults, and non-speaking users. Low-stimulus themes, Partner Mode, Safety card, and 100% private.
      ```
    - **Description**: Paste the full description from `APP_STORE_LISTING.md`.
    - **Keywords**:
      ```text
-     aac,autism,speech,assistive,talk,tts,nonverbal,communication,mute,autistic,emergency,text to speech
+     aac,autism,speech,assistive,talk,tts,nonverbal,communication,mute,autistic,safety,text to speech
      ```
    - **Support URL**: `https://github.com/triton1502oc/Sotto-iOS/issues`
    - **Marketing URL**: `https://github.com/triton1502oc/Sotto-iOS`
    - **Privacy Policy URL**: `https://github.com/triton1502oc/Sotto-iOS/blob/main/PRIVACY_POLICY.md`
 3. **Screenshots**:
    - Upload at least 1–3 screenshots for **6.9" / 6.7" Display** (iPhone 16 Pro Max / 15 Pro Max: `1290 x 2796` px or `1320 x 2868` px).
-   - If iPad is enabled, upload iPad Pro 13" screenshots (`2064 x 2752` px).
+   - Upload iPad Pro 13" screenshots (`2064 x 2752` px) for iPad universal support.
 4. **Build**:
    - Scroll down to **Build** section and click **+ Select Build**.
    - Choose the uploaded build from Step 4.
@@ -153,9 +156,10 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
    - **Notes**:
      ```text
      Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
-     - Speech-to-text (Microphone & Speech Recognition) is used solely when the user taps the microphone button in the Quick-Speak bar or Phrase Editor to dictate a custom phrase.
+     - Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
      - Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
-     - No login or account is required. All data is stored locally in UserDefaults.
+     - No login or account is required. All data is stored locally on the device in UserDefaults.
+     - Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
      ```
 6. Click **Save** in the top right.
 7. Click **Add for Review** (or **Submit to App Review**).

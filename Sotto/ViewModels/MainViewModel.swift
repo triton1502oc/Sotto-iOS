@@ -298,6 +298,19 @@ public final class MainViewModel: ObservableObject {
         return json
     }
     
+    public func exportCompactPhrasesForQR() -> String {
+        let json = PhraseBackupHelper.exportCompactPhrasesForQR(phrases: phrases, categories: categories)
+        UsabilityTracker.shared.recordBackupAction(
+            isExport: true,
+            includesPhrases: true,
+            includesTree: false,
+            includesLog: false,
+            isReplace: false,
+            voiceSettings: voiceSettings
+        )
+        return json
+    }
+    
     public func importBackup(
         backupData: BackupData,
         replace: Bool
@@ -358,6 +371,7 @@ public final class MainViewModel: ObservableObject {
         UsabilityTracker.shared.recordCardTap(
             category: phrase.category.rawValue,
             phraseId: phrase.id.uuidString,
+            isEmergency: phrase.isEmergency,
             voiceSettings: voiceSettings
         )
         if voiceSettings.showLanguageSwitcher && activeSpeechTarget == "secondary" {
@@ -387,8 +401,16 @@ public final class MainViewModel: ObservableObject {
                 }
             }
         } else {
+            let textToSpeak: String
+            if phrase.isEmergency, let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
+                textToSpeak = spoken
+            } else if phrase.isUnconfiguredEmergency {
+                textToSpeak = LocaleHelper.formatEmergencyPhraseForSpeech(area: "", contact: "", appLanguage: voiceSettings.appLanguage)
+            } else {
+                textToSpeak = phrase.text
+            }
             speechService.speak(
-                text: phrase.text,
+                text: textToSpeak,
                 language: phrase.language,
                 settings: voiceSettings
             )

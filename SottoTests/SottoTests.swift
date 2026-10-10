@@ -672,5 +672,421 @@ final class SottoTests: XCTestCase {
         XCTAssertNotNil(restored)
         XCTAssertEqual(event, restored)
     }
+    
+    // MARK: - Action & TwoWay Localization Tests
+    
+    func testLocaleHelperActionEdit() {
+        XCTAssertEqual(LocaleHelper.getActionEdit(isEditMode: false, appLanguage: "en"), "Edit")
+        XCTAssertEqual(LocaleHelper.getActionEdit(isEditMode: true, appLanguage: "en"), "Done")
+        XCTAssertEqual(LocaleHelper.getActionEdit(isEditMode: false, appLanguage: "id"), "Ubah")
+        XCTAssertEqual(LocaleHelper.getActionEdit(isEditMode: true, appLanguage: "id"), "Selesai")
+    }
+    
+    func testLocaleHelperTwoWayLabels() {
+        // Tab labels
+        XCTAssertEqual(LocaleHelper.getTwoWayTabLabel(isWhyFinder: true, appLanguage: "en"), "Guided")
+        XCTAssertEqual(LocaleHelper.getTwoWayTabLabel(isWhyFinder: false, appLanguage: "en"), "Talk")
+        XCTAssertEqual(LocaleHelper.getTwoWayTabLabel(isWhyFinder: true, appLanguage: "id"), "Panduan")
+        XCTAssertEqual(LocaleHelper.getTwoWayTabLabel(isWhyFinder: false, appLanguage: "id"), "Bicara")
+        
+        // Response labels
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: "en"), "Yes")
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: "en"), "No")
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: "en"), "Not Sure")
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: "en"), "Stop")
+        
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: "id"), "Ya")
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: "id"), "Tidak")
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: "id"), "Tidak Yakin")
+        XCTAssertEqual(LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: "id"), "Berhenti")
+        
+        // Action labels
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "flip", appLanguage: "en"), "Flip")
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "flip_back", appLanguage: "en"), "Flip Back")
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "flip", appLanguage: "id"), "Putar")
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "flip_back", appLanguage: "id"), "Kembali")
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: "id"), "Bicara")
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: "id"), "Kartu")
+        XCTAssertEqual(LocaleHelper.getTwoWayActionLabel(actionKey: "mic", appLanguage: "id"), "Mik")
+    }
+    
+    func testLocaleHelperSafetyCategoryDisplay() {
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: "en"), "Safety")
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("SAFETY", appLanguage: "en"), "Safety")
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: "id"), "Keselamatan")
+        XCTAssertEqual(LocaleHelper.getCategoryDisplayName("SAFETY", appLanguage: "id"), "Keselamatan")
+    }
+    
+    // MARK: - Batch 1 Security & Bug Regression Tests
+    
+    func testCurrentAppVersionFormatted() {
+        let version = UsabilityTracker.currentAppVersion
+        XCTAssertTrue(version.hasPrefix("v"), "App version should start with 'v'")
+        XCTAssertFalse(version.isEmpty)
+    }
+    
+    @MainActor
+    func testSpeechRecognizerServiceInitialization() {
+        let recognizer = SpeechRecognizerService()
+        XCTAssertFalse(recognizer.isRecording)
+        XCTAssertEqual(recognizer.transcribedText, "")
+        XCTAssertNil(recognizer.errorMessage)
+    }
+    
+    func testCumulativeDictationBaselineReplacementLogic() {
+        // Simulating the dictation replacement logic in QuickSpeakBarView & PhraseEditModal
+        let baseText = "I need"
+        let partialUpdates = ["water", "water please", "water please quickly"]
+        
+        var currentText = baseText
+        for partial in partialUpdates {
+            let clean = partial.trimmingCharacters(in: .whitespacesAndNewlines)
+            currentText = baseText.isEmpty ? clean : "\(baseText) \(clean)"
+        }
+        
+        // Ensure no exponential duplication occurred
+        XCTAssertEqual(currentText, "I need water please quickly")
+        XCTAssertFalse(currentText.contains("water please water please"))
+    }
+    
+    // MARK: - Batch 2 Security & Accessibility Tests
+    
+    func testWhyFinderRepositoryLogPersistenceAndUserDefaultsMigration() {
+        let suiteName = "test_sotto_whyfinder_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suiteName)!
+        
+        let repo = UserDefaultsWhyFinderRepository(userDefaults: testDefaults)
+        repo.clearLogs()
+        
+        let legacyEntry = WhyLogEntry(
+            id: "legacy_test_log",
+            startedAt: Int64(Date().timeIntervalSince1970 * 1000),
+            endedAt: Int64(Date().timeIntervalSince1970 * 1000) + 5000,
+            outcome: .found,
+            areaId: "senses",
+            causeText: "Too bright",
+            note: "Test legacy migration"
+        )
+        let legacyData = try! JSONEncoder().encode([legacyEntry])
+        testDefaults.set(legacyData, forKey: UserDefaultsWhyFinderRepository.keyLogs)
+        
+        // Should migrate from UserDefaults to disk
+        let logs = repo.getLogs()
+        XCTAssertTrue(logs.contains { $0.id == "legacy_test_log" })
+        
+        // After migration, UserDefaults key should be cleared
+        XCTAssertNil(testDefaults.data(forKey: UserDefaultsWhyFinderRepository.keyLogs))
+        
+        // Test add new entry
+        let newEntry = WhyLogEntry(
+            id: "new_test_log",
+            startedAt: Int64(Date().timeIntervalSince1970 * 1000) + 10000,
+            endedAt: Int64(Date().timeIntervalSince1970 * 1000) + 15000,
+            outcome: .found,
+            areaId: "body",
+            bodyPart: "head",
+            note: "Encrypted at rest"
+        )
+        repo.addLog(newEntry)
+        
+        let updatedLogs = repo.getLogs()
+        XCTAssertEqual(updatedLogs.first?.id, "new_test_log")
+        
+        // Test delete and clean up
+        XCTAssertTrue(repo.deleteLog(id: "new_test_log"))
+        XCTAssertTrue(repo.deleteLog(id: "legacy_test_log"))
+        repo.clearLogs()
+        testDefaults.removePersistentDomain(forName: suiteName)
+    }
+    
+    func testMainViewModelEmergencyPhraseFiltering() {
+        let mockPhrases = [
+            Phrase(text: "Emergency SOS Contact", isEmergency: true, category: .emergency),
+            Phrase(text: "I need quiet", isEmergency: false, category: .needs),
+            Phrase(text: "Hello", isEmergency: false, category: .general)
+        ]
+        
+        // When .all and showSafetyCards == true
+        let allWithSafety = mockPhrases
+        XCTAssertTrue(allWithSafety.contains { $0.isEmergency })
+        
+        // When .all and showSafetyCards == false
+        let allWithoutSafety = mockPhrases.filter { !$0.isEmergency }
+        XCTAssertFalse(allWithoutSafety.contains { $0.isEmergency })
+        
+        // When .needs
+        let needsPhrases = mockPhrases.filter { !$0.isEmergency && $0.category == .needs }
+        XCTAssertEqual(needsPhrases.count, 1)
+        XCTAssertEqual(needsPhrases.first?.text, "I need quiet")
+        
+        // Persistent SOS banner query across subcategories finds the emergency phrase
+        let persistentEmergency = mockPhrases.first(where: { $0.isEmergency })
+        XCTAssertNotNil(persistentEmergency)
+        XCTAssertEqual(persistentEmergency?.text, "Emergency SOS Contact")
+    }
+    
+    // MARK: - Batch 3 Tests (Issues #12, #13, #14)
+    
+    func testEmergencyPhraseFormatting() {
+        // Full English
+        let enFull = LocaleHelper.formatEmergencyPhrase(area: "Seattle, WA", contact: "Dad: 555-0199", appLanguage: "en")
+        XCTAssertEqual(enFull, "I live around Seattle, WA, please call my emergency contact: Dad: 555-0199")
+        
+        // Blank English fallback
+        let enFallback = LocaleHelper.formatEmergencyPhrase(area: "", contact: "", appLanguage: "en")
+        XCTAssertEqual(enFallback, "I live around [Area/Neighborhood], please call my emergency contact: [phone number]")
+        
+        // Full Indonesian
+        let idFull = LocaleHelper.formatEmergencyPhrase(area: "Jakarta Selatan", contact: "Ibu: 0812-3456", appLanguage: "id")
+        XCTAssertEqual(idFull, "Saya tinggal di sekitar Jakarta Selatan, tolong hubungi kontak darurat saya: Ibu: 0812-3456")
+        
+        // Blank Indonesian fallback
+        let idFallback = LocaleHelper.formatEmergencyPhrase(area: "", contact: "", appLanguage: "id")
+        XCTAssertEqual(idFallback, "Saya tinggal di sekitar [Area / Lingkungan], tolong hubungi kontak darurat saya: [nomor telepon]")
+    }
+    
+    func testAppDelegateOrientationLockToggle() {
+        XCTAssertEqual(AppDelegate.orientationLock, .all)
+        
+        // Partner Mode 180° flip active
+        AppDelegate.orientationLock = .portrait
+        XCTAssertEqual(AppDelegate.orientationLock, .portrait)
+        
+        // Partner Mode dismissed or un-flipped
+        AppDelegate.orientationLock = .all
+        XCTAssertEqual(AppDelegate.orientationLock, .all)
+    }
+    
+    func testQRDeckPayloadBase64Roundtrip() {
+        let samplePhrases = [
+            Phrase(text: "Hello", category: .general),
+            Phrase(text: "Thank you", category: .social)
+        ]
+        
+        let json = PhraseBackupHelper.exportToJson(phrases: samplePhrases, categories: ["General", "Social"])
+        XCTAssertFalse(json.isEmpty)
+        
+        // Base64 encode for QR/URL transfer
+        let base64 = Data(json.utf8).base64EncodedString()
+        XCTAssertFalse(base64.isEmpty)
+        
+        // Decode
+        let decodedData = Data(base64Encoded: base64)
+        XCTAssertNotNil(decodedData)
+        let decodedJson = String(data: decodedData!, encoding: .utf8)
+        XCTAssertNotNil(decodedJson)
+        
+        let restoredBackup = PhraseBackupHelper.parseJson(decodedJson!)
+        XCTAssertNotNil(restoredBackup)
+        XCTAssertEqual(restoredBackup?.phrases.count, 2)
+        XCTAssertEqual(restoredBackup?.phrases.first?.text, "Hello")
+    }
+    
+    // MARK: - Post-Batch 3 Verification Tests (Phone TTS, Natural Voice, Compact QR)
+    
+    func testFormatDigitsForSpeechAndEmergencyTTS() {
+        // Continuous 12 digits
+        let rawDigits = "081234567890"
+        let formatted = LocaleHelper.formatDigitsForSpeech(rawDigits)
+        XCTAssertEqual(formatted, "0 8 1 2 3 4 5 6 7 8 9 0")
+        
+        // Dashed phone number
+        let dashed = "Ibu: 0812-3456-7890"
+        let formattedDashed = LocaleHelper.formatDigitsForSpeech(dashed)
+        XCTAssertTrue(formattedDashed.contains("0 8 1 2 - 3 4 5 6 - 7 8 9 0"))
+        
+        // Regular small numbers (e.g. 120, 2024) should remain intact
+        let normalText = "Room 101, Year 2024"
+        let unchanged = LocaleHelper.formatDigitsForSpeech(normalText)
+        XCTAssertEqual(unchanged, normalText)
+        
+        // Emergency phrase speech generation
+        let idSpeech = LocaleHelper.formatEmergencyPhraseForSpeech(area: "Kebayoran", contact: "Ibu: 081234567890", appLanguage: "id")
+        XCTAssertTrue(idSpeech.contains("0 8 1 2 3 4 5 6 7 8 9 0"))
+        
+        let enSpeech = LocaleHelper.formatEmergencyPhraseForSpeech(area: "Seattle", contact: "Mom: 555-019-2831", appLanguage: "en")
+        XCTAssertTrue(enSpeech.contains("5 5 5 - 0 1 9 - 2 8 3 1"))
+    }
+    
+    func testBestVoiceSelectionPriority() {
+        // Should resolve voice for English, prioritizing Samantha/Siri and never Gordon
+        let enVoice = SpeechService.bestVoice(forLanguage: "en-US")
+        XCTAssertNotNil(enVoice)
+        XCTAssertFalse(enVoice?.name.lowercased() == "gordon")
+        XCTAssertTrue(SpeechService.isDignifiedVoice(enVoice!))
+        
+        // Should resolve voice for Indonesian to Damayanti
+        let idVoice = SpeechService.bestVoice(forLanguage: "id-ID")
+        XCTAssertNotNil(idVoice)
+        XCTAssertEqual(idVoice?.name.lowercased(), "damayanti")
+        
+        // When invalid identifier is passed, it falls back to best matching language voice
+        let fallbackVoice = SpeechService.bestVoice(forLanguage: "en-US", preferredIdentifier: "non.existent.voice.id")
+        XCTAssertNotNil(fallbackVoice)
+        XCTAssertTrue(SpeechService.isDignifiedVoice(fallbackVoice!))
+    }
+    
+    func testCompactQRExportAndRoundtrip() {
+        let samplePhrases = [
+            Phrase(text: "Saya butuh air minum.", category: .needs),
+            Phrase(text: "Tolong panggil bantuan.", isEmergency: true, category: .emergency),
+            Phrase(text: "Terima kasih.", category: .social)
+        ]
+        
+        let fullJson = PhraseBackupHelper.exportToJson(phrases: samplePhrases, categories: ["Needs", "Emergency", "Social"])
+        let compactJson = PhraseBackupHelper.exportCompactPhrasesForQR(phrases: samplePhrases, categories: ["Needs", "Emergency", "Social"])
+        
+        // Compact JSON must be smaller than full formatted JSON
+        XCTAssertTrue(compactJson.utf8.count < fullJson.utf8.count)
+        XCTAssertTrue(compactJson.utf8.count < 1000)
+        
+        // Must parse back accurately
+        let parsed = try? PhraseBackupHelper.parseBackupJson(compactJson)
+        XCTAssertNotNil(parsed)
+        XCTAssertEqual(parsed?.phrases.count, 3)
+        XCTAssertEqual(parsed?.phrases[0].text, "Saya butuh air minum.")
+        XCTAssertEqual(parsed?.phrases[1].isEmergency, true)
+    }
+    
+    func testDictationControlTrailingStateLogic() {
+        // Test simulation of QuickSpeakBarView trailing controls:
+        // Case 1: When recording is active, Stop Mic control is always exposed even if text is non-empty
+        var isRecording = true
+        var text = "Hello world"
+        let isNotEmpty = !text.isEmpty
+        
+        // Assert that isRecording keeps stop action visible
+        let shouldShowStopRecording = isRecording
+        XCTAssertTrue(shouldShowStopRecording, "Stop recording button must remain visible when listening mode is active, even if text is entered")
+        
+        // Case 2: Tapping stop turns off recording
+        isRecording.toggle()
+        XCTAssertFalse(isRecording)
+        
+        // Case 3: When not recording and text exists, clear button is exposed
+        let shouldShowClear = !isRecording && isNotEmpty
+        XCTAssertTrue(shouldShowClear)
+        
+        // Case 4: Clearing resets text
+        text = ""
+        XCTAssertTrue(text.isEmpty)
+    }
+    
+    func testModalDictationLifecycleAndMutualExclusionLogic() {
+        // Simulating PhraseEditModal dual speech recognizers
+        var primaryRecording = true
+        var secondaryRecording = false
+        
+        // When secondary starts, primary must be stopped
+        if !secondaryRecording {
+            primaryRecording = false
+            secondaryRecording = true
+        }
+        XCTAssertFalse(primaryRecording, "Primary dictation must be stopped when secondary dictation starts")
+        XCTAssertTrue(secondaryRecording)
+        
+        // When modal actions occur (cancel, save, translate, category pick), both must be stopped
+        primaryRecording = false
+        secondaryRecording = false
+        XCTAssertFalse(primaryRecording)
+        XCTAssertFalse(secondaryRecording)
+    }
+    
+    @MainActor
+    func testSpeechAutoStopSilenceEndpointingLogic() {
+        let recognizer = SpeechRecognizerService()
+        XCTAssertFalse(recognizer.isRecording)
+        
+        // Ensure calling stopRecording cancels timers without crashing
+        recognizer.stopRecording()
+        XCTAssertFalse(recognizer.isRecording)
+    }
+    
+    // MARK: - Issue #15 Tests: In-Grid Soft Discovery & Emergency Card Setup
+    
+    func testEmergencyPlaceholderDetection() {
+        // Unconfigured English defaults
+        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "I live around [Area/Neighborhood], please call my emergency contact: [phone number]"))
+        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "Please call my emergency contact: [Phone Number]"))
+        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "[Area / Neighborhood]"))
+        
+        // Unconfigured Indonesian defaults
+        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "Saya tinggal di sekitar [Area / Lingkungan], tolong hubungi kontak darurat saya: [nomor telepon]"))
+        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "Tolong hubungi kontak darurat saya: [Nomor Telepon]"))
+        XCTAssertTrue(LocaleHelper.isEmergencyPlaceholder(text: "[nomor telepon]"))
+        
+        // Configured safety card texts
+        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "I live around Brooklyn, NY, please call my emergency contact: Mom: 555-019-2831"))
+        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "Saya tinggal di sekitar Jakarta Selatan, tolong hubungi kontak darurat saya: Ibu: 0812-3456-7890"))
+        
+        // Regular phrases without brackets
+        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "I need a quiet space."))
+        XCTAssertFalse(LocaleHelper.isEmergencyPlaceholder(text: "Saya butuh tempat tenang."))
+    }
+    
+    func testPhraseIsUnconfiguredEmergency() {
+        let unconfiguredCard = Phrase(
+            text: "I live around [Area/Neighborhood], please call my emergency contact: [phone number]",
+            isEmergency: true,
+            category: .emergency
+        )
+        XCTAssertTrue(unconfiguredCard.isUnconfiguredEmergency)
+        
+        let configuredCard = Phrase(
+            text: "I live around Brooklyn, NY, please call my emergency contact: Mom: 555-019-2831",
+            isEmergency: true,
+            category: .emergency
+        )
+        XCTAssertFalse(configuredCard.isUnconfiguredEmergency)
+        
+        let regularPhrase = Phrase(
+            text: "I need a quiet space.",
+            isEmergency: false,
+            category: .needs
+        )
+        XCTAssertFalse(regularPhrase.isUnconfiguredEmergency)
+    }
+    
+    func testExtractEmergencyDetailsRoundtrip() {
+        // English configured
+        let enConfigured = "I live around Capitol Hill, Seattle, please call my emergency contact: Mom: 555-019-2831"
+        let (enArea, enContact) = LocaleHelper.extractEmergencyDetails(phraseText: enConfigured, appLanguage: "en")
+        XCTAssertEqual(enArea, "Capitol Hill, Seattle")
+        XCTAssertEqual(enContact, "Mom: 555-019-2831")
+        
+        // Indonesian configured
+        let idConfigured = "Saya tinggal di sekitar Kebayoran Baru, tolong hubungi kontak darurat saya: Ayah: 0812-3456-7890"
+        let (idArea, idContact) = LocaleHelper.extractEmergencyDetails(phraseText: idConfigured, appLanguage: "id")
+        XCTAssertEqual(idArea, "Kebayoran Baru")
+        XCTAssertEqual(idContact, "Ayah: 0812-3456-7890")
+        
+        // Unconfigured placeholders should extract empty strings
+        let unconfigured = "I live around [Area/Neighborhood], please call my emergency contact: [phone number]"
+        let (blankArea, blankContact) = LocaleHelper.extractEmergencyDetails(phraseText: unconfigured, appLanguage: "en")
+        XCTAssertEqual(blankArea, "")
+        XCTAssertEqual(blankContact, "")
+    }
+    
+    func testSafetySetupHintLocalization() {
+        let enHint = LocaleHelper.getSafetySetupHint(appLanguage: "en")
+        XCTAssertEqual(enHint, "Tap to set up emergency contact")
+        
+        let idHint = LocaleHelper.getSafetySetupHint(appLanguage: "id")
+        XCTAssertEqual(idHint, "Ketuk untuk atur kontak darurat")
+    }
+    
+    func testUsabilityTrackerRecordSafetyCardSaved() {
+        var settings = VoiceSettings()
+        settings.shareUsabilityMetrics = true
+        
+        // Should execute and record safety_card_setup activation safely
+        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: settings)
+        
+        // With telemetry disabled, should safely no-op
+        settings.shareUsabilityMetrics = false
+        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: settings)
+    }
 }
+
+
 

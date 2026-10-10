@@ -7,18 +7,20 @@ Sotto is an assistive communication (AAC) app designed for autistic teens and ad
 
 ## 1. Mission & Design Philosophy
 
-Sotto (meaning *"under one's breath"* / soft voice) is designed specifically for autistic teens, adults, speech-impaired individuals, and non-speaking users who need clear, dignified text-to-speech support.
+Sotto was created by a father to navigate overwhelming communication breakdowns and meltdowns with his autistic sons (ages 22 and 15). When sensory overload strikes, speaking, reading long sentences, or processing complex questions becomes exhausting or impossible.
 
-* **Dignified & Mature UI**: Zero cartoon clip-art, zero pediatric pastel palettes, and zero nested visual clutter.
-* **Low-Stimulus & High-Contrast**: Dark-neutral theme (`#121212` background, `#1E1E1E` surface) with high-contrast text (`#E0E0E0`) and large, fast touch targets.
-* **Zero-Distraction Communication**: In active communication mode, administrative actions (add, edit, delete, reorder) are hidden.
-* **100% Offline & Private**: Zero accounts, zero tracking SDKs, and zero cloud uploads. All data remains on the device.
+- **Primary Mission (Crisis Navigation for Caregivers & Families)**: Provide parents, siblings, family members, caregivers, therapists, and educators with an immediate two-way receptive triage HUD and low-cognitive-load yes/no inquiry to reach loved ones during meltdowns and shutdowns without escalating distress.
+- **Secondary Purpose (Dignified Voice for Non-Speaking & Unclear Speech)**: Provide non-speaking individuals, those with unclear or dysfluent speech, and anyone navigating verbal fatigue with a clean, mature text-to-speech board and spontaneous quick-speak bar—free of pediatric cartoons, patronizing symbols, and visual clutter.
+- **Dignified & Mature UI**: Zero cartoon clip-art, zero pediatric pastel palettes, and zero nested visual clutter.
+- **Low-Stimulus & High-Contrast**: Dark-neutral theme (`#121212` background, `#1E1E1E` surface) with high-contrast text (`#E0E0E0`), curated sensory palettes, and large, fast touch targets.
+- **Zero-Distraction Communication**: In active communication mode, administrative actions (add, edit, delete, reorder) remain hidden.
+- **100% Offline Core & Privacy-First**: Zero accounts, zero tracking SDKs, and zero cloud uploads. All data remains on the device. Strictly opt-in anonymous interaction telemetry (zero text or speech collected).
 
 ---
 
 ## 2. Technical Guardrails
 
-* **Platform**: iOS 17.0+ (iPhone and iPad).
+* **Platform**: iOS 16.0+ (iPhone and iPad).
 * **Language**: 100% Swift (Swift 5.9+).
 * **UI Framework**: 100% SwiftUI. Never use legacy Storyboards, UIKit xibs, or unnecessary UIViewController wrappers.
 * **Architecture**: Unidirectional data flow / MVVM with `ObservableObject` and reactive state.
@@ -26,6 +28,8 @@ Sotto (meaning *"under one's breath"* / soft voice) is designed specifically for
 * **Persistence**: Native `UserDefaults` with robust Codable serialization.
 * **Project Configuration**: Driven by `project.yml` via `xcodegen generate`. Never manually modify `project.pbxproj`.
 * **Cross-Platform Parity**: Sotto development is led by Android (`../Sotto`) and ported to iOS (`Sotto-iOS`) with 1:1 feature parity.
+* **Code Standards**: Emphasize simple, concise, and secure Swift code with zero regressions. Prioritize readable Swift idioms over unnecessary abstractions, ensure 100% backwards compatibility for saved user phrases, and preserve offline privacy.
+* **Telemetry for New Features**: Every newly added user-facing feature or configurable capability MUST include corresponding privacy-preserving, opt-in telemetry via `UsabilityTracker` (e.g., activation marker, anonymous usage count, or state snapshot) while strictly upholding 100% opt-in, zero-PII guarantees.
 
 ---
 

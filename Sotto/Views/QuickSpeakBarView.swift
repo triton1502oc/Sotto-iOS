@@ -9,6 +9,7 @@ public struct QuickSpeakBarView: View {
     
     @StateObject private var speechRecognizer = SpeechRecognizerService()
     @FocusState private var isFocused: Bool
+    @State private var baseTextBeforeRecording: String = ""
     
     public init(
         text: Binding<String>,
@@ -45,29 +46,66 @@ public struct QuickSpeakBarView: View {
                 .foregroundColor(SottoTheme.textPrimary)
                 .font(.system(size: 15))
                 .focused($isFocused)
-                
-                // Smart Trailing Icon: Clear when text present, Dictation mic when empty
-                if isNotEmpty {
-                    Button(action: {
-                        onClear?()
-                        text = ""
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(SottoTheme.textSecondary)
-                            .font(.system(size: 17))
-                            .padding(.bottom, 2)
-                    }
-                } else {
-                    Button(action: toggleDictation) {
-                        Image(systemName: speechRecognizer.isRecording ? "mic.fill" : "mic")
-                            .foregroundColor(speechRecognizer.isRecording ? SottoTheme.danger : SottoTheme.textPrimary)
-                            .font(.system(size: 17))
-                            .padding(.bottom, 2)
+                .onSubmit {
+                    if speechRecognizer.isRecording {
+                        speechRecognizer.stopRecording()
                     }
                 }
+                
+                // Trailing Controls: Always show active Stop Mic button when recording; show Clear and Mic when idle
+                if speechRecognizer.isRecording {
+                    if isNotEmpty {
+                        Button(action: {
+                            speechRecognizer.stopRecording()
+                            onClear?()
+                            text = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(SottoTheme.textSecondary)
+                                .font(.system(size: 18))
+                                .frame(width: 36, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Clear text and stop listening")
+                    }
+                    
+                    Button(action: toggleDictation) {
+                        Image(systemName: "mic.fill")
+                            .foregroundColor(SottoTheme.danger)
+                            .font(.system(size: 20, weight: .bold))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Stop recording speech")
+                    .accessibilityHint("Turns off microphone listening mode")
+                } else {
+                    if isNotEmpty {
+                        Button(action: {
+                            onClear?()
+                            text = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(SottoTheme.textSecondary)
+                                .font(.system(size: 18))
+                                .frame(width: 36, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Clear text")
+                    }
+                    
+                    Button(action: toggleDictation) {
+                        Image(systemName: "mic")
+                            .foregroundColor(isNotEmpty ? SottoTheme.textSecondary : SottoTheme.textPrimary)
+                            .font(.system(size: 18))
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Start recording speech")
+                    .accessibilityHint("Dictates spoken words into the Quick-Speak bar")
+                }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
             .background(SottoTheme.background)
             .cornerRadius(12)
             .overlay(
@@ -79,35 +117,47 @@ public struct QuickSpeakBarView: View {
             
             // Tier 2: Action Row (Fullscreen, Save as Card, Speak)
             HStack {
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     // Fullscreen Button
                     Button(action: {
                         if isNotEmpty {
+                            if speechRecognizer.isRecording {
+                                speechRecognizer.stopRecording()
+                            }
                             onFullscreen(text)
                         }
                     }) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(isNotEmpty ? SottoTheme.textPrimary : SottoTheme.textDisabled)
-                            .frame(width: 40, height: 38)
+                            .frame(width: 44, height: 44)
                             .background(SottoTheme.background)
                             .cornerRadius(10)
+                            .contentShape(Rectangle())
                     }
                     .disabled(!isNotEmpty)
+                    .accessibilityLabel("Fullscreen view")
+                    .accessibilityHint("Shows text in large high-contrast display")
                     .demoTarget("quickSpeak_fullscreenButton")
                     
                     // Save as Card Button (visible when text is entered)
                     if isNotEmpty, let onSaveAsCard = onSaveAsCard {
                         Button(action: {
+                            if speechRecognizer.isRecording {
+                                speechRecognizer.stopRecording()
+                            }
                             onSaveAsCard(text)
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(SottoTheme.primary)
-                                .frame(width: 40, height: 38)
+                                .frame(width: 44, height: 44)
                                 .background(SottoTheme.background)
                                 .cornerRadius(10)
+                                .contentShape(Rectangle())
                         }
+                        .accessibilityLabel("Save as phrase card")
+                        .accessibilityHint("Adds text to phrase library")
                         .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -117,25 +167,34 @@ public struct QuickSpeakBarView: View {
                 // Speak Button
                 Button(action: {
                     if isNotEmpty {
+                        if speechRecognizer.isRecording {
+                            speechRecognizer.stopRecording()
+                        }
                         onSpeak(text)
                     }
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "speaker.wave.2.fill")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                     }
                     .foregroundColor(isNotEmpty ? SottoTheme.onPrimary : SottoTheme.textDisabled)
-                    .frame(width: 52, height: 38)
+                    .frame(width: 56, height: 44)
                     .background(isNotEmpty ? SottoTheme.primary : SottoTheme.surfaceVariant)
                     .cornerRadius(10)
+                    .contentShape(Rectangle())
                 }
                 .disabled(!isNotEmpty)
+                .accessibilityLabel("Speak aloud")
+                .accessibilityHint("Speaks the entered text using text to speech")
                 .demoTarget("quickSpeak_speakButton")
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 6)
         }
         .background(SottoTheme.surface)
+        .onDisappear {
+            speechRecognizer.stopRecording()
+        }
     }
     
     private func toggleDictation() {
@@ -144,11 +203,13 @@ public struct QuickSpeakBarView: View {
         } else {
             speechRecognizer.requestPermissions { granted in
                 if granted {
+                    baseTextBeforeRecording = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     speechRecognizer.startRecording { recognizedText in
-                        if text.isEmpty {
-                            text = recognizedText
+                        let cleanRecognized = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if baseTextBeforeRecording.isEmpty {
+                            text = cleanRecognized
                         } else {
-                            text = "\(text) \(recognizedText)"
+                            text = "\(baseTextBeforeRecording) \(cleanRecognized)"
                         }
                     }
                 }

@@ -2,6 +2,7 @@ import Foundation
 import Speech
 import AVFoundation
 
+@MainActor
 public final class SpeechRecognizerService: ObservableObject {
     @Published public var isRecording = false
     @Published public var transcribedText = ""
@@ -11,6 +12,9 @@ public final class SpeechRecognizerService: ObservableObject {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private var speechRecognizer: SFSpeechRecognizer?
+    
+    private var silenceTask: Task<Void, Never>?
+    private var initialTimeoutTask: Task<Void, Never>?
     
     public init() {}
     
@@ -45,6 +49,8 @@ public final class SpeechRecognizerService: ObservableObject {
     
     public func startRecording(
         locale: Locale = Locale.current,
+        autoStopDelay: TimeInterval = 1.8,
+        initialTimeout: TimeInterval = 5.0,
         onUpdate: ((String) -> Void)? = nil
     ) {
         // Stop any active task
@@ -63,6 +69,12 @@ public final class SpeechRecognizerService: ObservableObject {
         let recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         self.recognitionRequest = recognitionRequest
         recognitionRequest.shouldReportPartialResults = true
+        recognitionRequest.taskHint = .dictation
+        
+        // Enforce 100% on-device speech recognition when supported to preserve offline privacy
+        if speechRecognizer.supportsOnDeviceRecognition {
+            recognitionRequest.requiresOnDeviceRecognition = true
+        }
         
         do {
             let audioSession = AVAudioSession.sharedInstance()
@@ -81,6 +93,11 @@ public final class SpeechRecognizerService: ObservableObject {
             
             self.isRecording = true
             self.errorMessage = nil
+            self.transcribedText = ""
+            
+            if initialTimeout > 0 {
+                startInitialTimeout(duration: initialTimeout)
+            }
             
             recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
                 guard let self = self else { return }
@@ -90,11 +107,21 @@ public final class SpeechRecognizerService: ObservableObject {
                     DispatchQueue.main.async {
                         self.transcribedText = text
                         onUpdate?(text)
+                        
+                        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            self.initialTimeoutTask?.cancel()
+                            self.initialTimeoutTask = nil
+                            if autoStopDelay > 0 {
+                                self.resetSilenceTimer(delay: autoStopDelay)
+                            }
+                        }
                     }
                 }
                 
                 if error != nil || (result?.isFinal ?? false) {
-                    self.stopRecording()
+                    DispatchQueue.main.async {
+                        self.stopRecording()
+                    }
                 }
             }
         } catch {
@@ -104,9 +131,13 @@ public final class SpeechRecognizerService: ObservableObject {
     }
     
     public func stopRecording() {
-        if audioEngine?.isRunning == true {
-            audioEngine?.stop()
-            audioEngine?.inputNode.removeTap(onBus: 0)
+        cancelSilenceTimers()
+        
+        if let engine = audioEngine {
+            if engine.isRunning {
+                engine.stop()
+            }
+            engine.inputNode.removeTap(onBus: 0)
         }
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
@@ -115,11 +146,44 @@ public final class SpeechRecognizerService: ObservableObject {
         recognitionRequest = nil
         recognitionTask = nil
         
-        DispatchQueue.main.async {
-            self.isRecording = false
-        }
+        self.isRecording = false
         
         // Restore playback audio session
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+    }
+    
+    private func resetSilenceTimer(delay: TimeInterval) {
+        silenceTask?.cancel()
+        guard delay > 0 else { return }
+        silenceTask = Task { [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                guard !Task.isCancelled else { return }
+                self?.stopRecording()
+            } catch {
+                // Cancelled
+            }
+        }
+    }
+    
+    private func startInitialTimeout(duration: TimeInterval) {
+        initialTimeoutTask?.cancel()
+        guard duration > 0 else { return }
+        initialTimeoutTask = Task { [weak self] in
+            do {
+                try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+                guard !Task.isCancelled else { return }
+                self?.stopRecording()
+            } catch {
+                // Cancelled
+            }
+        }
+    }
+    
+    private func cancelSilenceTimers() {
+        silenceTask?.cancel()
+        silenceTask = nil
+        initialTimeoutTask?.cancel()
+        initialTimeoutTask = nil
     }
 }

@@ -208,16 +208,38 @@ public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol 
         return def
     }
     
+    private var logsFileURL: URL? {
+        guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let dir = appSupport.appendingPathComponent("Sotto", isDirectory: true)
+        if !FileManager.default.fileExists(atPath: dir.path) {
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+        return dir.appendingPathComponent("why_logs.json")
+    }
+    
     public func getLogs() -> [WhyLogEntry] {
-        guard let data = userDefaults.data(forKey: Self.keyLogs) else {
-            return []
+        var diskLogs: [WhyLogEntry] = []
+        if let fileURL = logsFileURL,
+           FileManager.default.fileExists(atPath: fileURL.path),
+           let data = try? Data(contentsOf: fileURL),
+           let list = try? JSONDecoder().decode([WhyLogEntry].self, from: data) {
+            diskLogs = list
         }
-        do {
-            let list = try JSONDecoder().decode([WhyLogEntry].self, from: data)
-            return list.sorted(by: { $0.startedAt > $1.startedAt })
-        } catch {
-            return []
+        
+        // Backward compatibility migration from legacy UserDefaults
+        if let data = userDefaults.data(forKey: Self.keyLogs),
+           let legacyList = try? JSONDecoder().decode([WhyLogEntry].self, from: data) {
+            let existingIds = Set(diskLogs.map { $0.id })
+            let newLegacy = legacyList.filter { !existingIds.contains($0.id) }
+            diskLogs.append(contentsOf: newLegacy)
+            diskLogs.sort(by: { $0.startedAt > $1.startedAt })
+            saveLogsInternal(diskLogs)
+            userDefaults.removeObject(forKey: Self.keyLogs)
         }
+        
+        return diskLogs.sorted(by: { $0.startedAt > $1.startedAt })
     }
     
     public func addLog(_ entry: WhyLogEntry) {
@@ -241,13 +263,18 @@ public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol 
     }
     
     public func clearLogs() {
+        if let fileURL = logsFileURL, FileManager.default.fileExists(atPath: fileURL.path) {
+            try? FileManager.default.removeItem(at: fileURL)
+        }
         userDefaults.removeObject(forKey: Self.keyLogs)
     }
     
     private func saveLogsInternal(_ entries: [WhyLogEntry]) {
         do {
             let data = try JSONEncoder().encode(entries)
-            userDefaults.set(data, forKey: Self.keyLogs)
+            if let fileURL = logsFileURL {
+                try data.write(to: fileURL, options: [.atomic, .completeFileProtection])
+            }
         } catch {
             // Ignore encoding errors
         }

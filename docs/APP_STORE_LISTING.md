@@ -14,59 +14,73 @@ Ready-to-use metadata, descriptions, keywords, screenshot specifications, and pr
 * **Secondary Category:** `Productivity`
 * **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)
 
-### Promotional Text *(168 / 170 characters)*
+### Promotional Text *(137 / 170 characters)*
 ```text
-Dignified, one-touch AAC speech communication for autistic teens, adults, and speech-impaired users. Low-stimulus dark theme, emergency hero card, and 100% private.
+Calm yes/no crisis tool for caregivers to reach autistic teens & adults in meltdowns, paired with a dignified, low-stim AAC speech board.
 ```
 
 ### Keywords *(Comma-separated, no spaces after commas, 96 / 100 characters)*
 ```text
-aac,autism,speech,assistive,talk,tts,nonverbal,communication,mute,autistic,emergency,text to speech
+aac,autism,speech,caregiver,meltdown,shutdown,assistive,talk,tts,nonverbal,communication,safety
 ```
 
-### Full Description *(Markdown & Plain Text compliant, ~1,950 / 4,000 characters)*
+### Full Description *(Markdown & Plain Text compliant, ~3,150 / 4,000 characters)*
 ```text
-Sotto (meaning "under one's breath" or a soft voice) is an assistive augmentative and alternative communication (AAC) app designed for autistic teens, adults, speech-impaired individuals, and non-speaking users who need clear, dignified, and low-stimulation text-to-speech support.
+Sotto is a calm yes/no crisis navigation tool for caregivers, parents, and therapists to connect with autistic teens and adults during sensory overload, meltdowns, and verbal shutdowns — paired with a dignified, low-stimulation AAC speech board for daily self-expression and unclear speech support.
 
-Unlike typical AAC tools built with pediatric cartoon symbols and complex administrative menus, Sotto provides a calm, mature, and predictable environment built specifically for everyday communication.
+Created by a father of two autistic sons (ages 22 and 15), Sotto is built around a simple reality: during a meltdown or verbal shutdown, processing complex questions or speaking is exhausting. Sotto bridges this divide with gentle binary choices, speech clarity support, and zero open-ended demands.
 
-KEY FEATURES:
+FOR CAREGIVERS, FAMILIES & THERAPISTS:
 
-• Modern Low-Stimulus UI
-Dark-neutral aesthetic (#121212 background, #1E1E1E surface) with high-contrast text and zero unnecessary visual clutter or distracting animations.
+• Two-Way Speak HUD & 180° Tabletop Flip (Immediate Emergency Triage)
+During acute sensory overload or verbal shutdowns, processing complex questions or branching trees worsens distress. Caregivers can speak naturally or pick an urgent prompt, flip the iPad or iPhone 180° face-to-face on a table, and let their loved one tap giant, dignified response targets (Yes, No, Not sure, Stop) with instant voice confirmation. Zero cognitive load.
 
-• Zero-Distraction Communication Mode
-In normal mode, all editing and administrative buttons are completely hidden. Tap any phrase card to speak immediately using iOS's offline text-to-speech engine.
+• Why Finder (Guided Root-Cause Discovery Tree)
+When the source of distress is unknown, Why Finder provides a gentle, step-by-step yes/no branching tree to systematically uncover hidden physical pain (with body part & intensity locator), sensory overload, emotional fatigue, or routine disruption without open-ended interrogation.
 
-• Emergency Bystander Mode
-A dedicated hero card for verbal shutdowns and non-verbal episodes. Long-press or tap fullscreen to display a high-contrast amber banner explaining non-verbal episodes clearly to bystanders, doctors, or first responders.
+• Private On-Device Why Log & Pattern Trends
+Resolved crisis sessions are automatically logged 100% locally on your device. Review 30-day patterns to identify frequent environmental triggers, recurring peak hours, and actionable interventions. Never shared or uploaded to the cloud.
 
-• Two-Way Caregiver Receptive Mode
-A dedicated receptive interface accessible via the ear icon (👂) allowing caregivers and medical partners to speak or present questions to non-speaking users. Features 180° face-to-face screen flip, read aloud audio for questions, preset question prompts (Care, Needs, Social, Emergency), and a dignified 4-button rapid response dock (Yes, No, Repeat, Wait) with instant voice and haptics.
+• Customizable Why Tree & Safe Sharing
+Adapt questions and areas to your loved one's specific triggers using voice dictation and reordering. Easily export and share customized trees with teachers or speech therapists while keeping private crisis logs strictly excluded.
 
-• Multi-Line Quick-Speak Bar
-Speak spontaneous thoughts without altering your phrase board. Features an expandable multi-line text input (1 to 4 lines), one-tap phrase saving to card (+), voice dictation (🎤), and instant fullscreen display.
+FOR NON-SPEAKING & UNCLEAR VOICES (DIGNIFIED SELF-EXPRESSION):
 
-• Contextual Categories
-Organize and filter phrases by situation (Emergency, Needs, Social, Care, General) with clean, subtle filter chips.
+• Mature, Dignified Voice for Unclear or Fatigued Speech
+Whether completely non-verbal, navigating an autistic shutdown, or speaking with quiet, slurred, or dysarthric speech that listeners struggle to understand, Sotto provides a crisp, adult text-to-speech voice and high-contrast cards—free of childish cartoons and patronizing symbols.
 
-• High-Visibility Fullscreen Mode
-In noisy, crowded, or overwhelming environments, view any phrase in giant, high-contrast text across your entire screen to silently communicate with others.
+• Safety & Bystander Hero Card
+A prominent high-contrast banner for non-verbal episodes, local contacts, or medical personnel. Show fullscreen directly to bystanders or first responders with digit-by-digit emergency phone number TTS read aloud.
+
+• Sensory-Minded Color Themes
+Curated sensory-friendly color palettes designed to accommodate neurodivergent needs, photophobia, and astigmatism halation while upholding WCAG 2.1 AAA contrast: Charcoal (default low-stimulus dark neutral), OLED Pure Black, Warm Amber / Low Strain, Slate Navy, and Soft Parchment.
+
+• Universal iPad & iPhone Support
+Adaptive responsive grid layouts designed for both iPhone and iPad in all orientations (Portrait, Landscape, Upside-Down), with multi-column support and zero layout shifts.
+
+• Quick-Speak Bar & Voice Dictation
+Type spontaneous thoughts with auto-expanding multi-line text (1 to 4 lines), one-tap speech, voice dictation, and one-touch card creation.
+
+• High-Visibility Giant Fullscreen
+Display any phrase across the entire display in giant text to silently communicate in loud or crowded environments.
+
+• Contextual Categories & Custom Boards
+Filter phrases by situation (Safety, Needs, Social, Care, General) or create custom categories with fine-motor single-step reordering.
 
 • Attention Chime & Haptics
 Optionally sound a gentle, two-tone chime (D5 -> A5) and vibration before speaking to politely capture listener attention in noisy spaces.
 
-• Configurable Voice & Speed
-Fine-tune your speech output to your comfort. Adjust speech rate and pitch with a live voice preview. Always accessible via the settings gear icon (⚙️).
+• Natural Speech Engine
+Intelligently prioritizes natural flagship voices (such as Apple's Samantha, Siri, Ava, and Damayanti) while filtering out novelty robotic sound effects. Adjust speech rate and pitch with live voice preview.
+
+• Instant Offline QR Code Deck Sharing
+Exchange entire communication decks between caregivers, therapists, and users completely offline without internet or cloud accounts using high-density QR codes and camera scanning across iOS and Android.
 
 • Dual-Language Speech & On-Device Auto-Translate
-Display cards in one language while speaking in another (e.g., English card text read aloud in Indonesian). Includes on-device auto-translation with zero cloud text transmission and dual-language speak controls in fullscreen view.
+Display cards in one language while speaking in another (e.g., English text read aloud in Indonesian) using 100% offline on-device translation.
 
-• Fully Customizable
-Toggle "Edit List" when you want to add new phrases, edit existing text, delete phrases, or assign categories.
-
-• 100% Offline & Private
-Zero accounts. Zero tracking. Zero cloud uploads. Your phrases and settings stay entirely on your local device.
+• 100% Offline Core & Privacy Guarantee
+Zero accounts. Zero ads. Zero cloud speech recording. Your phrases, custom trees, and private logs never leave your phone. Optional, strictly opt-in anonymous usability timing to help diagnose accessibility friction (zero text or speech collected).
 ```
 
 ### URLs
@@ -82,7 +96,7 @@ Zero accounts. Zero tracking. Zero cloud uploads. Your phrases and settings stay
 |---|---|---|
 | **iPhone 6.9" / 6.7"** (iPhone 16 Pro Max, 15 Pro Max, 14 Pro Max) | 1320 x 2868 px or 1290 x 2796 px | Required |
 | **iPhone 6.5"** (iPhone 11 Pro Max, XS Max) | 1242 x 2688 px | Required (if supporting older aspect ratios) |
-| **iPad Pro 13" / 12.9"** | 2064 x 2752 px or 2048 x 2732 px | Required if iPad supported |
+| **iPad Pro 13" / 12.9"** | 2064 x 2752 px or 2048 x 2732 px | Required for iPad universal support |
 | **App Icon** | 1024 x 1024 px (PNG, no transparency) | Included in Assets.xcassets |
 
 ---
@@ -102,7 +116,8 @@ When completing the **App Privacy** section in App Store Connect:
 When submitting for App Review, provide this note for the reviewer:
 ```text
 Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
-- Speech-to-text (Microphone & Speech Recognition) is used solely when the user taps the microphone button in the Quick-Speak bar or Phrase Editor to dictate a custom phrase.
+- Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
 - Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
-- No login or account is required. All data is stored locally in UserDefaults.
+- No login or account is required. All data is stored locally on the device in UserDefaults.
+- Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
 ```

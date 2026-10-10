@@ -64,14 +64,14 @@ public struct FullscreenPhraseModal: View {
                 ZStack {
                     if isEmergency {
                         HStack(spacing: 6) {
-                            Text("🚨")
-                            Text("Emergency")
+                            Text("🛡️")
+                            Text(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: voiceSettings.appLanguage))
                                 .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(SottoTheme.emergencyBadgeText)
+                                .foregroundColor(SottoTheme.safetyBadgeText)
                         }
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
-                        .background(SottoTheme.emergencyBadgeBg)
+                        .background(SottoTheme.safetyBadgeBg)
                         .cornerRadius(8)
                     }
                     

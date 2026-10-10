@@ -4,6 +4,7 @@ public struct PhraseCardView: View {
     public let phrase: Phrase
     public let isEditMode: Bool
     public let showAlternateSpeech: Bool
+    public let appLanguage: String
     public let onTap: () -> Void
     public let onLongPress: () -> Void
     
@@ -11,12 +12,14 @@ public struct PhraseCardView: View {
         phrase: Phrase,
         isEditMode: Bool,
         showAlternateSpeech: Bool = false,
+        appLanguage: String = "system",
         onTap: @escaping () -> Void,
         onLongPress: @escaping () -> Void
     ) {
         self.phrase = phrase
         self.isEditMode = isEditMode
         self.showAlternateSpeech = showAlternateSpeech
+        self.appLanguage = appLanguage
         self.onTap = onTap
         self.onLongPress = onLongPress
     }
@@ -28,6 +31,25 @@ public struct PhraseCardView: View {
         return !spoken.isEmpty
     }
     
+    private var accessibilityLabelText: String {
+        let typePrefix = phrase.isEmergency ? "Safety phrase, \(phrase.category.displayName)" : "\(phrase.category.displayName) phrase"
+        let unconfiguredHint = phrase.isUnconfiguredEmergency ? " (\(LocaleHelper.getSafetySetupHint(appLanguage: appLanguage)))" : ""
+        if hasSpokenText, let spoken = phrase.spokenText {
+            return "\(typePrefix): \(phrase.text)\(unconfiguredHint). Alternate speech: \(spoken)"
+        }
+        return "\(typePrefix): \(phrase.text)\(unconfiguredHint)"
+    }
+    
+    private var accessibilityHintText: String {
+        if isEditMode {
+            return "Double tap to edit card."
+        }
+        if phrase.isUnconfiguredEmergency {
+            return "Double tap to configure emergency contact card. Double tap and hold to show fullscreen."
+        }
+        return "Double tap to speak aloud. Double tap and hold to show fullscreen."
+    }
+    
     public var body: some View {
         Button(action: onTap) {
             if phrase.isEmergency {
@@ -36,7 +58,16 @@ public struct PhraseCardView: View {
                 regularCardContent
             }
         }
-        .buttonStyle(CardButtonStyle())
+        .buttonStyle(SottoCardButtonStyle())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabelText)
+        .accessibilityHint(accessibilityHintText)
+        .accessibilityAction(named: phrase.isUnconfiguredEmergency ? "Configure Emergency Contact" : "Speak Aloud") {
+            onTap()
+        }
+        .accessibilityAction(named: "Show Fullscreen") {
+            onLongPress()
+        }
         .simultaneousGesture(
             LongPressGesture(minimumDuration: 0.5)
                 .onEnded { _ in
@@ -57,9 +88,9 @@ public struct PhraseCardView: View {
             // Safety Badge
             HStack(spacing: 4) {
                 Text("🛡️")
-                    .font(.system(size: 13))
-                Text(LocaleHelper.getCategoryDisplayName("EMERGENCY"))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.subheadline)
+                Text(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: appLanguage))
+                    .font(.subheadline.weight(.semibold))
                     .foregroundColor(SottoTheme.safetyBadgeText)
             }
             .padding(.horizontal, 10)
@@ -69,18 +100,34 @@ public struct PhraseCardView: View {
             
             // Safety Phrase Text
             Text(phrase.text)
-                .font(.system(size: 17, weight: .medium))
+                .font(.title3.weight(.medium))
                 .foregroundColor(SottoTheme.safetyText)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
+                .minimumScaleFactor(0.7)
                 .padding(.horizontal, 12)
+            
+            // In-grid gentle hint for unconfigured safety card
+            if phrase.isUnconfiguredEmergency {
+                HStack(spacing: 5) {
+                    Image(systemName: "pencil.circle")
+                        .font(.system(size: 13))
+                    Text(LocaleHelper.getSafetySetupHint(appLanguage: appLanguage))
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(SottoTheme.safetyBadgeText)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(SottoTheme.safetyBadgeBg.opacity(0.85))
+                .cornerRadius(6)
+            }
             
             if hasSpokenText, let spoken = phrase.spokenText {
                 HStack(spacing: 4) {
                     Text("🗣️")
-                        .font(.system(size: 12))
+                        .font(.caption)
                     Text(spoken)
-                        .font(.system(size: 13))
+                        .font(.subheadline)
                         .foregroundColor(Color(hex: 0xFFFFCC80).opacity(0.8))
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -104,10 +151,11 @@ public struct PhraseCardView: View {
         VStack {
             Spacer()
             Text(phrase.text)
-                .font(.system(size: 16, weight: .medium))
+                .font(.body.weight(.medium))
                 .foregroundColor(SottoTheme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(hasSpokenText ? 3 : 4)
+                .minimumScaleFactor(0.75)
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
             
@@ -115,9 +163,9 @@ public struct PhraseCardView: View {
                 Spacer().frame(height: 4)
                 HStack(spacing: 4) {
                     Text("🗣️")
-                        .font(.system(size: 11))
+                        .font(.caption2)
                     Text(spoken)
-                        .font(.system(size: 12))
+                        .font(.caption)
                         .foregroundColor(SottoTheme.textSecondary.opacity(0.7))
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -130,14 +178,5 @@ public struct PhraseCardView: View {
         .aspectRatio(1.0, contentMode: .fit)
         .background(isEditMode ? SottoTheme.surfaceVariant : SottoTheme.surface)
         .cornerRadius(16)
-    }
-}
-
-private struct CardButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
-            .opacity(configuration.isPressed ? 0.85 : 1.0)
-            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }

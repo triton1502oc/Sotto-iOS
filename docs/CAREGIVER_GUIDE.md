@@ -1,42 +1,143 @@
 # Sotto User & Caregiver Guide
 
 ### TL;DR
-Sotto serves a dual purpose: an intuitive, low-stimulus AAC tool for non-speaking individuals, and a dignity-first **Two-Way Receptive HUD** (`👂`) for caregivers, medical staff, and family members to ask questions, read text aloud, and flip the screen 180° for effortless face-to-face communication.
+Sotto serves a vital dual mission: a calm, low-cognitive-load **Partner Mode** (`🤝`)—combining an immediate two-way receptive emergency triage HUD and guided **Why Finder** root-cause investigation—for communication partners, caregivers, therapists, and family members, paired with a dignity-first AAC speech board for autistic individuals, non-speaking users, and anyone with unclear or fatigued speech.
 
 ---
 
 ## 1. Quick Overview
 
-Sotto (*"under one's breath"*) is designed for sensory-sensitive communication:
+Sotto (*"under one's breath"*) was created by a father navigating overwhelming communication breakdowns and meltdowns with his two autistic sons (ages 22 and 15). When sensory overload strikes, speaking, reading long sentences, or processing complex questions becomes exhausting or impossible.
+
+Sotto is designed around a simple reality:
 - **Zero cartoon clutter**: Clean dark-neutral palette tailored for teens and adults.
-- **Zero distraction**: Admin buttons remain hidden during communication.
-- **100% Offline & Private**: Audio and phrases never leave your local device.
+- **Zero open-ended pressure**: When in meltdown or verbal shutdown, processing complex questions is overwhelming. Sotto reduces communication to large binary choices.
+- **Support for Unclear Speech**: Offers an instant, clear voice for individuals whose natural speech is slurred, dysarthric, or exhausted under stress.
+- **100% Offline & Private**: Audio, phrases, and crisis logs never leave your local device.
 
 ```
-                    ┌────────────────────────┐
-                    │ SOTTO APP MODES        │
-                    ├────────────────────────┤
-                    │                        │
-  ┌─────────────────┴───────────────┐        │
-  ▼                                 ▼        ▼
-[Self-Advocacy Mode]   [Two-Way Receptive Mode]   [Settings & Customization]
-• 1-Tap Phrase Cards   • Caregiver Speech-to-Text • Voice Speed & Pitch
-• Emergency Hero Card  • Preset Question Picker   • Attention Alert Chime
-• Quick-Speak Bar      • 180° Face-to-Face Flip   • Offline Translation
-• Giant Fullscreen     • 4 Dignified Quick Replies• Custom Phrase Editor
+                      ┌────────────────────────────────────────┐
+                      │              SOTTO APP                 │
+                      ├────────────────────────────────────────┤
+                      │                                        │
+        ┌─────────────┴─────────────┐            ┌─────────────┴─────────────┐
+        ▼                           ▼            ▼                           ▼
+ 🤝 PARTNER MODE (Caregiver Hub)          🗣️ SELF-ADVOCACY (Daily AAC)
+ ├── Talk Tab: Emergency Triage HUD & Mic ├── Instant 1-Tap Phrase Cards
+ ├── 180° Face-to-Face Screen Flip        ├── Safety Bystander Hero Card
+ ├── 4-Card Tactile Response Docks        ├── Quick-Speak Bar & Dictation
+ └── Guided Tab: Root-Cause Decision Tree └── Giant High-Contrast Fullscreen
 ```
 
 ---
 
-## 2. Daily User Guide (Self-Advocacy Mode)
+## 2. Partner Mode: Immediate Emergency Triage (`🤝`)
+
+When sensory overload, verbal shutdowns, cognitive freezes, or acute panic occur, processing multi-step questions causes **demand fatigue** and worsens distress. **Two-Way Partner Mode (Talk tab)** is Sotto's primary front-line tool for immediate crisis triage and de-escalation.
+
+```
+Caregiver asks 1 direct question ──► Giant text on screen ──► Individual taps 1 of 4 replies
+(Voice Dictation or Preset Card)      (Can be flipped 180°)     (Large 1-Tap Tactile Dock)
+```
+
+> [!IMPORTANT]
+> **Clinical Rule of Thumb: Talk vs. Guided**
+> - **During Peak Meltdown or Acute Crisis**: Use **Talk (`💬`)**. Ask one direct question (*"Do you want to leave?"*, *"Is it too loud?"*). Do not make an overwhelmed person navigate a multi-level tree.
+> - **When Trigger is Unknown or After Calming Down**: Use **Guided (`🧭`)**. Methodically investigate physical pain, body regions, sensory triggers, or routine changes.
+
+### How to Use Talk Mode During an Emergency Step-by-Step
+
+1. **Open Partner Mode**: Tap the handshake icon (`🤝`) in the top app bar.
+2. **Present One Urgent Question**:
+   - **Speak Naturally (`🎤 Mic`)**: Tap the mic button. Sotto transcribes your voice in real time into giant high-contrast text. Tap again to stop.
+   - **Preset Check-in Cards (`📋 Cards`)**: Tap Cards to pick instant comfort and triage checks filtered by categories (*"Are you in pain?"*, *"Do you need water?"*, *"I need a quiet space."*).
+   - **Type Manually (`⌨️ Type`)**: Type directly if ambient noise is too loud for speech recognition.
+3. **Vocalize with Read Aloud (`🔊 Speak`)**:
+   - If the individual has their eyes closed or head down, tap **`🔊 Speak`** to vocalize the prompt through the phone's speaker.
+4. **Face-to-Face 180° Flip (`🔄 Flip`)**:
+   - Rest the phone on a table or between you and tap **`🔄 Flip`**.
+   - The question text and the 4 response buttons flip upside down (facing the person across from you right-side up), while the caregiver controls remain facing you at the bottom.
+5. **Dignified 4-Button Rapid Response**:
+   - The individual taps one large, high-contrast button:
+     - `✓ Yes` • `✕ No` • `? Not Sure` • `⏹ Stop`
+   - Instant offline TTS voice confirmation plays aloud, haptic feedback pulses on the phone, and a visual confirmation badge appears.
+
+---
+
+## 3. Why Finder: Guided Root-Cause Discovery Tree (`🧭`)
+
+When the immediate crisis is stabilized—or when an individual is showing signs of distress but the underlying cause is unknown (e.g. subtle physical discomfort, clothing texture, or routine friction)—switch to **Guided Mode (`🧭`)**.
+
+**Why Finder** provides a structured, gentle yes/no decision tree designed to uncover root causes without open-ended interrogation.
+
+### How to Use Guided Mode Step-by-Step
+
+1. **Switch to Guided**: Tap the **Guided** (`🧭`) tab in the bottom bar of Partner Mode.
+2. **Present One Question at a Time**:
+   - The screen displays a single, low-stimulus question in giant text:
+     `[✓ YES]` / `[✕ NO]` / `[? NOT SURE]` / `[⏹ STOP]`
+   - The individual can tap, point, or nod for the caregiver to tap.
+3. **Core Investigation Branches**:
+   - **Physical / Body**: Checks for acute pain, nausea, hunger, dehydration, restroom need, sensory discomfort from temperature, or medication timing. Includes visual **Body Part Selection** and **1–5 Pain Intensity Scale**.
+   - **Sensory Overload**: Checks for loud noises, bright lighting, crowds/proximity, visual chaos, irritating clothing/textures, or overwhelming smells.
+   - **Emotional / Social Overwhelm**: Checks for demand fatigue, anger, sadness, anxiety, or the urgent need for solitary space.
+   - **Routine & Task Friction**: Checks for unexpected schedule changes, transition shock, confusion over instructions, or physical fatigue.
+4. **Resolution & Immediate Action Plan**:
+   - Once a root cause is confirmed, Why Finder displays clear, concrete action steps (e.g., *"Offer quiet solitary space and dim lighting"*, *"Check temperature and offer cold water"*, *"Pause current task and remove pressure"*).
+   - Tap **`🔊 Speak`** to vocalize the soothing resolution so the individual knows they have been heard and understood.
+5. **Automatic On-Device Logging**:
+   - Every resolved session is automatically logged to your private Why Log to help identify recurring patterns over time.
+   - If the individual needs to exit at any time, tap **`⏹ Stop`** or **`✕`** — there is zero penalty or pressure.
+
+---
+
+## 4. Private Why Log & 30-Day Trend Insights (`📋`)
+
+Meltdowns rarely happen without environmental triggers. The **Private Why Log** helps families and therapists understand patterns without relying on memory during stressful moments.
+
+### Viewing Logs & Trends
+- Tap **`📋 View Why Log`** inside Voice & Language Settings.
+- **30-Day Pattern Insights**:
+  - **Category Breakdown**: See percentage shares across Sensory, Physical, Emotional, and Routine triggers.
+  - **Top Specific Triggers**: Identify the most frequent culprits (e.g. *"Loud noise or crowded space"*).
+  - **Peak Hours of Crisis**: View time-of-day clusters to help preemptively adjust transitions and sensory environments.
+- **Historical Log List**: View past events with relative time (*"2 hours ago"*, *"Yesterday"*), confirmed trigger area, specific cause, and recommended resolution.
+
+### Privacy & Safe Sharing
+- **100% Local Storage**: Why Log records are stored strictly in private, sandboxed app storage. They are never sent over the internet.
+- **Selective Backup**: When exporting a backup in **Voice & Language Settings**, the Why Log is **excluded by default** with an explicit privacy warning. You choose whether to include it or keep it local.
+
+---
+
+## 5. Customizing the Crisis Tree (`🌳`)
+
+Every autistic individual has a unique sensory profile, communication style, and set of comfort measures.
+
+### Using the Why Tree Editor
+1. Tap **`🌳 Edit Tree`** from Voice & Language Settings.
+2. **Customize Branching Questions**:
+   - Tap any area (Physical, Sensory, Emotional, Routine) to view and edit its questions.
+   - Tap **`+ Add Question`** to add personalized triggers (e.g., *"Is the dog barking bothering you?"*, *"Are your socks uncomfortable?"*).
+   - Use voice dictation (`🎤`) to dictate questions hands-free, and use single-step ▲/▼ buttons to reorder questions.
+   - Edit the specific root cause and action advice shown when resolved.
+3. **Reset to Defaults**:
+   - Select **`Reset to Defaults`** anytime to restore the default research-backed crisis tree without losing your phrase cards.
+
+---
+
+## 6. Daily Self-Advocacy AAC Guide
+
+For autistic teens and adults, as well as individuals with unclear, slurred, or fatigued speech expressing their own thoughts during non-crisis moments:
 
 ### A. Speaking with Cards
-- **Instant Speech**: Tap any phrase card once. Sotto vocalizes the text using your device's native offline Text-to-Speech (TTS) engine (`AVSpeechSynthesizer`).
-- **Category Filter**: Use the top chips (`All`, `Emergency`, `Needs`, `Social`, `Care`, `General`) to filter phrases for your current situation.
+- **Instant Speech**: Tap any phrase card once. Sotto vocalizes the text using your device's native offline Text-to-Speech (TTS) engine (`AVSpeechSynthesizer`)—eliminating listener misunderstandings and vocal fatigue.
+- **Category Filter**: Use the top chips (`All`, `🛡️ Safety`, `Needs`, `Social`, `Care`, `General`, or custom categories) to filter phrases for your current situation.
 
-### B. Emergency & Non-Verbal Shutdowns
-- **Hero Card**: The top amber/gold emergency card explains your condition directly to bystanders.
-- **Fullscreen Mode**: Long-press any card (or tap the fullscreen icon `⛶` on the Quick-Speak bar) to fill the entire screen with giant, high-contrast text. Show your screen silently to bystanders or first responders.
+### B. Safety Bystander Mode & Setup Wizard
+- **Hero Card**: The prominent amber/gold safety card displays your local area and emergency contact directly to bystanders or first responders. Can be toggled on/off the Home screen in Voice & Language Settings (`Show Safety Cards on Home`).
+- **Guided Setup Wizard**: On initial launch or configuration, a guided wizard prompts for caregiver contact and locality orientation with helpful examples (e.g. `+1 (555) 019-2834` / `0812-3456-7890`), preventing sensitive home addresses from being accidentally displayed.
+- **Natural Digit-by-Digit Phone Speech**: Phone numbers are automatically formatted (`formatDigitsForSpeech`) so the TTS engine reads them aloud digit-by-digit (e.g. "0 8 1 2 ...") rather than as an unintelligible multi-billion integer.
+- **Fullscreen Mode**: Long-press any card (or tap fullscreen on the Quick-Speak bar) to fill the entire screen with giant, high-contrast text. Show your screen silently to bystanders or medical personnel.
 
 ### C. Quick-Speak Input Bar
 - **Type Spontaneously**: Tap the bottom input bar to type any phrase. Sentences automatically expand up to 4 lines for easy editing.
@@ -46,79 +147,38 @@ Sotto (*"under one's breath"*) is designed for sensory-sensitive communication:
 
 ---
 
-## 3. Caregiver & Two-Way Receptive Guide (`👂`)
+## 7. Customizing Phrases, Sharing & Settings
 
-When verbal shutdowns, auditory processing delay, cognitive fatigue, or motor apraxia make two-way conversation difficult, use **Two-Way Receptive Mode**.
-
-```
-Caregiver asks question ──► Screen displays giant text ──► User taps 1 of 4 replies
-(Speech, Preset, or Type)     (Can be flipped 180°)        (Yes / No / Repeat / Wait)
-```
-
-### Step 1: Open Two-Way Mode
-Tap the ear icon (`👂`) in the top app bar next to the settings gear.
-
-### Step 2: Present a Question to the User
-You have three simple ways to formulate your question:
-1. **Speak Naturally (`🎤 Listen & Read`)**: Tap the mic button. Sotto transcribes your voice in real time onto the screen in giant high-contrast text. Tap the mic again to stop.
-2. **Choose Preset Prompts (`📋 Questions`)**: Tap the Questions button to browse categorized prompts:
-   - **`Care`**: Basic medical & comfort checks (*"Are you in pain?"*, *"Do you need water or food?"*, *"Do you need the restroom?"*).
-   - **`Needs`**: Environmental adjustments (*"I need a quiet space."*, *"Please give me time."*).
-   - **`Social`**: Courtesy & social boundaries.
-   - **`Emergency`**: Urgent safety prompts.
-3. **Type Manually (`⌨️`)**: Tap the keyboard icon to type a custom question if ambient noise is too loud for speech recognition.
-
-### Step 3: Vocalize with Read Aloud (`🔊 Read Aloud`)
-If the user has visual fatigue, reading difficulty, or is resting with eyes closed, tap **`🔊 Read Aloud`** to speak the displayed question through your phone's speaker.
-
-### Step 4: Face-to-Face 180° Flip (`🔄 Flip`)
-When sitting across from someone (at a table, bedside, or desk):
-1. Tap **`🔄 Flip`**.
-2. Rest the phone on the table between you.
-3. **What happens**:
-   - The question text and the 4 response buttons flip upside down (facing the person across from you right-side up).
-   - The caregiver toolbar (`🔄 Flip`, `📋 Questions`, `🎤`, `🔊`, `⌨️`, `✕`) stays upright facing you at the bottom.
-
-### Step 5: Dignified 4-Button Rapid Response
-The person across the table simply taps one of four large, high-contrast buttons:
-
-| Button | Nuance & Purpose | Spoken Audio (TTS) |
-| :--- | :--- | :--- |
-| **`✓ Yes`** | Affirmative response | *"Yes"* |
-| **`✕ No`** | Negative response | *"No"* |
-| **`🔁 Repeat`** | Caregiver spoke too quickly or unclearly | *"Please repeat that."* |
-| **`⏳ Wait`** | User is processing, thinking, or needs a moment | *"Please give me a moment."* |
-
-When tapped:
-- The app immediately vocalizes the answer through TTS.
-- A visual confirmation badge (`Replied: Yes`) appears for 3 seconds.
-- The caregiver's phone vibrates briefly with haptic confirmation.
-
-### Step 6: Exiting Caregiver Mode
-Tap **`✕`** in the top right (or bottom right in flipped mode) to dismiss the dialog and return to the main phrase board.
-
----
-
-## 4. Customizing Phrases & Settings
-
-### Managing Cards (`[✏️ Edit List]`)
-1. Tap **`[✏️ Edit List]`** in the top right.
+### Managing Cards (`[✏️ Edit]`)
+1. Tap **`[✏️ Edit]`** in the top right.
 2. The button transforms to **`[✓ Done]`** and a floating **`+`** button appears:
    - **Add a Card**: Tap the **`+`** button at the bottom right. Enter card text, category, and optional alternative spoken text.
-   - **Edit a Card**: Tap any existing card to change its text, category, or toggle emergency status.
+   - **Edit a Card**: Tap any existing card to change its text, category, or toggle safety status.
    - **Delete a Card**: Inside the edit dialog, tap the red **Delete** button.
 3. Tap **`[✓ Done]`** when finished.
 
+### Instant QR Code Deck Sharing (`📷` / `⬛`)
+Exchange communication decks between caregivers, therapists, and users completely offline without internet, cloud logins, or AirDrop:
+- **Export to QR Code**: Inside Backup & Restore settings, tap **Export Deck as QR Code**. Sotto encodes phrases into high-density Base64 (`SOTTO:v1:...`) and renders an instant QR code.
+- **Scan QR Code**: Tap **Scan QR Code** to launch the camera scanner and instantly import phrase decks from another iPhone, iPad, or Android device.
+
 ### Voice & App Settings (`⚙️`)
-Tap the permanently visible gear icon (`⚙️`) in the top app bar to adjust:
+Tap the gear icon (`⚙️`) in the top app bar to adjust:
+- **Dignified Natural Voices**: Sotto automatically prioritizes natural human voices (such as Apple's **Samantha**, **Siri**, **Ava**, and **Damayanti**) while filtering out novelty and toy sound effects.
+  > [!TIP]
+  > **How to Download Apple's Free Neural Voices**: iOS initially installs compact voices. To unlock Apple's natural Enhanced/Premium neural voices, open **iPad/iPhone Settings > Accessibility > Spoken Content > Voices**, tap **English** (or **Indonesian**), select **Samantha** (or **Siri** / **Ava**), and tap the cloud download icon (☁️). Sotto will automatically detect and speak with the downloaded high-definition voice!
 - **Speech Speed & Pitch**: Slow down speech for clarity or raise/lower voice pitch.
 - **Attention Alert Chime**: Play a polite alert chime before speaking to capture listener attention in noisy spaces.
-- **Dual-Language & On-Device Translation**: Display cards in English while speaking in Indonesian (or vice versa), powered by 100% offline Apple Translation framework and built-in dictionary.
+- **Sensory Themes**: Choose from 5 sensory-friendly color palettes (**Charcoal**, **OLED Pure Black**, **Warm Amber / Low Strain**, **Slate Navy**, and **Soft Parchment**) designed for photophobia, astigmatism halation, and calming focus.
+- **Dual-Language & On-Device Translation**: Display cards in English while speaking in Indonesian (or vice versa), powered by 100% offline Apple Translation framework.
+- **Backup & Restore**: Export or import your phrase library, customized Why tree, and optional Why log (`Backup v2`).
+- **Anonymous Usability Telemetry**: Review or toggle strictly opt-in anonymous interaction telemetry (zero text or speech collected). Preview the payload anytime.
 
 ---
 
-## 5. Offline Privacy & Security Guarantee
+## 8. Offline Privacy & Security Guarantee
 
-- **No Cloud Uploads**: Speech recognition and speech synthesis use native iOS APIs.
-- **No Audio Recording**: Audio data is processed in real-time memory and immediately discarded.
-- **No Accounts or Telemetry**: Zero analytics, tracking, or telemetry SDKs exist in Sotto.
+- **No Cloud Accounts**: Zero registration, accounts, or passwords.
+- **No Cloud Audio Recording**: Audio data is processed strictly in real-time memory and immediately discarded.
+- **Private Local Storage**: Phrases, Why trees, and crisis logs reside in sandboxed local storage on your device.
+- **Zero Third-Party Trackers**: Sotto contains no commercial analytics or advertising frameworks.

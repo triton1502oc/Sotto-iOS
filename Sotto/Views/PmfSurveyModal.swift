@@ -28,11 +28,11 @@ public struct PmfSurveyModal: View {
     ]
     
     private let q2Options: [(key: String, label: String)] = [
-        ("why_finder", "Why Finder (narrowing causes)"),
-        ("caregiver_mode", "Caregiver Mode (receptive listener)"),
-        ("phrase_cards", "Phrase Cards"),
-        ("emergency_card", "Emergency Alert Card"),
-        ("quick_speak", "Quick Speak bar")
+        ("why_finder", "Why Finder (crisis narrowing)"),
+        ("caregiver_mode", "Partner Mode (receptive yes/no)"),
+        ("phrase_cards", "Phrase cards & custom categories"),
+        ("emergency_card", "Safety cards & chime"),
+        ("quick_speak", "Quick-speak typing")
     ]
     
     private let q3Options: [(key: String, label: String)] = [

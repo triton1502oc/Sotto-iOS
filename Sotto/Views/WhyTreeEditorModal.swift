@@ -13,8 +13,7 @@ public struct WhyTreeEditorModal: View {
     @State private var showAddQuestion: Bool = false
     @State private var newQuestionText: String = ""
     @State private var newQuestionType: WhyQuestionType = .plain
-    @State private var speechService = SpeechRecognizerService()
-    @State private var isDictating: Bool = false
+    @StateObject private var speechService = SpeechRecognizerService()
     
     public init(
         repository: WhyFinderRepositoryProtocol = UserDefaultsWhyFinderRepository.shared,
@@ -359,35 +358,61 @@ public struct WhyTreeEditorModal: View {
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(SottoTheme.textSecondary)
                     
-                    HStack {
+                    HStack(spacing: 8) {
                         TextField("Enter question...", text: textBinding)
                             .font(.system(size: 16))
                             .foregroundColor(SottoTheme.textPrimary)
                             .padding(12)
                             .background(SottoTheme.background)
                             .cornerRadius(10)
+                            .onSubmit {
+                                if speechService.isRecording {
+                                    speechService.stopRecording()
+                                }
+                            }
+                        
+                        if !textBinding.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                            Button(action: {
+                                speechService.stopRecording()
+                                textBinding.wrappedValue = ""
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 18))
+                                    .foregroundColor(SottoTheme.textSecondary)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .accessibilityLabel("Clear question text")
+                        }
                         
                         Button(action: {
-                            if isDictating {
+                            if speechService.isRecording {
                                 speechService.stopRecording()
-                                isDictating = false
                             } else {
-                                speechService.startRecording()
-                                isDictating = true
+                                speechService.requestPermissions { granted in
+                                    if granted {
+                                        let baseText = textBinding.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                                        speechService.startRecording { recognizedText in
+                                            let clean = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                            if baseText.isEmpty {
+                                                textBinding.wrappedValue = clean
+                                            } else {
+                                                textBinding.wrappedValue = "\(baseText) \(clean)"
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }) {
-                            Image(systemName: isDictating ? "stop.fill" : "mic.fill")
-                                .font(.system(size: 16))
-                                .foregroundColor(isDictating ? .white : SottoTheme.primary)
+                            Image(systemName: speechService.isRecording ? "stop.fill" : "mic.fill")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(speechService.isRecording ? .white : SottoTheme.primary)
                                 .frame(width: 44, height: 44)
-                                .background(isDictating ? SottoTheme.destructiveRed : SottoTheme.surfaceVariant)
+                                .background(speechService.isRecording ? SottoTheme.danger : SottoTheme.surfaceVariant)
                                 .clipShape(Circle())
                         }
-                    }
-                    .onChange(of: speechService.transcribedText) { newText in
-                        if !newText.isEmpty {
-                            textBinding.wrappedValue = newText
-                        }
+                        .accessibilityLabel(speechService.isRecording ? "Stop recording question" : "Start recording question")
+                        .accessibilityHint("Dictates question text")
                     }
                     
                     Text("Interaction Type")
@@ -409,16 +434,25 @@ public struct WhyTreeEditorModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
+                    Button("Cancel") {
+                        speechService.stopRecording()
+                        onCancel()
+                    }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: onSave)
-                        .bold()
-                        .foregroundColor(SottoTheme.confirm)
+                    Button("Save") {
+                        speechService.stopRecording()
+                        onSave()
+                    }
+                    .bold()
+                    .foregroundColor(SottoTheme.confirm)
                 }
             }
         }
         .navigationViewStyle(.stack)
+        .onDisappear {
+            speechService.stopRecording()
+        }
     }
     
     // MARK: - Mutators

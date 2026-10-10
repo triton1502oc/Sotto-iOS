@@ -282,6 +282,15 @@ public final class UsabilityTracker {
         }
     }
 
+    public func recordSafetyCardSaved(voiceSettings: VoiceSettings) {
+        guard voiceSettings.shareUsabilityMetrics else { return }
+        queue.async {
+            let event = UsabilityEvent(intent: "SafetyCardSetup", durationMs: 0, outcome: "saved")
+            self.appendAndSync(event, voiceSettings: voiceSettings)
+        }
+        recordActivation(key: "safety_card_setup", voiceSettings: voiceSettings)
+    }
+
     public func recordWhyFinder(
         outcome: String,
         areaId: String?,
@@ -421,6 +430,11 @@ public final class UsabilityTracker {
         }
     }
 
+    public static var currentAppVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.6.1"
+        return "v\(version)"
+    }
+
     public func generatePreviewPayload(installId: String, role: String, uiLang: String, voiceSettings: VoiceSettings? = nil) -> String {
         let events = getPendingEvents(voiceSettings: voiceSettings)
         let payload: [String: Any] = [
@@ -428,7 +442,7 @@ public final class UsabilityTracker {
             "installId": installId,
             "role": role,
             "uiLang": uiLang,
-            "appVersion": "v1.7.0",
+            "appVersion": Self.currentAppVersion,
             "platform": "iOS",
             "sessionId": sessionId,
             "eventsCount": events.count,
@@ -474,7 +488,7 @@ public final class UsabilityTracker {
 
         let payload: [String: Any] = [
             "schema": 3,
-            "appVersion": "v1.7.0",
+            "appVersion": Self.currentAppVersion,
             "platform": "iOS",
             "sessionId": sessionId,
             "role": voiceSettings.userRole,

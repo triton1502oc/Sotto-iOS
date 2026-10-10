@@ -17,17 +17,67 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.6.1</string>
+	<string>1.6.2</string>
 	<key>CFBundleVersion</key>
-	<string>5</string>
+	<string>6</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Sotto uses your microphone to transcribe speech when using the voice input button or Caregiver Receptive Mode.</string>
+	<string>Sotto uses your microphone to transcribe speech when using the voice input button or Partner Mode.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Sotto uses your camera to scan communication deck QR codes shared by caregivers or partners.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Sotto uses speech recognition to convert spoken words into text for Quick-Speak, custom phrases, and Caregiver Receptive Mode.</string>
+	<string>Sotto uses speech recognition to convert spoken words into text for Quick-Speak, custom phrases, and Partner Mode.</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Sotto Deck</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.amh.sotto.deck</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.amh.sotto</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>sotto</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Sotto Communication Deck</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.amh.sotto.deck</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sotto</string>
+					<string>sottodeck</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -37,7 +87,7 @@
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UIStatusBarStyle</key>
 	<string>UIStatusBarStyleLightContent</string>

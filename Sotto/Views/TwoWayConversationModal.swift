@@ -19,6 +19,7 @@ public struct TwoWayConversationModal: View {
     public let allPhrases: [Phrase]
     public let categories: [String]
     public let whyFinderRepository: WhyFinderRepositoryProtocol
+    public let appLanguage: String
     public let onSpeakResponse: (String) -> Void
     public let onDismiss: () -> Void
     
@@ -27,6 +28,7 @@ public struct TwoWayConversationModal: View {
     @State private var isFlipped: Bool = false
     @State private var lastReply: String? = nil
     @State private var showQuestionsSheet: Bool = false
+    @State private var selectedPromptCategory: String = "ALL"
     @State private var showKeyboardInput: Bool = false
     @State private var manualInputText: String = ""
     @State private var whySessionSaved: Bool = false
@@ -39,17 +41,23 @@ public struct TwoWayConversationModal: View {
         allPhrases: [Phrase],
         categories: [String] = [],
         whyFinderRepository: WhyFinderRepositoryProtocol = UserDefaultsWhyFinderRepository.shared,
+        appLanguage: String = "system",
         onSpeakResponse: @escaping (String) -> Void,
         onDismiss: @escaping () -> Void
     ) {
         self.allPhrases = allPhrases
         self.categories = categories
         self.whyFinderRepository = whyFinderRepository
+        self.appLanguage = appLanguage
         self.onSpeakResponse = onSpeakResponse
         self.onDismiss = onDismiss
         
         let tree = whyFinderRepository.getTree()
         _whySession = StateObject(wrappedValue: WhyFinderSession(tree: tree))
+    }
+    
+    private var isIndonesian: Bool {
+        LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
     }
     
     private var activeFreeformText: String {
@@ -65,31 +73,33 @@ public struct TwoWayConversationModal: View {
         case .askingQuestion(_, _, let q):
             return q.text
         case .selectingBodyPart:
-            return "Where does it hurt or feel uncomfortable?"
+            return isIndonesian ? "Di bagian mana yang terasa sakit atau tidak nyaman?" : "Where does it hurt or feel uncomfortable?"
         case .selectingIntensity:
-            return "How intense is it? (1 = mild, 5 = severe)"
+            return isIndonesian ? "Seberapa parah intensitasnya? (1 = ringan, 5 = sangat parah)" : "How intense is it? (1 = mild, 5 = severe)"
         case .confirmingCause(_, _, let cause, let part, let intensity):
             var details = ""
             if let p = part, !p.isEmpty {
-                let partLabel = LocaleHelper.getBodyRegionLabel(p)
+                let partLabel = LocaleHelper.getBodyRegionLabel(p, appLanguage: appLanguage)
                 let intensityStr = intensity != nil ? " (\(intensity!)/5)" : ""
                 details = " (\(partLabel)\(intensityStr))"
             }
-            return "Did we figure it out?\n\n\(cause)\(details)"
+            let title = isIndonesian ? "Apakah ini penyebabnya?" : "Did we figure it out?"
+            return "\(title)\n\n\(cause)\(details)"
         case .finished(let outcome, _, let cause, let part, let intensity, _, _, _):
             switch outcome {
             case .found:
                 var details = ""
                 if let p = part, !p.isEmpty {
-                    let partLabel = LocaleHelper.getBodyRegionLabel(p)
+                    let partLabel = LocaleHelper.getBodyRegionLabel(p, appLanguage: appLanguage)
                     let intensityStr = intensity != nil ? " (\(intensity!)/5)" : ""
                     details = " (\(partLabel)\(intensityStr))"
                 }
-                return "Cause Found\n\n\(cause ?? "")\(details)"
+                let title = isIndonesian ? "Penyebab Ditemukan" : "Cause Found"
+                return "\(title)\n\n\(cause ?? "")\(details)"
             case .notFound:
-                return "Could Not Pinpoint Cause"
+                return isIndonesian ? "Penyebab Belum Ditemukan" : "Could Not Pinpoint Cause"
             case .stopped:
-                return "Stopped for Now"
+                return isIndonesian ? "Dihentikan Sementara" : "Stopped for Now"
             }
         }
     }
@@ -118,6 +128,47 @@ public struct TwoWayConversationModal: View {
                 finishAndSaveWhySession()
             }
         }
+        .onChange(of: isFlipped) { flipped in
+            if flipped {
+                AppDelegate.orientationLock = .portrait
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+                }
+            } else {
+                AppDelegate.orientationLock = .all
+                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                    windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+                }
+            }
+        }
+        .onChange(of: activeTab) { _ in
+            speechRecognizer.stopRecording()
+        }
+        .onChange(of: isFlipped) { _ in
+            speechRecognizer.stopRecording()
+        }
+        .onDisappear {
+            speechRecognizer.stopRecording()
+            AppDelegate.orientationLock = .all
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+            }
+        }
+    }
+    
+    private func toggleListening() {
+        if speechRecognizer.isRecording {
+            speechRecognizer.stopRecording()
+        } else {
+            speechRecognizer.requestPermissions { granted in
+                if granted {
+                    displayedText = ""
+                    let effectiveLang = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage)
+                    let locale = LocaleHelper.getLocaleForLanguage(effectiveLang)
+                    speechRecognizer.startRecording(locale: locale)
+                }
+            }
+        }
     }
     
     // MARK: - Normal Side-by-Side Layout
@@ -132,6 +183,7 @@ public struct TwoWayConversationModal: View {
                 activeFreeformText: activeFreeformText,
                 lastReply: lastReply,
                 isListening: speechRecognizer.isRecording,
+                appLanguage: appLanguage,
                 onRestartWhyTree: {
                     whySession.restart()
                     whySessionSaved = false
@@ -152,24 +204,29 @@ public struct TwoWayConversationModal: View {
             CaregiverResponseDock(
                 activeTab: activeTab,
                 whyState: whySession.currentState,
+                appLanguage: appLanguage,
                 onYes: {
-                    handleUserResponse(displayText: "Yes", ttsText: "Yes")
+                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
+                    handleUserResponse(displayText: label, ttsText: label)
                     if activeTab == .whyFinder { whySession.answerYes() }
                 },
                 onNo: {
-                    handleUserResponse(displayText: "No", ttsText: "No")
+                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
+                    handleUserResponse(displayText: label, ttsText: label)
                     if activeTab == .whyFinder { whySession.answerNo() }
                 },
                 onNotSure: {
-                    handleUserResponse(displayText: "Not Sure", ttsText: "Not Sure")
+                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
+                    handleUserResponse(displayText: label, ttsText: label)
                     if activeTab == .whyFinder { whySession.answerNotSure() }
                 },
                 onStop: {
-                    handleUserResponse(displayText: "Stop", ttsText: "Stop")
+                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+                    handleUserResponse(displayText: label, ttsText: label)
                     if activeTab == .whyFinder { whySession.stop() }
                 },
                 onSelectBodyPart: { partKey in
-                    let label = LocaleHelper.getBodyRegionLabel(partKey)
+                    let label = LocaleHelper.getBodyRegionLabel(partKey, appLanguage: appLanguage)
                     handleUserResponse(displayText: label, ttsText: label)
                     whySession.selectBodyPart(partKey)
                 },
@@ -190,24 +247,30 @@ public struct TwoWayConversationModal: View {
             CaregiverBottomMenu(
                 activeTab: $activeTab,
                 isFlipped: $isFlipped,
+                appLanguage: appLanguage,
                 isListening: speechRecognizer.isRecording,
                 canStepBack: whySession.canStepBack(),
                 canSpeakPrompt: (activeTab == .whyFinder ? !whyPromptText.isEmpty : !activeFreeformText.isEmpty),
                 onToggleListening: {
-                    if speechRecognizer.isRecording {
-                        speechRecognizer.stopRecording()
-                    } else {
-                        displayedText = ""
-                        speechRecognizer.startRecording()
-                    }
+                    toggleListening()
                 },
                 onSpeakPrompt: {
+                    speechRecognizer.stopRecording()
                     let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
                     if !text.isEmpty { onSpeakResponse(text) }
                 },
-                onPickCard: { showQuestionsSheet = true },
-                onStepBack: { whySession.stepBack() },
-                onToggleKeyboard: { showKeyboardInput.toggle() },
+                onPickCard: {
+                    speechRecognizer.stopRecording()
+                    showQuestionsSheet = true
+                },
+                onStepBack: {
+                    speechRecognizer.stopRecording()
+                    whySession.stepBack()
+                },
+                onToggleKeyboard: {
+                    speechRecognizer.stopRecording()
+                    showKeyboardInput.toggle()
+                },
                 onDismiss: {
                     speechRecognizer.stopRecording()
                     onDismiss()
@@ -230,6 +293,7 @@ public struct TwoWayConversationModal: View {
                     activeFreeformText: activeFreeformText,
                     lastReply: lastReply,
                     isListening: speechRecognizer.isRecording,
+                    appLanguage: appLanguage,
                     onRestartWhyTree: {
                         whySession.restart()
                         whySessionSaved = false
@@ -248,24 +312,29 @@ public struct TwoWayConversationModal: View {
                 CaregiverResponseDock(
                     activeTab: activeTab,
                     whyState: whySession.currentState,
+                    appLanguage: appLanguage,
                     onYes: {
-                        handleUserResponse(displayText: "Yes", ttsText: "Yes")
+                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
                         if activeTab == .whyFinder { whySession.answerYes() }
                     },
                     onNo: {
-                        handleUserResponse(displayText: "No", ttsText: "No")
+                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
                         if activeTab == .whyFinder { whySession.answerNo() }
                     },
                     onNotSure: {
-                        handleUserResponse(displayText: "Not Sure", ttsText: "Not Sure")
+                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
                         if activeTab == .whyFinder { whySession.answerNotSure() }
                     },
                     onStop: {
-                        handleUserResponse(displayText: "Stop", ttsText: "Stop")
+                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
                         if activeTab == .whyFinder { whySession.stop() }
                     },
                     onSelectBodyPart: { partKey in
-                        let label = LocaleHelper.getBodyRegionLabel(partKey)
+                        let label = LocaleHelper.getBodyRegionLabel(partKey, appLanguage: appLanguage)
                         handleUserResponse(displayText: label, ttsText: label)
                         whySession.selectBodyPart(partKey)
                     },
@@ -287,24 +356,30 @@ public struct TwoWayConversationModal: View {
             CaregiverBottomMenu(
                 activeTab: $activeTab,
                 isFlipped: $isFlipped,
+                appLanguage: appLanguage,
                 isListening: speechRecognizer.isRecording,
                 canStepBack: whySession.canStepBack(),
                 canSpeakPrompt: (activeTab == .whyFinder ? !whyPromptText.isEmpty : !activeFreeformText.isEmpty),
                 onToggleListening: {
-                    if speechRecognizer.isRecording {
-                        speechRecognizer.stopRecording()
-                    } else {
-                        displayedText = ""
-                        speechRecognizer.startRecording()
-                    }
+                    toggleListening()
                 },
                 onSpeakPrompt: {
+                    speechRecognizer.stopRecording()
                     let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
                     if !text.isEmpty { onSpeakResponse(text) }
                 },
-                onPickCard: { showQuestionsSheet = true },
-                onStepBack: { whySession.stepBack() },
-                onToggleKeyboard: { showKeyboardInput.toggle() },
+                onPickCard: {
+                    speechRecognizer.stopRecording()
+                    showQuestionsSheet = true
+                },
+                onStepBack: {
+                    speechRecognizer.stopRecording()
+                    whySession.stepBack()
+                },
+                onToggleKeyboard: {
+                    speechRecognizer.stopRecording()
+                    showKeyboardInput.toggle()
+                },
                 onDismiss: {
                     speechRecognizer.stopRecording()
                     onDismiss()
@@ -317,6 +392,7 @@ public struct TwoWayConversationModal: View {
     // MARK: - Helpers
     
     private func handleUserResponse(displayText: String, ttsText: String) {
+        speechRecognizer.stopRecording()
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
         
@@ -350,14 +426,18 @@ public struct TwoWayConversationModal: View {
     
     private var manualKeyboardRow: some View {
         HStack {
-            TextField("Type a phrase or prompt...", text: $manualInputText)
+            TextField(isIndonesian ? "Ketik pesan atau pertanyaan..." : "Type a phrase or prompt...", text: $manualInputText)
                 .font(.system(size: 15))
                 .foregroundColor(SottoTheme.textPrimary)
                 .padding(10)
                 .background(SottoTheme.surface)
                 .cornerRadius(10)
+                .onSubmit {
+                    speechRecognizer.stopRecording()
+                }
             
-            Button("Done") {
+            Button(isIndonesian ? "Selesai" : "Done") {
+                speechRecognizer.stopRecording()
                 if !manualInputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                     displayedText = manualInputText.trimmingCharacters(in: .whitespacesAndNewlines)
                     manualInputText = ""
@@ -386,38 +466,80 @@ public struct TwoWayConversationModal: View {
                     if activeTab == .whyFinder {
                         // Why Tree Questions
                         let tree = whyFinderRepository.getTree()
+                        
+                        // Area Filter Chips
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                let isAll = selectedPromptCategory == "ALL"
+                                Button(action: { selectedPromptCategory = "ALL" }) {
+                                    Text(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: isAll ? .bold : .regular))
+                                        .foregroundColor(isAll ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(isAll ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                                        .cornerRadius(16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                }
+                                
+                                ForEach(tree.areas, id: \.id) { area in
+                                    let isSel = selectedPromptCategory == area.id
+                                    Button(action: { selectedPromptCategory = area.id }) {
+                                        Text(LocaleHelper.getAreaDisplayName(area.id, appLanguage: appLanguage))
+                                            .font(.system(size: 13, weight: isSel ? .bold : .regular))
+                                            .foregroundColor(isSel ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(isSel ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                                            .cornerRadius(16)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                            )
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                        }
+                        
                         ScrollView {
                             LazyVStack(spacing: 8) {
                                 ForEach(Array(tree.areas.enumerated()), id: \.element.id) { aIdx, area in
-                                    Button(action: {
-                                        whySession.jumpToArea(areaIndex: aIdx)
-                                        showQuestionsSheet = false
-                                    }) {
-                                        HStack {
-                                            Text("🏷️ \(area.question)")
-                                                .font(.system(size: 15, weight: .bold))
-                                                .foregroundColor(SottoTheme.primary)
-                                            Spacer()
-                                        }
-                                        .padding(12)
-                                        .background(SottoTheme.primary.opacity(0.15))
-                                        .cornerRadius(10)
-                                    }
-                                    
-                                    ForEach(Array(area.questions.enumerated()), id: \.element.id) { qIdx, question in
+                                    if selectedPromptCategory == "ALL" || selectedPromptCategory == area.id {
                                         Button(action: {
-                                            whySession.jumpToQuestion(areaIndex: aIdx, questionIndex: qIdx)
+                                            whySession.jumpToArea(areaIndex: aIdx)
                                             showQuestionsSheet = false
                                         }) {
                                             HStack {
-                                                Text(question.text)
-                                                    .font(.system(size: 14, weight: .medium))
-                                                    .foregroundColor(SottoTheme.textPrimary)
+                                                Text("🏷️ \(area.question)")
+                                                    .font(.system(size: 15, weight: .bold))
+                                                    .foregroundColor(SottoTheme.primary)
                                                 Spacer()
                                             }
                                             .padding(12)
-                                            .background(SottoTheme.surfaceVariant.opacity(0.5))
+                                            .background(SottoTheme.primary.opacity(0.15))
                                             .cornerRadius(10)
+                                        }
+                                        
+                                        ForEach(Array(area.questions.enumerated()), id: \.element.id) { qIdx, question in
+                                            Button(action: {
+                                                whySession.jumpToQuestion(areaIndex: aIdx, questionIndex: qIdx)
+                                                showQuestionsSheet = false
+                                            }) {
+                                                HStack {
+                                                    Text(question.text)
+                                                        .font(.system(size: 14, weight: .medium))
+                                                        .foregroundColor(SottoTheme.textPrimary)
+                                                    Spacer()
+                                                }
+                                                .padding(12)
+                                                .background(SottoTheme.surfaceVariant.opacity(0.5))
+                                                .cornerRadius(10)
+                                            }
                                         }
                                     }
                                 }
@@ -425,10 +547,59 @@ public struct TwoWayConversationModal: View {
                             .padding(16)
                         }
                     } else {
-                        // Phrases Cards
+                        // Phrases Cards (Talk Mode)
+                        let effectiveCats = categories.isEmpty ? PhraseCategory.defaultCategoryNames : categories
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 6) {
+                                let isAll = selectedPromptCategory == "ALL"
+                                Button(action: { selectedPromptCategory = "ALL" }) {
+                                    Text(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: isAll ? .bold : .regular))
+                                        .foregroundColor(isAll ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(isAll ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                                        .cornerRadius(16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                }
+                                
+                                ForEach(effectiveCats, id: \.self) { catName in
+                                    let isSel = selectedPromptCategory == catName
+                                    Button(action: { selectedPromptCategory = catName }) {
+                                        Text(LocaleHelper.getCategoryDisplayName(catName, appLanguage: appLanguage))
+                                            .font(.system(size: 13, weight: isSel ? .bold : .regular))
+                                            .foregroundColor(isSel ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                                            .padding(.horizontal, 12)
+                                            .padding(.vertical, 6)
+                                            .background(isSel ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                                            .cornerRadius(16)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 16)
+                                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                            )
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 8)
+                        }
+                        
+                        let filteredPhrases: [Phrase] = {
+                            if selectedPromptCategory == "ALL" {
+                                return allPhrases
+                            } else if selectedPromptCategory.uppercased() == "EMERGENCY" || selectedPromptCategory.uppercased() == "SAFETY" {
+                                return allPhrases.filter { $0.isEmergency }
+                            } else {
+                                return allPhrases.filter { !$0.isEmergency && $0.category.rawValue == selectedPromptCategory }
+                            }
+                        }()
+                        
                         ScrollView {
                             LazyVStack(spacing: 8) {
-                                ForEach(allPhrases) { phrase in
+                                ForEach(filteredPhrases) { phrase in
                                     Button(action: {
                                         displayedText = phrase.text
                                         showQuestionsSheet = false
@@ -450,11 +621,11 @@ public struct TwoWayConversationModal: View {
                     }
                 }
             }
-            .navigationTitle(activeTab == .whyFinder ? "Tree Questions" : "Choose Card")
+            .navigationTitle(activeTab == .whyFinder ? (isIndonesian ? "Pertanyaan Panduan" : "Tree Questions") : (isIndonesian ? "Pilih Kartu" : "Choose Card"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
+                    Button(isIndonesian ? "Batal" : "Cancel") {
                         showQuestionsSheet = false
                     }
                 }
@@ -473,6 +644,7 @@ private struct CaregiverDisplayCard: View {
     let activeFreeformText: String
     let lastReply: String?
     let isListening: Bool
+    let appLanguage: String
     let onRestartWhyTree: () -> Void
     let onFinish: () -> Void
     let onReadAloudPrompt: () -> Void
@@ -482,7 +654,8 @@ private struct CaregiverDisplayCard: View {
             // Status reply / listening badge
             HStack {
                 if let reply = lastReply {
-                    Text("✓ Replied: \(reply)")
+                    let prefix = LocaleHelper.getTwoWayActionLabel(actionKey: "replied_prefix", appLanguage: appLanguage)
+                    Text("✓ \(prefix)\(reply)")
                         .font(.system(size: 13, weight: .bold))
                         .foregroundColor(.white)
                         .padding(.horizontal, 12)
@@ -494,7 +667,7 @@ private struct CaregiverDisplayCard: View {
                         Circle()
                             .fill(SottoTheme.recordingPulseRed)
                             .frame(width: 8, height: 8)
-                        Text("Listening...")
+                        Text(LocaleHelper.getTwoWayActionLabel(actionKey: "listening", appLanguage: appLanguage))
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(SottoTheme.recordingPulseRed)
                     }
@@ -510,8 +683,16 @@ private struct CaregiverDisplayCard: View {
             
             if activeTab == .whyFinder, case .finished(let outcome, _, let cause, let part, let intensity, _, _, _) = whyState {
                 // Finished State
+                let outcomeTitle: String = {
+                    switch outcome {
+                    case .found: return "🎯 " + LocaleHelper.getTwoWayActionLabel(actionKey: "cause_found", appLanguage: appLanguage)
+                    case .stopped: return "⏸ " + LocaleHelper.getTwoWayActionLabel(actionKey: "stopped", appLanguage: appLanguage)
+                    default: return "🔍 " + LocaleHelper.getTwoWayActionLabel(actionKey: "unresolved", appLanguage: appLanguage)
+                    }
+                }()
+                
                 VStack(spacing: 14) {
-                    Text(outcome == .found ? "🎯 Cause Found" : (outcome == .stopped ? "⏸ Stopped" : "🔍 Unresolved"))
+                    Text(outcomeTitle)
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(SottoTheme.textPrimary)
                     
@@ -522,7 +703,7 @@ private struct CaregiverDisplayCard: View {
                                 .foregroundColor(SottoTheme.primary)
                             
                             if let p = part, !p.isEmpty {
-                                let partLabel = LocaleHelper.getBodyRegionLabel(p)
+                                let partLabel = LocaleHelper.getBodyRegionLabel(p, appLanguage: appLanguage)
                                 let intensityStr = intensity != nil ? " • \(intensity!)/5" : ""
                                 Text("\(partLabel)\(intensityStr)")
                                     .font(.system(size: 15))
@@ -537,7 +718,7 @@ private struct CaregiverDisplayCard: View {
                     
                     HStack(spacing: 12) {
                         Button(action: onRestartWhyTree) {
-                            Text("🔄 Restart")
+                            Text("🔄 " + LocaleHelper.getTwoWayActionLabel(actionKey: "restart", appLanguage: appLanguage))
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(SottoTheme.textPrimary)
                                 .frame(maxWidth: .infinity)
@@ -547,7 +728,7 @@ private struct CaregiverDisplayCard: View {
                         }
                         
                         Button(action: onFinish) {
-                            Text("Done")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "done", appLanguage: appLanguage))
                                 .font(.system(size: 15, weight: .bold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -560,8 +741,9 @@ private struct CaregiverDisplayCard: View {
             } else {
                 // Active Prompt (Tap to read aloud)
                 let prompt = activeTab == .whyFinder ? whyPromptText : activeFreeformText
+                let hint = LocaleHelper.getTwoWayActionLabel(actionKey: "mic_hint", appLanguage: appLanguage)
                 Button(action: onReadAloudPrompt) {
-                    Text(prompt.isEmpty ? "Tap Mic or Type to begin..." : prompt)
+                    Text(prompt.isEmpty ? hint : prompt)
                         .font(.system(size: prompt.count < 40 ? 30 : 22, weight: .bold))
                         .foregroundColor(prompt.isEmpty ? SottoTheme.textSecondary.opacity(0.5) : SottoTheme.textPrimary)
                         .multilineTextAlignment(.center)
@@ -587,6 +769,7 @@ private struct CaregiverDisplayCard: View {
 private struct CaregiverResponseDock: View {
     let activeTab: CaregiverTab
     let whyState: WhyFinderState
+    let appLanguage: String
     let onYes: () -> Void
     let onNo: () -> Void
     let onNotSure: () -> Void
@@ -613,11 +796,16 @@ private struct CaregiverResponseDock: View {
     
     // Four Card Dock
     private var fourCardDock: some View {
-        VStack(spacing: 8) {
+        let strYes = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
+        let strNo = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
+        let strNotSure = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
+        let strStop = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+        
+        return VStack(spacing: 8) {
             // Row 1: YES & NO
             HStack(spacing: 10) {
                 Button(action: onYes) {
-                    Text("✓ Yes")
+                    Text("✓ \(strYes)")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(SottoTheme.successText)
                         .frame(maxWidth: .infinity)
@@ -627,7 +815,7 @@ private struct CaregiverResponseDock: View {
                 }
                 
                 Button(action: onNo) {
-                    Text("✕ No")
+                    Text("✕ \(strNo)")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(SottoTheme.crisisStopText)
                         .frame(maxWidth: .infinity)
@@ -640,7 +828,7 @@ private struct CaregiverResponseDock: View {
             // Row 2: NOT SURE & STOP
             HStack(spacing: 10) {
                 Button(action: onNotSure) {
-                    Text("? Not Sure")
+                    Text("? \(strNotSure)")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(SottoTheme.warningHighText)
                         .frame(maxWidth: .infinity)
@@ -650,7 +838,7 @@ private struct CaregiverResponseDock: View {
                 }
                 
                 Button(action: onStop) {
-                    Text("⏹ Stop")
+                    Text("⏹ \(strStop)")
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundColor(SottoTheme.neutralStoppedText)
                         .frame(maxWidth: .infinity)
@@ -664,12 +852,15 @@ private struct CaregiverResponseDock: View {
     
     // Body Part Selection Grid
     private var bodyPartGrid: some View {
-        VStack(spacing: 8) {
+        let strNotSure = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
+        let strStop = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+        
+        return VStack(spacing: 8) {
             let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
             LazyVGrid(columns: columns, spacing: 6) {
                 ForEach(BodyRegions.all, id: \.self) { region in
                     Button(action: { onSelectBodyPart(region) }) {
-                        Text(LocaleHelper.getBodyRegionLabel(region))
+                        Text(LocaleHelper.getBodyRegionLabel(region, appLanguage: appLanguage))
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(SottoTheme.textPrimary)
                             .frame(maxWidth: .infinity)
@@ -686,7 +877,7 @@ private struct CaregiverResponseDock: View {
             
             HStack(spacing: 10) {
                 Button(action: onNotSure) {
-                    Text("? Not Sure")
+                    Text("? \(strNotSure)")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
                         .frame(maxWidth: .infinity)
@@ -696,7 +887,7 @@ private struct CaregiverResponseDock: View {
                 }
                 
                 Button(action: onStop) {
-                    Text("⏹ Stop")
+                    Text("⏹ \(strStop)")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
                         .frame(maxWidth: .infinity)
@@ -710,7 +901,10 @@ private struct CaregiverResponseDock: View {
     
     // Intensity Scale Row (1 to 5)
     private var intensityScaleRow: some View {
-        VStack(spacing: 10) {
+        let strNotSure = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
+        let strStop = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+        
+        return VStack(spacing: 10) {
             HStack(spacing: 6) {
                 let colors = [
                     SottoTheme.intensityMild,
@@ -734,7 +928,7 @@ private struct CaregiverResponseDock: View {
             
             HStack(spacing: 10) {
                 Button(action: onNotSure) {
-                    Text("? Not Sure")
+                    Text("? \(strNotSure)")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
                         .frame(maxWidth: .infinity)
@@ -744,7 +938,7 @@ private struct CaregiverResponseDock: View {
                 }
                 
                 Button(action: onStop) {
-                    Text("⏹ Stop")
+                    Text("⏹ \(strStop)")
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
                         .frame(maxWidth: .infinity)
@@ -762,6 +956,7 @@ private struct CaregiverResponseDock: View {
 private struct CaregiverBottomMenu: View {
     @Binding var activeTab: CaregiverTab
     @Binding var isFlipped: Bool
+    let appLanguage: String
     let isListening: Bool
     let canStepBack: Bool
     let canSpeakPrompt: Bool
@@ -775,25 +970,26 @@ private struct CaregiverBottomMenu: View {
     var body: some View {
         VStack(spacing: 8) {
             // Line 1: Mode Switcher Tabs + Global Controls (Flip & Dismiss)
+            // Guided first, then Talk (matching Android layout)
             HStack {
                 HStack(spacing: 8) {
-                    Button(action: { activeTab = .freeform }) {
-                        Text("💬 Talk")
-                            .font(.system(size: 13, weight: activeTab == .freeform ? .bold : .medium))
-                            .foregroundColor(activeTab == .freeform ? SottoTheme.onPrimary : SottoTheme.textSecondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(activeTab == .freeform ? SottoTheme.primary : SottoTheme.surface)
-                            .cornerRadius(16)
-                    }
-                    
                     Button(action: { activeTab = .whyFinder }) {
-                        Text("🧭 Guided")
+                        Text("🧭 \(LocaleHelper.getTwoWayTabLabel(isWhyFinder: true, appLanguage: appLanguage))")
                             .font(.system(size: 13, weight: activeTab == .whyFinder ? .bold : .medium))
                             .foregroundColor(activeTab == .whyFinder ? SottoTheme.onPrimary : SottoTheme.textSecondary)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(activeTab == .whyFinder ? SottoTheme.primary : SottoTheme.surface)
+                            .cornerRadius(16)
+                    }
+                    
+                    Button(action: { activeTab = .freeform }) {
+                        Text("💬 \(LocaleHelper.getTwoWayTabLabel(isWhyFinder: false, appLanguage: appLanguage))")
+                            .font(.system(size: 13, weight: activeTab == .freeform ? .bold : .medium))
+                            .foregroundColor(activeTab == .freeform ? SottoTheme.onPrimary : SottoTheme.textSecondary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(activeTab == .freeform ? SottoTheme.primary : SottoTheme.surface)
                             .cornerRadius(16)
                     }
                 }
@@ -804,7 +1000,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: { withAnimation(.easeInOut(duration: 0.25)) { isFlipped.toggle() } }) {
                         HStack(spacing: 4) {
                             Text("🔄")
-                            Text(isFlipped ? "Flip Back" : "Flip")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: isFlipped ? "flip_back" : "flip", appLanguage: appLanguage))
                                 .font(.system(size: 13, weight: .medium))
                         }
                         .foregroundColor(SottoTheme.textPrimary)
@@ -833,7 +1029,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: onSpeakPrompt) {
                         HStack(spacing: 4) {
                             Text("🔊")
-                            Text("Speak")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
@@ -847,7 +1043,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: onPickCard) {
                         HStack(spacing: 4) {
                             Text("📋")
-                            Text("Questions")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
@@ -861,7 +1057,7 @@ private struct CaregiverBottomMenu: View {
                         Button(action: onStepBack) {
                             HStack(spacing: 4) {
                                 Text("↩️")
-                                Text("Back")
+                                Text(LocaleHelper.getTwoWayActionLabel(actionKey: "back", appLanguage: appLanguage))
                             }
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(SottoTheme.textPrimary)
@@ -875,7 +1071,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: onSpeakPrompt) {
                         HStack(spacing: 4) {
                             Text("🔊")
-                            Text("Speak")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
@@ -889,7 +1085,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: onPickCard) {
                         HStack(spacing: 4) {
                             Text("📋")
-                            Text("Cards")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)
@@ -902,7 +1098,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: onToggleListening) {
                         HStack(spacing: 4) {
                             Text(isListening ? "⏹" : "🎤")
-                            Text(isListening ? "Stop" : "Mic")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: isListening ? "stop" : "mic", appLanguage: appLanguage))
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(isListening ? .white : SottoTheme.textPrimary)
@@ -915,7 +1111,7 @@ private struct CaregiverBottomMenu: View {
                     Button(action: onToggleKeyboard) {
                         HStack(spacing: 4) {
                             Text("⌨️")
-                            Text("Type")
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "type", appLanguage: appLanguage))
                         }
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(SottoTheme.textPrimary)

@@ -317,7 +317,7 @@ public final class DemoAutomationRunner: ObservableObject {
         try? await Task.sleep(nanoseconds: 1_500_000_000)
         
         // ==================== SCENE 4: Voice Customization & Dual-Language Enable ====================
-        // Tap "Edit List"
+        // Tap "Edit"
         let editBtnPos = targetCenter("topBar_editButton", fallback: CGPoint(x: w - 50, y: 60))
         await animateMove(to: editBtnPos, duration: 0.5)
         await performTap()

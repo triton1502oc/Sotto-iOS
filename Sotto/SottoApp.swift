@@ -1,8 +1,18 @@
 import SwiftUI
 import AVFoundation
 
+public final class AppDelegate: NSObject, UIApplicationDelegate {
+    public static var orientationLock = UIInterfaceOrientationMask.all
+
+    public func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return Self.orientationLock
+    }
+}
+
 @main
 struct SottoApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     init() {
         // Configure default audio session for assistive communication playback
         do {

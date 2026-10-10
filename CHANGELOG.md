@@ -3,7 +3,30 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [v1.6.1] - 2026-10-09
+## [v1.6.2] - 2026-10-10
+
+### Added
+- **Intelligent Voice Selection & Novelty Filtering**: Intelligent voice ranking algorithm in `SpeechService` prioritizing Apple's natural flagship voices (**Samantha**, **Siri**, **Ava**, **Alex** for English; **Damayanti** for Indonesian). Filters out toy and novelty sound-effect voices (Albert, Bad News, Boing, Cellos, etc.) from the voice selection sheet.
+- **Enhanced Neural Voice Guide**: In-app guidance card in Voice & Language Settings explaining how to download Apple's free Enhanced and Premium neural voice models in iOS/iPadOS Accessibility Settings.
+- **Instant QR Code Deck Sharing & Scanner**: Offline phrase deck export and camera-based QR code import modal (`QRCodeModal.swift`, `QRScannerModal.swift`) supporting compressed Base64 payloads (`SOTTO:v1:...`) for seamless sharing across iOS and Android devices without internet or accounts (#13).
+- **In-Grid Safety Card Discovery & Guided Setup**: Replaced initial launch blocking modal with gentle in-grid discovery (#15). Unconfigured safety cards display an ambient visual hint ("Tap to set up emergency contact") and immediately open the structured setup wizard on tap or in card Edit mode (#12, #15).
+- **Natural Digit-by-Digit Phone Number Speech**: Automatic digit separation (`formatDigitsForSpeech`) ensuring emergency contact numbers are spoken aloud digit-by-digit rather than mispronounced as enormous integers.
+- **VoiceOver Accessibility & Dynamic Type**: Comprehensive semantic accessibility labels, hints, and custom actions across phrase cards and controls (#10), paired with Dynamic Type font scaling for low-vision AAC users (#9).
+- **Persistent Emergency Quick-Action**: Persistent safety action access across tabs and views (#11).
+
+### Security & Reliability
+- **100% On-Device Speech Recognition**: Enforced `recognitionRequest.requiresOnDeviceRecognition = true` in `SpeechRecognizerService.swift` guaranteeing complete offline transcription privacy (#1).
+- **Privacy Manifest Telemetry Declaration**: Explicitly declared product interaction telemetry under `NSPrivacyCollectedDataTypes` in `PrivacyInfo.xcprivacy` with Analytics purpose per Apple App Store Review guidelines (#2).
+- **Encrypted Storage for Health Logs & Temporary File Cleanup**: Migrated Why Finder logs to Application Support with `completeFileProtection` encryption at rest, and automated temporary file cleanup after export sharing (#7).
+- **Main Thread Safety in Speech Services**: Enforced `@MainActor` isolation and verified asynchronous state dispatches in `SpeechRecognizerService` (#5).
+- **Microphone & Audio Lifecycle Management**: Added `.onDisappear` handlers across modals to reliably release microphone and audio engine resources on dismissal (#4).
+- **Cumulative Dictation Duplication Fix**: Resolved transcription text duplication via baseline tracking in `MainViewModel` and edit dialogs (#3).
+- **Apple HIG Touch Target Compliance**: Enforced 44x44 pt minimum touch targets across all category chips, buttons, and card controls (#8).
+- **Clean 64-bit Device Capabilities**: Replaced legacy `armv7` requirement with `arm64` in `Info.plist` (#6).
+- **Partner Mode Flipped Orientation Lock**: Suppressed auto-rotation during 180° face-to-face screen flip in Partner Mode to prevent accidental inversion (#14).
+- **Asynchronous QR Code Rendering**: Offloaded QR image bitmap generation to background tasks to prevent main-thread UI stalling on older devices.
+
+## [v1.6.1] - 2026-10-10
 
 ### Added
 - **Sensory-Minded Color Themes**: Curated sensory-friendly color palettes accessible from Voice & Language Settings (`Appearance` section) to accommodate neurodivergent needs, photophobia, and astigmatism halation while upholding WCAG 2.1 AAA contrast: **Charcoal** (default low-stimulus dark neutral), **OLED Pure Black** (maximum contrast and power efficiency), **Warm Amber / Low Strain** (low blue light dark sepia), **Slate Navy** (calm focus), and **Soft Parchment** (anti-halation muted daylight). Automatic dynamic light/dark status bar and window styling based on theme. Safety semantics remain invariant and distinct across all themes.
@@ -13,6 +36,8 @@ All notable changes to the Sotto (iOS) project will be documented in this file. 
 - **Telemetry Schema v3 & Tap Event Aggregation**: Optimized privacy-preserving usability tracking with schema v3, aggregating routine tap events to minimize payload size and device overhead, alongside privacy-preserving intent tracking and Settings adoption snapshots.
 
 ### Changed
+- **Partner Mode Icon Unification (`🤝`)**: Aligned top bar caregiver receptive mode icon from ear (`👂`) to partner handshake (`🤝`) matching Android and Why Finder clinical triage conventions.
+- **Localized Edit Button**: Streamlined top bar action button label to `[✏️ Edit]` / `[✓ Done]` (and Indonesian `[✏️ Edit]` / `[✓ Selesai]`) replacing `[✏️ Edit List]`.
 - **Category Bar Streamlining**: Removed the redundant Safety filter chip from the main screen's horizontal category bar to reduce visual clutter, while keeping Safety manageable in Edit Mode.
 - **Default Emergency Consolidation Migration**: Automatically consolidates legacy emergency cards into the single privacy-safe emergency template on update.
 

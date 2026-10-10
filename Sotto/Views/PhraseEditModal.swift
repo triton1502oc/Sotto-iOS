@@ -6,6 +6,7 @@ import Translation
 public struct PhraseEditModal: View {
     public let existingPhrase: Phrase?
     public let voiceSettings: VoiceSettings
+    public let onOpenEmergencyWizard: (() -> Void)?
     public let onSave: (Phrase) -> Void
     public let onDelete: ((Phrase) -> Void)?
     public let onCancel: () -> Void
@@ -18,6 +19,8 @@ public struct PhraseEditModal: View {
     @State private var translationError: String? = nil
     @State private var translationTrigger: Bool = false
     @State private var selectedCategory: PhraseCategory
+    @State private var baseTextBeforeRecording: String = ""
+    @State private var baseSpokenTextBeforeRecording: String = ""
     
     @StateObject private var speechRecognizer = SpeechRecognizerService()
     @StateObject private var spokenSpeechRecognizer = SpeechRecognizerService()
@@ -26,12 +29,14 @@ public struct PhraseEditModal: View {
         existingPhrase: Phrase? = nil,
         initialText: String = "",
         voiceSettings: VoiceSettings = VoiceSettings(),
+        onOpenEmergencyWizard: (() -> Void)? = nil,
         onSave: @escaping (Phrase) -> Void,
         onDelete: ((Phrase) -> Void)? = nil,
         onCancel: @escaping () -> Void
     ) {
         self.existingPhrase = existingPhrase
         self.voiceSettings = voiceSettings
+        self.onOpenEmergencyWizard = onOpenEmergencyWizard
         self.onSave = onSave
         self.onDelete = onDelete
         self.onCancel = onCancel
@@ -68,12 +73,46 @@ public struct PhraseEditModal: View {
                                     .cornerRadius(8)
                                     .padding(4)
                                 
-                                Button(action: toggleDictation) {
-                                    Image(systemName: speechRecognizer.isRecording ? "mic.fill" : "mic")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(speechRecognizer.isRecording ? SottoTheme.danger : SottoTheme.textPrimary)
-                                        .padding(8)
+                                VStack(spacing: 6) {
+                                    if speechRecognizer.isRecording {
+                                        Button(action: toggleDictation) {
+                                            Image(systemName: "mic.fill")
+                                                .font(.system(size: 20, weight: .bold))
+                                                .foregroundColor(SottoTheme.danger)
+                                                .frame(width: 44, height: 44)
+                                                .background(SottoTheme.danger.opacity(0.18))
+                                                .clipShape(Circle())
+                                        }
+                                        .accessibilityLabel("Stop recording phrase text")
+                                        .accessibilityHint("Turns off microphone listening mode")
+                                    } else {
+                                        Button(action: toggleDictation) {
+                                            Image(systemName: "mic")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(SottoTheme.textPrimary)
+                                                .frame(width: 44, height: 44)
+                                                .contentShape(Rectangle())
+                                        }
+                                        .accessibilityLabel("Start recording phrase text")
+                                        .accessibilityHint("Dictates spoken words into phrase text")
+                                    }
+                                    
+                                    if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                        Button(action: {
+                                            speechRecognizer.stopRecording()
+                                            text = ""
+                                        }) {
+                                            Image(systemName: "xmark.circle.fill")
+                                                .font(.system(size: 18))
+                                                .foregroundColor(SottoTheme.textSecondary)
+                                                .frame(width: 44, height: 44)
+                                                .contentShape(Rectangle())
+                                        }
+                                        .accessibilityLabel("Clear phrase text")
+                                    }
                                 }
+                                .padding(.trailing, 2)
+                                .padding(.top, 2)
                             }
                             .background(SottoTheme.background)
                             .cornerRadius(10)
@@ -148,12 +187,46 @@ public struct PhraseEditModal: View {
                                                 .cornerRadius(8)
                                                 .padding(4)
                                             
-                                            Button(action: toggleSpokenDictation) {
-                                                Image(systemName: spokenSpeechRecognizer.isRecording ? "mic.fill" : "mic")
-                                                    .font(.system(size: 18))
-                                                    .foregroundColor(spokenSpeechRecognizer.isRecording ? SottoTheme.danger : SottoTheme.textPrimary)
-                                                    .padding(8)
+                                            VStack(spacing: 6) {
+                                                if spokenSpeechRecognizer.isRecording {
+                                                    Button(action: toggleSpokenDictation) {
+                                                        Image(systemName: "mic.fill")
+                                                            .font(.system(size: 18, weight: .bold))
+                                                            .foregroundColor(SottoTheme.danger)
+                                                            .frame(width: 44, height: 44)
+                                                            .background(SottoTheme.danger.opacity(0.18))
+                                                            .clipShape(Circle())
+                                                    }
+                                                    .accessibilityLabel("Stop recording spoken text")
+                                                    .accessibilityHint("Turns off microphone listening mode")
+                                                } else {
+                                                    Button(action: toggleSpokenDictation) {
+                                                        Image(systemName: "mic")
+                                                            .font(.system(size: 18))
+                                                            .foregroundColor(SottoTheme.textPrimary)
+                                                            .frame(width: 44, height: 44)
+                                                            .contentShape(Rectangle())
+                                                    }
+                                                    .accessibilityLabel("Start recording spoken text")
+                                                    .accessibilityHint("Dictates spoken words into alternate text")
+                                                }
+                                                
+                                                if !spokenText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                                    Button(action: {
+                                                        spokenSpeechRecognizer.stopRecording()
+                                                        spokenText = ""
+                                                    }) {
+                                                        Image(systemName: "xmark.circle.fill")
+                                                            .font(.system(size: 18))
+                                                            .foregroundColor(SottoTheme.textSecondary)
+                                                            .frame(width: 44, height: 44)
+                                                            .contentShape(Rectangle())
+                                                    }
+                                                    .accessibilityLabel("Clear spoken text")
+                                                }
                                             }
+                                            .padding(.trailing, 2)
+                                            .padding(.top, 2)
                                         }
                                         .background(SottoTheme.background)
                                         .cornerRadius(10)
@@ -178,10 +251,14 @@ public struct PhraseEditModal: View {
                                     let isSelected = selectedCategory == category
                                     let isEmergency = category == .emergency
                                     
-                                    Button(action: { selectedCategory = category }) {
+                                    Button(action: {
+                                        speechRecognizer.stopRecording()
+                                        spokenSpeechRecognizer.stopRecording()
+                                        selectedCategory = category
+                                    }) {
                                         HStack(spacing: 4) {
                                             if isEmergency {
-                                                Text("🚨")
+                                                Text("🛡️")
                                                     .font(.system(size: 12))
                                             }
                                             Text(category.displayName)
@@ -204,6 +281,28 @@ public struct PhraseEditModal: View {
                                         )
                                     }
                                 }
+                            }
+                        }
+                        
+                        if selectedCategory == .emergency, let onOpenEmergencyWizard = onOpenEmergencyWizard {
+                            Button(action: {
+                                onCancel()
+                                onOpenEmergencyWizard()
+                            }) {
+                                HStack(spacing: 6) {
+                                    Text("🛡️")
+                                    Text("Open Safety Card Setup Wizard")
+                                        .font(.system(size: 14, weight: .medium))
+                                }
+                                .foregroundColor(SottoTheme.safetyText)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 42)
+                                .background(SottoTheme.safetyBackground)
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(SottoTheme.safetyBorder.opacity(0.6), lineWidth: 1)
+                                )
                             }
                         }
                         
@@ -243,14 +342,22 @@ public struct PhraseEditModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", action: onCancel)
-                        .foregroundColor(SottoTheme.textSecondary)
+                    Button("Cancel") {
+                        speechRecognizer.stopRecording()
+                        spokenSpeechRecognizer.stopRecording()
+                        onCancel()
+                    }
+                    .foregroundColor(SottoTheme.textSecondary)
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
                     HStack(spacing: 16) {
                         if let existing = existingPhrase, let onDelete = onDelete {
-                            Button(action: { onDelete(existing) }) {
+                            Button(action: {
+                                speechRecognizer.stopRecording()
+                                spokenSpeechRecognizer.stopRecording()
+                                onDelete(existing)
+                            }) {
                                 Text("Delete")
                                     .foregroundColor(SottoTheme.danger)
                             }
@@ -267,9 +374,15 @@ public struct PhraseEditModal: View {
             }
         }
         .navigationViewStyle(.stack)
+        .onDisappear {
+            speechRecognizer.stopRecording()
+            spokenSpeechRecognizer.stopRecording()
+        }
     }
     
     private func savePhrase() {
+        speechRecognizer.stopRecording()
+        spokenSpeechRecognizer.stopRecording()
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         
@@ -299,6 +412,8 @@ public struct PhraseEditModal: View {
     }
     
     private func executeAutoTranslate() {
+        speechRecognizer.stopRecording()
+        spokenSpeechRecognizer.stopRecording()
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         
@@ -335,13 +450,18 @@ public struct PhraseEditModal: View {
         if speechRecognizer.isRecording {
             speechRecognizer.stopRecording()
         } else {
+            spokenSpeechRecognizer.stopRecording()
             speechRecognizer.requestPermissions { granted in
                 if granted {
-                    speechRecognizer.startRecording { recognizedText in
-                        if text.isEmpty {
-                            text = recognizedText
+                    baseTextBeforeRecording = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let effectiveLang = LocaleHelper.getEffectiveLanguage(appLanguage: voiceSettings.appLanguage)
+                    let locale = LocaleHelper.getLocaleForLanguage(effectiveLang)
+                    speechRecognizer.startRecording(locale: locale) { recognizedText in
+                        let clean = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if baseTextBeforeRecording.isEmpty {
+                            text = clean
                         } else {
-                            text = "\(text) \(recognizedText)"
+                            text = "\(baseTextBeforeRecording) \(clean)"
                         }
                     }
                 }
@@ -353,15 +473,18 @@ public struct PhraseEditModal: View {
         if spokenSpeechRecognizer.isRecording {
             spokenSpeechRecognizer.stopRecording()
         } else {
+            speechRecognizer.stopRecording()
             spokenSpeechRecognizer.requestPermissions { granted in
                 if granted {
+                    baseSpokenTextBeforeRecording = spokenText.trimmingCharacters(in: .whitespacesAndNewlines)
                     let targetLang = voiceSettings.secondaryLanguage
                     let locale = LocaleHelper.getLocaleForLanguage(targetLang)
                     spokenSpeechRecognizer.startRecording(locale: locale) { recognizedText in
-                        if spokenText.isEmpty {
-                            spokenText = recognizedText
+                        let clean = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if baseSpokenTextBeforeRecording.isEmpty {
+                            spokenText = clean
                         } else {
-                            spokenText = "\(spokenText) \(recognizedText)"
+                            spokenText = "\(baseSpokenTextBeforeRecording) \(clean)"
                         }
                     }
                 }

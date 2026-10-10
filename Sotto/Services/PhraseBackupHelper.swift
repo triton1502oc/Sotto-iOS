@@ -89,6 +89,51 @@ public enum PhraseBackupHelper {
         return exportToJson(phrases: phrases, categories: categories, whyTree: nil, whyLog: nil)
     }
     
+    /// Generates lightweight, compact JSON optimized specifically for optical QR code scanning.
+    /// Excludes bulky question trees and logs, and omits default values to keep byte count well within QR limits (<2 KB).
+    public static func exportCompactPhrasesForQR(phrases: [Phrase], categories: [String]) -> String {
+        var cleanCategories: [String] = []
+        for cat in categories {
+            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty && trimmed.uppercased() != "ALL" && !cleanCategories.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                cleanCategories.append(trimmed)
+            }
+        }
+        
+        var phrasesArray: [[String: Any]] = []
+        for phrase in phrases {
+            var obj: [String: Any] = ["text": phrase.text]
+            if phrase.isEmergency {
+                obj["isEmergency"] = true
+            }
+            if phrase.category != .general && !phrase.isEmergency {
+                obj["category"] = phrase.category.rawValue
+            }
+            if phrase.language != LocaleHelper.langAuto && !phrase.language.isEmpty {
+                obj["language"] = phrase.language
+            }
+            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty && spoken != LocaleHelper.langAuto {
+                obj["spokenText"] = spoken
+            }
+            if let spokenLang = phrase.spokenLanguage?.trimmingCharacters(in: .whitespacesAndNewlines), !spokenLang.isEmpty && spokenLang != LocaleHelper.langAuto {
+                obj["spokenLanguage"] = spokenLang
+            }
+            phrasesArray.append(obj)
+        }
+        
+        let root: [String: Any] = [
+            "version": currentVersion,
+            "categories": cleanCategories,
+            "phrases": phrasesArray
+        ]
+        
+        guard let data = try? JSONSerialization.data(withJSONObject: root, options: []),
+              let jsonStr = String(data: data, encoding: .utf8) else {
+            return "{}"
+        }
+        return jsonStr
+    }
+    
     public static func parseJson(_ jsonString: String) -> BackupData? {
         try? parseBackupJson(jsonString)
     }

@@ -181,4 +181,187 @@ public enum LocaleHelper {
         default: return regionKey
         }
     }
+    
+    public static func getActionEdit(isEditMode: Bool, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        if isEditMode {
+            return isIndonesian ? "Selesai" : "Done"
+        } else {
+            return isIndonesian ? "Ubah" : "Edit"
+        }
+    }
+    
+    public static func getTwoWayResponseLabel(responseKey: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch responseKey.lowercased() {
+        case "yes": return isIndonesian ? "Ya" : "Yes"
+        case "no": return isIndonesian ? "Tidak" : "No"
+        case "not_sure", "not sure": return isIndonesian ? "Tidak Yakin" : "Not Sure"
+        case "stop": return isIndonesian ? "Berhenti" : "Stop"
+        case "repeat": return isIndonesian ? "Ulangi" : "Repeat"
+        case "wait": return isIndonesian ? "Tunggu" : "Wait"
+        default: return responseKey
+        }
+    }
+    
+    public static func getTwoWayTabLabel(isWhyFinder: Bool, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        if isWhyFinder {
+            return isIndonesian ? "Panduan" : "Guided"
+        } else {
+            return isIndonesian ? "Bicara" : "Talk"
+        }
+    }
+    
+    public static func getTwoWayActionLabel(actionKey: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch actionKey.lowercased() {
+        case "flip": return isIndonesian ? "Putar" : "Flip"
+        case "flip_back": return isIndonesian ? "Kembali" : "Flip Back"
+        case "speak": return isIndonesian ? "Bicara" : "Speak"
+        case "cards": return isIndonesian ? "Kartu" : "Cards"
+        case "back": return isIndonesian ? "Kembali" : "Back"
+        case "type": return isIndonesian ? "Ketik" : "Type"
+        case "mic": return isIndonesian ? "Mik" : "Mic"
+        case "stop": return isIndonesian ? "Berhenti" : "Stop"
+        case "listening": return isIndonesian ? "Mendengarkan…" : "Listening…"
+        case "replied_prefix": return isIndonesian ? "Menjawab: " : "Replied: "
+        case "restart": return isIndonesian ? "Ulangi" : "Restart"
+        case "done": return isIndonesian ? "Selesai" : "Done"
+        case "cause_found": return isIndonesian ? "Penyebab Ditemukan" : "Cause Found"
+        case "unresolved": return isIndonesian ? "Belum Selesai" : "Unresolved"
+        case "stopped": return isIndonesian ? "Berhenti" : "Stopped"
+        case "mic_hint": return isIndonesian ? "Ketuk mikrofon untuk bicara…" : "Tap mic to speak to user…"
+        default: return actionKey
+        }
+    }
+    
+    public static func formatDigitsForSpeech(_ text: String) -> String {
+        // Matches sequences of digits (phone numbers) with optional international prefix, dashes, parens, spaces
+        let pattern = "(\\+?[0-9][0-9\\s\\-\\(\\)]{3,}[0-9])"
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
+        
+        let nsString = text as NSString
+        let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsString.length))
+        
+        var result = text
+        for match in matches.reversed() {
+            let matchedStr = nsString.substring(with: match.range)
+            let digitCount = matchedStr.filter { $0.isNumber }.count
+            // Format only if there are at least 5 digits (phone numbers, card numbers)
+            if digitCount >= 5 {
+                var formatted = ""
+                for char in matchedStr {
+                    if char.isNumber {
+                        formatted.append("\(char) ")
+                    } else if char == "-" || char == "/" || char == "," {
+                        formatted.append("- ")
+                    }
+                }
+                formatted = formatted.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                formatted = formatted.trimmingCharacters(in: .whitespacesAndNewlines)
+                if let range = Range(match.range, in: result) {
+                    result.replaceSubrange(range, with: formatted)
+                }
+            }
+        }
+        return result
+    }
+    public static func isEmergencyPlaceholder(text: String) -> Bool {
+        let lower = text.lowercased()
+        return lower.contains("[area") ||
+               lower.contains("[phone") ||
+               lower.contains("[nomor") ||
+               lower.contains("[lingkungan") ||
+               (text.contains("[") && text.contains("]"))
+    }
+    
+    public static func getSafetySetupHint(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Ketuk untuk atur kontak darurat" : "Tap to set up emergency contact"
+    }
+
+    public static func extractEmergencyDetails(phraseText: String, appLanguage: String = "system") -> (area: String, contact: String) {
+        let text = phraseText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return ("", "") }
+        
+        var area = ""
+        var contact = ""
+        
+        if let enPrefixRange = text.range(of: "I live around ", options: .caseInsensitive),
+           let enSplitRange = text.range(of: ", please call my emergency contact: ", options: .caseInsensitive) {
+            let extractedArea = String(text[enPrefixRange.upperBound..<enSplitRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let extractedContact = String(text[enSplitRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !isEmergencyPlaceholder(text: extractedArea) {
+                area = extractedArea
+            }
+            if !isEmergencyPlaceholder(text: extractedContact) {
+                contact = extractedContact
+            }
+            return (area, contact)
+        }
+        
+        if let idPrefixRange = text.range(of: "Saya tinggal di sekitar ", options: .caseInsensitive),
+           let idSplitRange = text.range(of: ", tolong hubungi kontak darurat saya: ", options: .caseInsensitive) {
+            let extractedArea = String(text[idPrefixRange.upperBound..<idSplitRange.lowerBound]).trimmingCharacters(in: .whitespacesAndNewlines)
+            let extractedContact = String(text[idSplitRange.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !isEmergencyPlaceholder(text: extractedArea) {
+                area = extractedArea
+            }
+            if !isEmergencyPlaceholder(text: extractedContact) {
+                contact = extractedContact
+            }
+            return (area, contact)
+        }
+        
+        if let split = text.range(of: "emergency contact: ", options: .caseInsensitive) {
+            let extractedContact = String(text[split.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !isEmergencyPlaceholder(text: extractedContact) {
+                contact = extractedContact
+            }
+        }
+        
+        if let split = text.range(of: "kontak darurat saya: ", options: .caseInsensitive) {
+            let extractedContact = String(text[split.upperBound...]).trimmingCharacters(in: .whitespacesAndNewlines)
+            if !isEmergencyPlaceholder(text: extractedContact) {
+                contact = extractedContact
+            }
+        }
+        
+        return (area, contact)
+    }
+    
+    public static func formatEmergencyPhrase(area: String, contact: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        let cleanArea = area.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanContact = contact.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if isIndonesian {
+            let areaText = cleanArea.isEmpty ? "[Area / Lingkungan]" : cleanArea
+            let contactText = cleanContact.isEmpty ? "[nomor telepon]" : cleanContact
+            return "Saya tinggal di sekitar \(areaText), tolong hubungi kontak darurat saya: \(contactText)"
+        } else {
+            let areaText = cleanArea.isEmpty ? "[Area/Neighborhood]" : cleanArea
+            let contactText = cleanContact.isEmpty ? "[phone number]" : cleanContact
+            return "I live around \(areaText), please call my emergency contact: \(contactText)"
+        }
+    }
+    
+    public static func formatEmergencyPhraseForSpeech(area: String, contact: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        let cleanArea = area.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanContact = contact.trimmingCharacters(in: .whitespacesAndNewlines)
+        let spokenContact = formatDigitsForSpeech(cleanContact)
+        
+        if isIndonesian {
+            let areaText = cleanArea.isEmpty ? "area tempat tinggal saya" : cleanArea
+            let contactText = cleanContact.isEmpty ? "keluarga saya" : spokenContact
+            return "Saya tinggal di sekitar \(areaText), tolong hubungi kontak darurat saya: \(contactText)"
+        } else {
+            let areaText = cleanArea.isEmpty ? "my neighborhood" : cleanArea
+            let contactText = cleanContact.isEmpty ? "my family" : spokenContact
+            return "I live around \(areaText), please call my emergency contact: \(contactText)"
+        }
+    }
 }
+

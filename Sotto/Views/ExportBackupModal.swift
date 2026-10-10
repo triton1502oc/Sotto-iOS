@@ -5,6 +5,7 @@ public struct ExportBackupModal: View {
     public let areaCount: Int
     public let logCount: Int
     public let onExport: (_ exportPhrases: Bool, _ exportTree: Bool, _ exportLog: Bool) -> Void
+    public var onShareQR: ((_ exportPhrases: Bool, _ exportTree: Bool, _ exportLog: Bool) -> Void)? = nil
     public let onDismiss: () -> Void
     
     @State private var exportPhrases: Bool = true
@@ -16,12 +17,14 @@ public struct ExportBackupModal: View {
         areaCount: Int,
         logCount: Int,
         onExport: @escaping (Bool, Bool, Bool) -> Void,
+        onShareQR: ((Bool, Bool, Bool) -> Void)? = nil,
         onDismiss: @escaping () -> Void
     ) {
         self.phraseCount = phraseCount
         self.areaCount = areaCount
         self.logCount = logCount
         self.onExport = onExport
+        self.onShareQR = onShareQR
         self.onDismiss = onDismiss
     }
     
@@ -105,18 +108,47 @@ public struct ExportBackupModal: View {
                     
                     Spacer()
                     
-                    Button(action: {
-                        onExport(exportPhrases, exportTree, exportLog)
-                    }) {
-                        Text("Export Backup")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(hasSelection ? .white : SottoTheme.textSecondary)
+                    VStack(spacing: 12) {
+                        Button(action: {
+                            onExport(exportPhrases, exportTree, exportLog)
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "square.and.arrow.up")
+                                Text("Export .sotto File (AirDrop / Files)")
+                            }
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(hasSelection ? SottoTheme.onPrimary : SottoTheme.textSecondary)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 50)
+                            .frame(height: 48)
                             .background(hasSelection ? SottoTheme.primary : SottoTheme.surfaceVariant)
                             .cornerRadius(12)
+                        }
+                        .disabled(!hasSelection)
+                        
+                        if let onShareQR = onShareQR {
+                            Button(action: {
+                                onShareQR(exportPhrases, exportTree, exportLog)
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "qrcode")
+                                    Text("Share Phrases via QR Code")
+                                }
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(SottoTheme.textPrimary)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(exportPhrases ? SottoTheme.surfaceVariant : SottoTheme.surfaceVariant.opacity(0.5))
+                                .cornerRadius(12)
+                            }
+                            .disabled(!exportPhrases)
+                            
+                            Text("💡 QR codes are optimized for vocabulary phrase decks. Full backups with question trees and logs are shared via .sotto File.")
+                                .font(.system(size: 12))
+                                .foregroundColor(SottoTheme.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 8)
+                        }
                     }
-                    .disabled(!hasSelection)
                 }
                 .padding(20)
             }
