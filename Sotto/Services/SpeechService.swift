@@ -6,7 +6,7 @@ public protocol SpeechServiceDelegate: AnyObject {
     func speechDidFinish()
 }
 
-public final class SpeechService: NSObject, AVSpeechSynthesizerDelegate {
+public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthesizerDelegate {
     public static let shared = SpeechService()
     
     private let synthesizer = AVSpeechSynthesizer()

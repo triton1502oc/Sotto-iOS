@@ -1,63 +1,68 @@
 # Sotto Demo Videos (iOS)
 
 ### TL;DR
-This directory contains high-definition, synchronized demo videos showcasing Sotto's core features (Quick Speak, Emergency Hero Card, Contextual Categories, Fullscreen Presentation Mode, Card Reordering, and Voice Settings with Attention Chime) for both Indonesian and English on iOS.
+High-definition demo videos and reproduction scripts showcasing Sotto's flagship assistive communication and crisis navigation features on iOS—including **Two-Way Caregiver Receptive Mode** (180° face-to-face screen flip and rapid triage responses), **Two-Tier Quick-Speak Bar**, **Bystander Safety Hero Card**, **Sensory Color Themes**, and the **Two-Tone Attention Chime**.
 
 ---
 
-## Videos
+## Demo Videos
 
-- **Indonesian Demo**: [`sotto_demo_id.mp4`](sotto_demo_id.mp4) (~64s, 1206×2622 @ 30fps H.264, 192 kbps AAC audio)
-  - Spoken TTS Voice: `Damayanti` (id-ID) & `Samantha` (en-US)
-  - Phrases: *"Tolong beri saya waktu."*, *"Saya tidak bisa bicara sekarang. Tolong baca layar saya."*, *"Halo, ini adalah suara bicara saya."*, *"Terima kasih banyak"*, *"Thank you very much"*
-- **English Demo**: [`sotto_demo_en.mp4`](sotto_demo_en.mp4) (~64s, 1206×2622 @ 30fps H.264, 192 kbps AAC audio)
-  - Spoken TTS Voice: `Samantha` (en-US) & `Damayanti` (id-ID)
-  - Phrases: *"I need a moment, please."*, *"I cannot speak right now. Please read my screen."*, *"Hello, this is my speaking voice."*, *"Thank you very much"*, *"Terima kasih banyak"*
+| Video | Format | Primary Lang | Audio / Voice | Specs | File |
+|---|---|---|---|---|---|
+| **App Store Preview (Master)** | 16:9 Landscape | `en-US` | Neural Baritone Christopher + Andrew + Ambient Bed + Chime | 1920×1080 @ 30fps, 60s | [`sotto_app_store_preview.mp4`](sotto_app_store_preview.mp4) |
+| **Shorts / Reels / TikTok (Vertical)** | 9:16 Portrait | `en-US` | Neural Baritone Christopher + Andrew + Ambient Bed + Chime | 1080×1920 @ 30fps, 60s | [`sotto_vertical_preview.mp4`](sotto_vertical_preview.mp4) |
+| **English Device Demo** | 9:19.5 Portrait | `en-US` | Samantha & Damayanti | 1206×2622 @ 30fps, ~64s | [`sotto_demo_en.mp4`](sotto_demo_en.mp4) |
+| **Indonesian Device Demo** | 9:19.5 Portrait | `id-ID` | Damayanti & Samantha | 1206×2622 @ 30fps, ~64s | [`sotto_demo_id.mp4`](sotto_demo_id.mp4) |
 
 ---
 
-## How to Reproduce / Re-record
+## Featured Capabilities
+
+1. **Modern Two-Tier Quick-Speak Bar**: Spontaneous text input, instant speech playback (`🔊`), and large-card fullscreen modal (`⛶`).
+2. **Safety Bystander Mode & Fullscreen Card**: Category filtering and high-contrast emergency card with digit-by-digit phone number TTS.
+3. **Two-Way Caregiver Receptive Mode**: Dedicated receptive HUD, caregiver question prompt bank, 180° face-to-face tabletop screen flip (`🔄 Flip`), and dignified rapid-response buttons (`✓ Yes` / `✕ No` / `❔ Not sure` / `🛑 Stop`) with instant voice confirmation.
+4. **Why Finder Diagnostic Tree**: Binary yes/no inquiry tree to discover root triggers (physical pain, sensory overload, fatigue) calmly.
+5. **Private Why Log & 30-Day Trends**: 100% on-device private crisis event logging with environmental trend insights.
+6. **Voice Customization & Attention Chime**: Two-tone pre-speech alert chime (D5 587.33 Hz + A5 880.00 Hz) and configurable speech rate/pitch.
+7. **5 Sensory Color Themes**: Charcoal, OLED Pure Black, Warm Amber, Slate Navy, and Soft Parchment for photophobia comfort.
+
+---
+
+## Recording & Reproduction
 
 ### Prerequisites
+- **iOS Simulator**: iPhone with Dynamic Island (e.g. iPhone 17 / iPhone 16 Pro) booted via `xcrun simctl boot <uuid>`.
+- **Tools**: `ffmpeg` (`brew install ffmpeg`), Xcode Command Line Tools (`xcrun`, `xcodebuild`).
+- **Python Dependencies**: `pip install --user edge-tts Pillow` (neural narration at build time only, no user data).
+- **macOS TTS Voices** (for simulator recording): `Samantha` (`en_US`) and `Damayanti` (`id_ID`) (*System Settings > Accessibility > Spoken Content > Voices*).
 
-1. **iOS Simulator**:
-   - Modern iPhone simulator (e.g. iPhone 18 Pro / iPhone 16 Pro / iPhone 15 Pro).
-   - Booted via `xcrun simctl boot <device-uuid>` or Xcode.
-2. **FFmpeg**:
-   ```bash
-   brew install ffmpeg
-   ```
-3. **Xcode Command Line Tools (`xcrun simctl`)**:
-   Ensure `xcrun` and `xcodebuild` are available in `$PATH`.
-4. **macOS TTS Voices** (used by Python audio generators):
-   - English: `Samantha` (macOS default)
-   - Indonesian: `Damayanti` (install via *System Settings > Accessibility > Spoken Content > Voices > Indonesian*)
+### Commands
 
----
-
-### Recording Commands
-
-#### 1. Record Indonesian Demo
 ```bash
+# 1. Build Master Neural Baritone Soundtrack (60s)
+python3 scripts/build_soundtrack.py      # -> demo/sotto_soundtrack.wav
+
+# 2. Render App Store Preview Video (16:9 Landscape 1080p)
+python3 scripts/render_demo_video.py     # -> demo/sotto_app_store_preview.mp4
+
+# 3. Render Shorts / Reels / TikTok Video (9:16 Portrait 1080x1920)
+python3 scripts/render_vertical_short.py # -> demo/sotto_vertical_preview.mp4
+
+# 4. Record Interactive Simulator Demos
+./scripts/record_demo_en.sh
 ./scripts/record_demo_id.sh
 ```
 
-#### 2. Record English Demo
-```bash
-./scripts/record_demo_en.sh
-```
-
 ---
 
-## How the Pipeline Works
+## Pipeline Overview
 
 1. **Clean Environment Configuration**:
-   - Pre-populates the app with standard English or Indonesian phrase sets and default settings.
    - Embeds a smooth touch cursor overlay (`DemoTouchOverlay`) to clearly visualize taps, long-presses, and card drag interactions in the video recording.
 2. **Synchronized UI Automation**:
-   - [`scripts/run_demo_flow_id.sh`](../scripts/run_demo_flow_id.sh) / [`scripts/run_demo_flow_en.sh`](../scripts/run_demo_flow_en.sh) drives the UI using launch arguments (`--demo-flow-id` / `--demo-flow-en`).
+   - Drives the UI using launch arguments (`--demo-flow-en` / `--demo-flow-id`).
    - Each speech or chime interaction logs a high-precision relative timestamp (e.g. `speak_waktu_1:4.660`) to `/tmp/sotto_demo_events.txt`.
-3. **Audio Synthesis**:
-   - [`scripts/generate_audio_id.py`](../scripts/generate_audio_id.py) / [`scripts/generate_audio.py`](../scripts/generate_audio.py) replicates the exact two-tone Attention Chime synthesis from [`ChimePlayer.swift`](../Sotto/Services/ChimePlayer.swift) (D5 587.33 Hz + A5 880.00 Hz) and generates spoken TTS clips.
+3. **Motion Preview Rendering**:
+   - `scripts/render_demo_video.py` and `scripts/render_vertical_short.py` generate authentic Apple iPhone device mockups with Dynamic Island framing, kinetic typography, and interactive touch pulses.
 4. **Muxing**:
-   - [`scripts/mux_audio_id.py`](../scripts/mux_audio_id.py) / [`scripts/mux_audio.py`](../scripts/mux_audio.py) places the audio clips along the timeline according to the logged event timestamps and muxes the video and audio tracks via FFmpeg into the final MP4.
+   - Muxes synthesized video and audio tracks via Apple VideoToolbox hardware H.264 / AAC encoder into the final broadcast MP4s.

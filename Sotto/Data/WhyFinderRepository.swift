@@ -6,6 +6,7 @@ public protocol WhyFinderRepositoryProtocol {
     func resetTreeToDefault(forLanguage: String) -> WhyTree
     func getLogs() -> [WhyLogEntry]
     func addLog(_ entry: WhyLogEntry)
+    @discardableResult
     func deleteLog(id: String) -> Bool
     func clearLogs()
 }
@@ -251,6 +252,7 @@ public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol 
         saveLogsInternal(current)
     }
     
+    @discardableResult
     public func deleteLog(id: String) -> Bool {
         var current = getLogs()
         let countBefore = current.count

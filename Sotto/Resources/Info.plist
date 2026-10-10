@@ -50,6 +50,8 @@
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>Sotto uses your camera to scan communication deck QR codes shared by caregivers or partners.</string>
 	<key>NSMicrophoneUsageDescription</key>

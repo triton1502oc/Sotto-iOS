@@ -54,6 +54,18 @@ public struct TwoWayConversationModal: View {
         
         let tree = whyFinderRepository.getTree()
         _whySession = StateObject(wrappedValue: WhyFinderSession(tree: tree))
+        
+        let args = ProcessInfo.processInfo.arguments
+        let isId = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
+        if args.contains("--whyfinder") || args.contains("--screenshot-whyfinder") {
+            _activeTab = State(initialValue: .whyFinder)
+        }
+        if args.contains("--partner-flip") {
+            _isFlipped = State(initialValue: true)
+        }
+        if (args.contains("--triage") || args.contains("--screenshot-triage")) && !args.contains("--whyfinder") {
+            _displayedText = State(initialValue: isId ? "Apakah kamu butuh tempat tenang sekarang?" : "Do you need a quiet space right now?")
+        }
     }
     
     private var isIndonesian: Bool {

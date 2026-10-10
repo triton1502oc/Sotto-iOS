@@ -387,7 +387,9 @@ public struct MainView: View {
             if let pending = EmergencyLaunchManager.shared.pendingAction {
                 handleEmergencyAction(pending)
             }
-            if DemoAutomationRunner.shared.isDemoRequested {
+            if DemoAutomationRunner.shared.isScreenshotRequested {
+                DemoAutomationRunner.shared.startScreenshotCapture(viewModel: viewModel)
+            } else if DemoAutomationRunner.shared.isDemoRequested {
                 DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: geometry.size)
             }
         }
@@ -435,7 +437,18 @@ public struct MainView: View {
                 viewModel.showImportBackupDialog = true
             }
         } else if url.scheme == "sotto" {
-            if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+            let host = url.host?.lowercased() ?? ""
+            if host == "triage" {
+                viewModel.showTwoWayDialog = true
+            } else if host == "whylog" {
+                viewModel.showWhyLogDialog = true
+            } else if host == "settings" {
+                viewModel.showVoiceSettingsDialog = true
+            } else if host == "safety" || host == "emergency" {
+                if let safetyCard = viewModel.phrases.first(where: { $0.isEmergency }) {
+                    viewModel.activeFullscreenPhrase = safetyCard
+                }
+            } else if let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
                let dataParam = components.queryItems?.first(where: { $0.name == "data" })?.value {
                 handleIncomingDeckString(dataParam)
             }

@@ -13,6 +13,8 @@ Ready-to-use metadata, descriptions, keywords, screenshot specifications, and pr
 * **Primary Category:** `Medical` or `Utilities`
 * **Secondary Category:** `Productivity`
 * **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)
+* **Copyright:** `2026 Budi Aprianto` (or `2026 <Your Name / Organization>`)
+* **Content Rights (Third-Party Content):** Select **"No"** (Core app uses 100% native Apple frameworks, SF Symbols, and local storage; zero external copyrighted assets).
 
 ### Promotional Text *(159 / 170 characters)*
 ```text
@@ -24,66 +26,54 @@ Calm yes/no crisis triage for caregivers reaching autistic loved ones in shutdow
 shutdown,meltdown,deescalation,sensory,mutism,nonverbal,crisis,triage,aphasia,overload,aac,autism,speech
 ```
 
-### Full Description *(Markdown & Plain Text compliant, ~3,400 / 4,000 characters)*
+### Full Description *(Markdown & Plain Text compliant, ~3,600 / 4,000 characters)*
 ```text
-Sotto is a calm yes/no crisis navigation tool for caregivers, parents, and therapists to connect with autistic teens and adults during sensory overload, meltdowns, and verbal shutdowns — paired with a dignified, low-stimulation AAC speech board for daily self-expression and unclear speech support.
+Sotto is a calm yes/no crisis navigation tool for caregivers, parents, and therapists to connect with autistic teens and adults during sensory overload, meltdowns, and verbal shutdowns — paired with a dignified, low-stimulation AAC speech board for daily communication and unclear speech support.
 
-Created by a father of two autistic sons (ages 22 and 15), Sotto is built around a simple reality: during a meltdown or verbal shutdown, processing complex questions or speaking is exhausting. Sotto bridges this divide with gentle binary choices, speech clarity support, zero open-ended demands, and instant hardware Action Button launch.
+Created by a father of two autistic sons (ages 22 and 15), Sotto is built on lived experience: during meltdowns and shutdowns, processing complex questions or speaking is exhausting. Sotto bridges this divide with gentle binary choices, speech clarity support, zero open-ended demands, and instant hardware Action Button launch.
 
 FOR CAREGIVERS, FAMILIES & THERAPISTS:
 
-• Two-Way Speak HUD & 180° Tabletop Flip (Immediate Emergency Triage)
-During acute sensory overload or verbal shutdowns, processing complex questions or branching trees worsens distress. Caregivers can speak naturally or pick an urgent prompt, flip the iPad or iPhone 180° face-to-face on a table, and let their loved one tap giant, dignified response targets (Yes, No, Not sure, Stop) with instant voice confirmation. Zero cognitive load.
+• Two-Way Speak HUD & 180° Tabletop Flip
+During sensory overload or shutdowns, complex questions worsen distress. Caregivers speak naturally or choose a preset prompt, flip the device 180° face-to-face, and let their loved one tap giant response targets (Yes, No, Not sure, Stop) with voice confirmation. Zero cognitive load.
 
-• 1-Press Hardware Action Button & Siri Shortcuts (Instant Emergency Access)
-During an acute shutdown or motor freeze, navigating screen menus is impossible. Users and caregivers can map the physical iPhone Action Button, iOS Accessibility Back Tap (double-tap back of phone), or Siri Shortcuts ("Open Sotto Emergency") to immediately launch crisis triage or the emergency safety card without looking.
+• Hardware Action Button & Siri Shortcuts
+During acute freezes, navigating menus is difficult. Map the physical Action Button, iOS Back Tap, or Siri Shortcuts ("Open Sotto Emergency") to instantly launch crisis triage or safety cards eyes-free.
 
-• Why Finder (Guided Root-Cause Discovery Tree)
-When the source of distress is unknown, Why Finder provides a gentle, step-by-step yes/no branching tree to systematically uncover hidden physical pain (with body part & intensity locator), sensory overload, emotional fatigue, or routine disruption without open-ended interrogation.
+• Why Finder (Root-Cause Discovery Tree)
+When distress causes are unclear, Why Finder provides a gentle yes/no tree to systematically uncover physical pain (with body locator), sensory overload, fatigue, or routine disruptions without demanding open-ended answers.
 
-• Private On-Device Why Log & Pattern Trends
-Resolved crisis sessions are automatically logged 100% locally on your device. Review 30-day patterns to identify frequent environmental triggers, recurring peak hours, and actionable interventions. Never shared or uploaded to the cloud.
+• Private On-Device Why Log & Trends
+Resolved crisis sessions are logged 100% locally. Review 30-day patterns to identify recurring triggers, peak hours, and actionable interventions. Never uploaded to the cloud.
 
-• Customizable Why Tree & Safe Sharing
-Adapt questions and areas to your loved one's specific triggers using voice dictation and reordering. Easily export and share customized trees with teachers or speech therapists while keeping private crisis logs strictly excluded.
+• Customizable Trees & Safe Sharing
+Tailor questions to specific triggers using voice dictation. Export and share custom trees with teachers or therapists while keeping private crisis logs strictly excluded.
 
-FOR NON-SPEAKING & UNCLEAR VOICES (DIGNIFIED SELF-EXPRESSION):
+FOR NON-SPEAKING & UNCLEAR VOICES:
 
-• Mature, Dignified Voice for Unclear or Fatigued Speech
-Whether completely non-verbal, navigating an autistic shutdown, or speaking with quiet, slurred, or dysarthric speech that listeners struggle to understand, Sotto provides a crisp, adult text-to-speech voice and high-contrast cards—free of childish cartoons and patronizing symbols.
+• Dignified Voice for Unclear Speech
+Whether non-verbal, in a shutdown, or speaking with quiet, slurred, or dysarthric speech, Sotto provides a crisp, adult voice and high-contrast cards—free of childish cartoons.
 
 • Safety & Bystander Hero Card
-A prominent high-contrast banner for non-verbal episodes, local contacts, or medical personnel. Show fullscreen directly to bystanders or first responders with digit-by-digit emergency phone number TTS read aloud.
+High-contrast banner for non-verbal episodes and medical contacts. Show fullscreen to bystanders or first responders with digit-by-digit emergency phone number TTS read aloud.
 
-• Sensory-Minded Color Themes
-Curated sensory-friendly color palettes designed to accommodate neurodivergent needs, photophobia, and astigmatism halation while upholding WCAG 2.1 AAA contrast: Charcoal (default low-stimulus dark neutral), OLED Pure Black, Warm Amber / Low Strain, Slate Navy, and Soft Parchment.
-
-• Universal iPad & iPhone Support
-Adaptive responsive grid layouts designed for both iPhone and iPad in all orientations (Portrait, Landscape, Upside-Down), with multi-column support and zero layout shifts.
+• Sensory Themes & Universal Grid
+Sensory palettes (Charcoal, OLED Black, Warm Amber, Slate Navy, Soft Parchment) with WCAG AAA contrast. Responsive layouts support all orientations on iPhone and iPad.
 
 • Quick-Speak Bar & Voice Dictation
-Type spontaneous thoughts with auto-expanding multi-line text (1 to 4 lines), one-tap speech, voice dictation, and one-touch card creation.
+Type spontaneous thoughts with auto-expanding text, one-tap speech, voice dictation, and one-touch card creation.
 
-• High-Visibility Giant Fullscreen
-Display any phrase across the entire display in giant text to silently communicate in loud or crowded environments.
+• Giant Fullscreen & Attention Chime
+Display any phrase across the entire screen in giant text for noisy spaces. Sound a gentle two-tone chime and haptic vibration to politely capture attention before speaking.
 
-• Contextual Categories & Custom Boards
-Filter phrases by situation (Safety, Needs, Social, Care, General) or create custom categories with fine-motor single-step reordering.
+• Natural Speech & Dual-Language TTS
+Natural flagship voices with rate and pitch controls. Display cards in one language while speaking in another (e.g., English text spoken in Indonesian) via offline translation.
 
-• Attention Chime & Haptics
-Optionally sound a gentle, two-tone chime (D5 -> A5) and vibration before speaking to politely capture listener attention in noisy spaces.
-
-• Natural Speech Engine
-Intelligently prioritizes natural flagship voices (such as Apple's Samantha, Siri, Ava, and Damayanti) while filtering out novelty robotic sound effects. Adjust speech rate and pitch with live voice preview.
-
-• Instant Offline QR Code Deck Sharing
-Exchange entire communication decks between caregivers, therapists, and users completely offline without internet or cloud accounts using high-density QR codes and camera scanning across iOS and Android.
-
-• Dual-Language Speech & On-Device Auto-Translate
-Display cards in one language while speaking in another (e.g., English text read aloud in Indonesian) using 100% offline on-device translation.
+• Instant Offline QR Deck Sharing
+Exchange communication decks between caregivers, therapists, and users completely offline without accounts using high-density QR codes across iOS and Android.
 
 • 100% Offline Core & Privacy Guarantee
-Zero accounts. Zero ads. Zero cloud speech recording. Your phrases, custom trees, and private logs never leave your phone. Optional, strictly opt-in anonymous usability timing to help diagnose accessibility friction (zero text or speech collected).
+Zero accounts, ads, or cloud speech recording. Your phrases, custom trees, and private logs never leave your device. Optional, strictly opt-in anonymous usability timing collects zero text or audio.
 ```
 
 ### URLs
@@ -95,14 +85,35 @@ Zero accounts. Zero ads. Zero cloud speech recording. Your phrases, custom trees
 
 ## 2. Screenshot & Media Requirements
 
-| Device Display | Dimensions | Required / Recommended |
+| Device Display / Asset | Dimensions | Status / Location |
 |---|---|---|
-| **iPhone 6.9" / 6.7"** (iPhone 16 Pro Max, 15 Pro Max, 14 Pro Max) | 1320 x 2868 px or 1290 x 2796 px | Required |
-| **iPhone 6.5"** (iPhone 11 Pro Max, XS Max) | 1242 x 2688 px | Required (if supporting older aspect ratios) |
-| **iPad Pro 13" / 12.9"** | 2064 x 2752 px or 2048 x 2732 px | Required for iPad universal support |
+| **iPhone with Dynamic Island (medium display)** (iPhone 16, 17) | 1206 x 2622 px (Portrait, 24-bit RGB, No Alpha) | **Ready to Upload:** `assets/screenshots/iphone_medium_dynamic_island/*.png` |
+| **13-inch iPad Displays** (iPad Pro 13-inch M4/M5, iPad Air 13-inch) | 2064 x 2752 px (Portrait, 24-bit RGB, No Alpha) | **Ready to Upload:** `assets/screenshots/ipad_13_inch/*.png` |
+| **iPhone 6.9" / 6.7" Display** (iPhone 16 Pro Max, 15 Pro Max) | 1320 x 2868 px or 1290 x 2796 px | Supported |
+| **iPad Pro 12.9" Display** | 2048 x 2732 px (Portrait) | Available: `assets/ipad/screenshot_12_9inch_*` |
 | **App Icon** | 1024 x 1024 px (PNG, no transparency) | Included in Assets.xcassets |
+| **Product Page Header** | 3840 x 1646 px (21:9, 24-bit RGB, no alpha) | Available: `assets/app_store_header_3840x1646.png` |
+| **Product Page Header (Universal)** | 5244 x 2950 px (16:9, 24-bit RGB, no alpha) | Available: `assets/app_store_universal_5244x2950.png` |
+| **Search Result Asset (3:2 Retina)** | 3840 x 2560 px (3:2, 24-bit RGB, no alpha) | Available: `assets/app_store_search_result_3840x2560.png` |
+| **Search Result Asset (3:2 Standard)** | 1920 x 1280 px (3:2, 24-bit RGB, no alpha) | Available: `assets/app_store_search_result_1920x1280.png` |
+| **Search Result Asset (Universal)** | 5244 x 2950 px (16:9, 24-bit RGB, no alpha) | Available: `assets/app_store_search_result_5244x2950.png` |
 
----
+### Screenshot Set Organization (App Store Review Compliant)
+Both folders contain 5 sequential screens matching App Store Connect review requirements:
+1. `01_aac_speech_board.png` – Low-stimulus AAC speech grid with Quick-Speak bar
+2. `02_two_way_partner_triage.png` – Caregiver yes/no crisis triage & 180° tabletop partner mode
+3. `03_why_finder_tree.png` – Why Finder systematic root-cause discovery tree
+4. `04_whylog_analytics.png` – Private on-device Why Log with 30-day pattern insights
+5. `05_bystander_safety_card.png` – Fullscreen Bystander Hero card with TTS readout
+
+### Re-generating and Verifying Assets
+To re-generate all creative assets or verify App Store compliance at any time:
+```bash
+./scripts/build_assets.sh          # Re-generate creative assets & verify
+./scripts/build_assets.sh --all    # Full simulator capture, generation, and verification
+./scripts/build_assets.sh --verify # Verification check only
+```
+
 
 ## 3. App Privacy Questionnaire (App Store Connect)
 

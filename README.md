@@ -1,5 +1,9 @@
 # Sotto for iOS
 
+<p align="center">
+  <img src="assets/sotto_ios_banner.png" alt="Sotto for iOS Banner" width="100%" />
+</p>
+
 **TL;DR**: Sotto (*"under one's breath"*) is a calm yes/no tool for caregivers to reach autistic teens & adults in meltdowns and verbal shutdowns, paired with a dignified, low-stimulation AAC speech board for self-expression.
 
 This repository is the native iOS (SwiftUI) port of [Sotto Android](https://github.com/triton1502oc/Sotto) with 1:1 feature parity and zero third-party dependencies.

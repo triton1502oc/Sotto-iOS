@@ -14,7 +14,35 @@ public struct WhyLogModal: View {
     ) {
         self.repository = repository
         self.onDismiss = onDismiss
-        _logs = State(initialValue: repository.getLogs())
+        var initialLogs = repository.getLogs()
+        if initialLogs.isEmpty && (ProcessInfo.processInfo.arguments.contains("--whylog") || ProcessInfo.processInfo.arguments.contains("--screenshot-whylog")) {
+            let nowMs = Int64(Date().timeIntervalSince1970 * 1000)
+            initialLogs = [
+                WhyLogEntry(
+                    id: UUID().uuidString,
+                    startedAt: nowMs - 3600_000 * 2,
+                    endedAt: nowMs - 3600_000 * 2 + 180_000,
+                    outcome: .found,
+                    areaId: "sensory",
+                    causeText: "Room is too loud or bright",
+                    bodyPart: nil,
+                    intensity: 3,
+                    note: "Moved to quiet sensory corner."
+                ),
+                WhyLogEntry(
+                    id: UUID().uuidString,
+                    startedAt: nowMs - 86400_000 * 2,
+                    endedAt: nowMs - 86400_000 * 2 + 120_000,
+                    outcome: .found,
+                    areaId: "physical",
+                    causeText: "Headache or sensory migraine",
+                    bodyPart: "head",
+                    intensity: 4,
+                    note: "Offered dim lighting and ice pack."
+                )
+            ]
+        }
+        _logs = State(initialValue: initialLogs)
     }
     
     public var body: some View {
@@ -84,7 +112,7 @@ public struct WhyLogModal: View {
             )) {
                 Button("Delete", role: .destructive) {
                     if let entry = entryToDelete {
-                        repository.deleteLog(id: entry.id)
+                        _ = repository.deleteLog(id: entry.id)
                         logs = repository.getLogs()
                     }
                     entryToDelete = nil

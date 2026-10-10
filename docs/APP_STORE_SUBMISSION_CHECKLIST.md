@@ -144,9 +144,12 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
    - **Support URL**: `https://github.com/triton1502oc/Sotto-iOS/issues`
    - **Marketing URL**: `https://github.com/triton1502oc/Sotto-iOS`
    - **Privacy Policy URL**: `https://github.com/triton1502oc/Sotto-iOS/blob/main/PRIVACY_POLICY.md`
-3. **Screenshots**:
-   - Upload at least 1–3 screenshots for **6.9" / 6.7" Display** (iPhone 16 Pro Max / 15 Pro Max: `1290 x 2796` px or `1320 x 2868` px).
-   - Upload iPad Pro 13" screenshots (`2064 x 2752` px) for iPad universal support.
+3. **Screenshots & Product Page Information (Asset Library)**:
+   - **Product Page Header**: Under **Product Page Information > Header**, upload `assets/app_store_header_3840x1646.png` (dedicated 21:9) or `assets/app_store_universal_5244x2950.png` (universal 16:9).
+   - **Search Result Creative**: Under **Product Page Information > Search Results**, upload `assets/app_store_search_result_3840x2560.png` (3:2 Retina) or `assets/app_store_search_result_1920x1280.png` (3:2 standard).
+   - Upload iPhone screenshots from `assets/screenshots/iphone_medium_dynamic_island/` (`1206 x 2622` px) and 6.9"/6.7" equivalents.
+   - Upload iPad Pro 13" screenshots (`2064 x 2752` px portrait or `2752 x 2064` px landscape) and iPad Pro 12.9" screenshots (`2048 x 2732` px portrait or `2732 x 2048` px landscape) from `assets/ipad/` for iPad universal support. App Previews (`1200 x 1600` px / `1600 x 1200` px) are also ready in `assets/ipad/`.
+   - *Asset Automation*: To regenerate or verify all creative assets at any time, run `./scripts/build_assets.sh`.
 4. **Build**:
    - Scroll down to **Build** section and click **+ Select Build**.
    - Choose the uploaded build from Step 4.
@@ -158,6 +161,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
      Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
      - Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
      - Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
+     - App Intents and Siri Shortcuts (Open Emergency Triage, Show Safety Card) provide hands-free and hardware Action Button emergency navigation for users during sensory shutdowns and acute freezes.
      - No login or account is required. All data is stored locally on the device in UserDefaults.
      - Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
      ```

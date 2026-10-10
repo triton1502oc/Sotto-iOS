@@ -87,6 +87,17 @@ public final class DemoAutomationRunner: ObservableObject {
         return args.contains("--demo-flow-en") || args.contains("--demo-flow-id")
     }
     
+    public var isScreenshotRequested: Bool {
+        let args = ProcessInfo.processInfo.arguments
+        return args.contains("--screenshot-main") ||
+               args.contains("--screenshot-triage") ||
+               args.contains("--screenshot-whyfinder") ||
+               args.contains("--screenshot-whylog") ||
+               args.contains("--screenshot-safety") ||
+               args.contains("--screenshot-settings") ||
+               args.contains("--capture-screenshots")
+    }
+    
     public var isIndonesian: Bool {
         ProcessInfo.processInfo.arguments.contains("--demo-flow-id")
     }
@@ -105,6 +116,55 @@ public final class DemoAutomationRunner: ObservableObject {
                 try? data.write(to: URL(fileURLWithPath: eventsFilePath))
             }
         }
+    }
+    
+    public func startScreenshotCapture(viewModel: MainViewModel) {
+        setupScreenshotState(viewModel: viewModel)
+        let args = ProcessInfo.processInfo.arguments
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if args.contains("--screenshot-triage") || args.contains("--screenshot-whyfinder") {
+                viewModel.showTwoWayDialog = true
+            } else if args.contains("--screenshot-whylog") {
+                viewModel.showWhyLogDialog = true
+            } else if args.contains("--screenshot-safety") {
+                if let emergency = viewModel.phrases.first(where: { $0.isEmergency }) {
+                    viewModel.activeFullscreenPhrase = emergency
+                }
+            } else if args.contains("--screenshot-settings") {
+                viewModel.showVoiceSettingsDialog = true
+            }
+        }
+    }
+    
+    private func setupScreenshotState(viewModel: MainViewModel) {
+        viewModel.voiceSettings.appLanguage = "en"
+        viewModel.voiceSettings.playAttentionChime = false
+        viewModel.voiceSettings.showLanguageSwitcher = false
+        viewModel.voiceSettings.secondaryLanguage = "id"
+        viewModel.phrases = [
+            Phrase(text: "I cannot speak right now. Please read my screen.", language: "auto", isEmergency: true, category: .emergency),
+            Phrase(text: "Please give me time.", language: "auto", isEmergency: false, category: .needs),
+            Phrase(text: "I need a quiet space.", spokenText: "Saya butuh tempat tenang.", spokenLanguage: "id", language: "auto", isEmergency: false, category: .needs),
+            Phrase(text: "I need to leave now.", language: "auto", isEmergency: false, category: .needs),
+            Phrase(text: "Yes, please.", language: "auto", isEmergency: false, category: .social),
+            Phrase(text: "No, thank you.", language: "auto", isEmergency: false, category: .social),
+            Phrase(text: "Thank you.", language: "auto", isEmergency: false, category: .social),
+            Phrase(text: "Are you in pain?", language: "auto", isEmergency: false, category: .care),
+            Phrase(text: "Do you need water or food?", language: "auto", isEmergency: false, category: .care),
+            Phrase(text: "Do you need the restroom?", language: "auto", isEmergency: false, category: .care),
+            Phrase(text: "Are you feeling cold or warm?", language: "auto", isEmergency: false, category: .care),
+            Phrase(text: "Do you want to rest or sleep?", language: "auto", isEmergency: false, category: .care),
+            Phrase(text: "Hello.", language: "auto", isEmergency: false, category: .general),
+            Phrase(text: "Please repeat that.", language: "auto", isEmergency: false, category: .general)
+        ]
+        viewModel.selectedCategory = .all
+        viewModel.isEditMode = false
+        viewModel.activeFullscreenPhrase = nil
+        viewModel.showVoiceSettingsDialog = false
+        viewModel.showTwoWayDialog = false
+        viewModel.showWhyLogDialog = false
+        viewModel.quickText = ""
     }
     
     public func startDemo(viewModel: MainViewModel, size: CGSize) {
