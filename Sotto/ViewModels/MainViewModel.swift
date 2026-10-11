@@ -374,44 +374,63 @@ public final class MainViewModel: ObservableObject {
             isEmergency: phrase.isEmergency,
             voiceSettings: voiceSettings
         )
-        if voiceSettings.showLanguageSwitcher && activeSpeechTarget == "secondary" {
-            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !spoken.isEmpty && spoken != LocaleHelper.langAuto {
-                speechService.speak(
-                    text: spoken,
-                    language: phrase.spokenLanguage ?? voiceSettings.secondaryLanguage,
-                    settings: voiceSettings
-                )
-            } else {
-                let sourceLocale = LocaleHelper.resolvePhraseLocale(phraseLang: phrase.language, phraseText: phrase.text, appLanguage: voiceSettings.appLanguage)
-                let sourceLang = sourceLocale.language.languageCode?.identifier ?? "en"
+        if voiceSettings.showLanguageSwitcher {
+            if activeSpeechTarget == "secondary" {
                 let targetLang = voiceSettings.secondaryLanguage
-                if let dictMatch = TranslationHelper.dictionaryTranslation(for: phrase.text, sourceLang: sourceLang, targetLang: targetLang) {
+                if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   !spoken.isEmpty && spoken != LocaleHelper.langAuto {
+                    let spokenLang = (phrase.spokenLanguage?.isEmpty == false && phrase.spokenLanguage != LocaleHelper.langAuto)
+                        ? phrase.spokenLanguage!
+                        : targetLang
                     speechService.speak(
-                        text: dictMatch,
-                        language: targetLang,
+                        text: spoken,
+                        language: spokenLang,
                         settings: voiceSettings
                     )
                 } else {
-                    speechService.speak(
-                        text: phrase.text,
-                        language: targetLang,
-                        settings: voiceSettings
-                    )
+                    let sourceLocale = LocaleHelper.resolvePhraseLocale(phraseLang: phrase.language, phraseText: phrase.text, appLanguage: voiceSettings.appLanguage)
+                    let sourceLang = sourceLocale.language.languageCode?.identifier ?? "en"
+                    if let dictMatch = TranslationHelper.dictionaryTranslation(for: phrase.text, sourceLang: sourceLang, targetLang: targetLang) {
+                        speechService.speak(
+                            text: dictMatch,
+                            language: targetLang,
+                            settings: voiceSettings
+                        )
+                    } else {
+                        speechService.speak(
+                            text: phrase.text,
+                            language: targetLang,
+                            settings: voiceSettings
+                        )
+                    }
                 }
+            } else {
+                // Primary speech target: always speak primary card text with primary language
+                speechService.speak(
+                    text: phrase.text,
+                    language: phrase.language,
+                    settings: voiceSettings
+                )
             }
         } else {
-            let textToSpeak: String
-            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
-                textToSpeak = spoken
+            // Single-language mode
+            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
+               !spoken.isEmpty && spoken != LocaleHelper.langAuto {
+                let spokenLang = (phrase.spokenLanguage?.isEmpty == false && phrase.spokenLanguage != LocaleHelper.langAuto)
+                    ? phrase.spokenLanguage!
+                    : phrase.language
+                speechService.speak(
+                    text: spoken,
+                    language: spokenLang,
+                    settings: voiceSettings
+                )
             } else {
-                textToSpeak = phrase.text
+                speechService.speak(
+                    text: phrase.text,
+                    language: phrase.language,
+                    settings: voiceSettings
+                )
             }
-            speechService.speak(
-                text: textToSpeak,
-                language: phrase.language,
-                settings: voiceSettings
-            )
         }
     }
     

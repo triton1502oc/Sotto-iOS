@@ -16,7 +16,7 @@ Ready-to-use, therapist-reviewed phrase packs for high-friction real-world envir
 
 ## 1. 🏥 Medical & Emergency Room Visit
 
-Designed for hospital intake, urgent care, triage, and physical assessments when verbal communication is compromised or painful.
+Designed for hospital intake, urgent care, comfort checks, and physical assessments when verbal communication is compromised or painful.
 
 <p align="center">
   <img src="assets/qr_deck_medical.png" alt="Medical Deck QR Code" width="260" height="260" />

@@ -1,7 +1,7 @@
 # Sotto User & Caregiver Guide
 
 ### TL;DR
-Sotto serves a vital dual mission: a calm, low-cognitive-load **Partner Mode** (`🤝`)—combining an immediate two-way receptive emergency triage HUD and guided **Why Finder** root-cause investigation—for communication partners, caregivers, therapists, and family members, paired with a dignity-first AAC speech board for autistic individuals, non-speaking users, and anyone with unclear or fatigued speech.
+Sotto serves a vital dual mission: a calm, low-cognitive-load **Partner Mode** (`🤝`)—combining an immediate two-way receptive crisis check-in HUD and guided **Why Finder** root-cause investigation—for communication partners, caregivers, therapists, and family members, paired with a dignity-first AAC speech board for autistic individuals, non-speaking users, and anyone with unclear or fatigued speech.
 
 ---
 
@@ -26,7 +26,7 @@ Sotto is designed around a simple reality:
         ┌─────────────┴─────────────┐            ┌─────────────┴─────────────┐
         ▼                           ▼            ▼                           ▼
  🤝 PARTNER MODE (Caregiver Hub)          🗣️ SELF-ADVOCACY (Daily AAC)
- ├── Talk Tab: Emergency Triage HUD & Mic ├── Instant 1-Tap Phrase Cards
+ ├── Talk Tab: Crisis Check-in HUD & Mic  ├── Instant 1-Tap Phrase Cards
  ├── 180° Face-to-Face Screen Flip        ├── Safety Bystander Hero Card
  ├── 4-Card Tactile Response Docks        ├── Quick-Speak Bar & Dictation
  └── Guided Tab: Root-Cause Decision Tree └── Giant High-Contrast Fullscreen
@@ -34,9 +34,9 @@ Sotto is designed around a simple reality:
 
 ---
 
-## 2. Partner Mode: Immediate Emergency Triage (`🤝`)
+## 2. Partner Mode: Immediate Crisis Check-in (`🤝`)
 
-When sensory overload, verbal shutdowns, cognitive freezes, or acute panic occur, processing multi-step questions causes **demand fatigue** and worsens distress. **Two-Way Partner Mode (Talk tab)** is Sotto's primary front-line tool for immediate crisis triage and de-escalation.
+When sensory overload, verbal shutdowns, cognitive freezes, or acute panic occur, processing multi-step questions causes **demand fatigue** and worsens distress. **Two-Way Partner Mode (Talk tab)** is Sotto's primary front-line tool for immediate crisis navigation and calm communication.
 
 ```
 Caregiver asks 1 direct question ──► Giant text on screen ──► Individual taps 1 of 4 replies
@@ -44,16 +44,16 @@ Caregiver asks 1 direct question ──► Giant text on screen ──► Indivi
 ```
 
 > [!IMPORTANT]
-> **Clinical Rule of Thumb: Talk vs. Guided**
+> **Caregiver Rule of Thumb: Talk vs. Guided**
 > - **During Peak Meltdown or Acute Crisis**: Use **Talk (`💬`)**. Ask one direct question (*"Do you want to leave?"*, *"Is it too loud?"*). Do not make an overwhelmed person navigate a multi-level tree.
-> - **When Trigger is Unknown or After Calming Down**: Use **Guided (`🧭`)**. Methodically investigate physical pain, body regions, sensory triggers, or routine changes.
+> - **When Trigger is Unknown or After Calming Down**: Use **Guided (`🧭`)**. Methodically investigate physical discomfort, body regions, sensory triggers, or routine changes.
 
 ### How to Use Talk Mode During an Emergency Step-by-Step
 
 1. **Open Partner Mode**: Tap the handshake icon (`🤝`) in the top app bar.
 2. **Present One Urgent Question**:
    - **Speak Naturally (`🎤 Mic`)**: Tap the mic button. Sotto transcribes your voice in real time into giant high-contrast text. Tap again to stop.
-   - **Preset Check-in Cards (`📋 Cards`)**: Tap Cards to pick instant comfort and triage checks filtered by categories (*"Are you in pain?"*, *"Do you need water?"*, *"I need a quiet space."*).
+   - **Preset Check-in Cards (`📋 Cards`)**: Tap Cards to pick instant comfort and binary checks filtered by categories (*"Are you in pain?"*, *"Do you need water?"*, *"I need a quiet space."*).
    - **Type Manually (`⌨️ Type`)**: Type directly if ambient noise is too loud for speech recognition.
 3. **Vocalize with Read Aloud (`🔊 Speak`)**:
    - If the individual has their eyes closed or head down, tap **`🔊 Speak`** to vocalize the prompt through the phone's speaker.
@@ -62,7 +62,7 @@ Caregiver asks 1 direct question ──► Giant text on screen ──► Indivi
    - The question text and the 4 response buttons flip upside down (facing the person across from you right-side up), while the caregiver controls remain facing you at the bottom.
 5. **Dignified 4-Button Rapid Response**:
    - The individual taps one large, high-contrast button:
-     - `✓ Yes` • `✕ No` • `? Not Sure` • `⏹ Stop`
+     - `✓ Yes` • `✕ No` • `⏳ Wait` • `🔁 Repeat` (or `? Not Sure` • `⏹ Stop` in Guided)
    - Instant offline TTS voice confirmation plays aloud, haptic feedback pulses on the phone, and a visual confirmation badge appears.
 
 ---

@@ -8,72 +8,57 @@ Ready-to-use metadata, descriptions, keywords, screenshot specifications, and pr
 ## 1. App Store Connect Metadata
 
 ### App Details
-* **App Name:** `Sotto - Assistive AAC Speech` *(29 / 30 characters)*
-* **Subtitle:** `Calm Crisis Triage & Adult AAC` *(30 / 30 characters)*
-* **Primary Category:** `Medical` or `Utilities`
+* **App Name:** `Sotto` *(5 / 30 characters)*
+* **Subtitle:** `Calm Yes/No for Meltdowns` *(25 / 30 characters)*
+* **Primary Category:** `Accessibility` or `Utilities`
 * **Secondary Category:** `Productivity`
 * **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)
-* **Copyright:** `2026 Budi Aprianto` (or `2026 <Your Name / Organization>`)
+* **Copyright:** `2026 Budi Aprianto`
 * **Content Rights (Third-Party Content):** Select **"No"** (Core app uses 100% native Apple frameworks, SF Symbols, and local storage; zero external copyrighted assets).
 
-### Promotional Text *(159 / 170 characters)*
+### Promotional Text *(167 / 170 characters)*
 ```text
-Calm yes/no crisis triage for caregivers reaching autistic loved ones in shutdowns, paired with a dignified low-stimulus AAC speech board & Action Button launch.
+Calm yes/no communication for caregivers reaching autistic loved ones in shutdowns, paired with a dignified low-stimulus AAC speech board & Action Button launch.
 ```
 
-### Keywords *(Comma-separated, no spaces after commas, 97 / 100 characters)*
+### Keywords *(Comma-separated, no spaces after commas, 77 / 100 characters)*
 ```text
-shutdown,meltdown,deescalation,sensory,mutism,nonverbal,crisis,triage,aphasia,overload,aac,autism,speech
+aac,autism,shutdown,meltdown,nonspeaking,yesno,caregiver,tts,offline,autistic
 ```
 
-### Full Description *(Markdown & Plain Text compliant, ~3,600 / 4,000 characters)*
+### Full Description *(Markdown & Plain Text compliant)*
 ```text
-Sotto is a calm yes/no crisis navigation tool for caregivers, parents, and therapists to connect with autistic teens and adults during sensory overload, meltdowns, and verbal shutdowns — paired with a dignified, low-stimulation AAC speech board for daily communication and unclear speech support.
+When speech is hard, tap instead.
 
-Created by a father of two autistic sons (ages 22 and 15), Sotto is built on lived experience: during meltdowns and shutdowns, processing complex questions or speaking is exhausting. Sotto bridges this divide with gentle binary choices, speech clarity support, zero open-ended demands, and instant hardware Action Button launch.
+Built by a father in Singapore for his two autistic sons (22 & 15) who can speak but not always. During meltdown, operating a phone is too hard. So I operate Sotto on MY phone, they tap Yes/No/Wait to pinpoint — issue resolved.
 
-FOR CAREGIVERS, FAMILIES & THERAPISTS:
+Two modes, one family system:
 
-• Two-Way Speak HUD & 180° Tabletop Flip
-During sensory overload or shutdowns, complex questions worsen distress. Caregivers speak naturally or choose a preset prompt, flip the device 180° face-to-face, and let their loved one tap giant response targets (Yes, No, Not sure, Stop) with voice confirmation. Zero cognitive load.
+MODE 1 - DAILY (He holds his phone):
+Self-operated dignified AAC for complex info. Tap cards, multi-line Quick-Speak Bar, long-press giant fullscreen. Universal iPhone & iPad.
 
-• Hardware Action Button & Siri Shortcuts
-During acute freezes, navigating menus is difficult. Map the physical Action Button, iOS Back Tap, or Siri Shortcuts ("Open Sotto Emergency") to instantly launch crisis triage or safety cards eyes-free.
+MODE 2 - MELTDOWN (You hold YOUR phone):
+You hold your phone. Tap partner, Flip 180° to face him, he taps Yes/No/Not sure/Stop. Direct pinpoint, no branching tree during crisis. This is what works at home.
 
-• Why Finder (Root-Cause Discovery Tree)
-When distress causes are unclear, Why Finder provides a gentle yes/no tree to systematically uncover physical pain (with body locator), sensory overload, fatigue, or routine disruptions without demanding open-ended answers.
+Crafted for sensory needs:
+• 5 Sensory Themes: Charcoal, OLED Pure Black, Warm Amber Low Strain, Slate Navy, Soft Parchment — WCAG AAA
+• Dignified Speech: AVSpeechSynthesizer with Samantha, Siri, Ava, Damayanti, digit-by-digit phone TTS for Safety card
+• Attention Chime: D5->A5 musical + haptics
+• Safety Bystander Card: 🛡️ badge, high-contrast amber #251E14/#FFB74D, digit-by-digit phone TTS
+• Two-Way HUD: Talk first during crisis, Why Finder second tab post-crisis
+• Why Log & Trends: After Yes/No resolves, log root cause locally
+• QR Offline Sharing: SOTTO:v1:... between iOS & Android, zero cloud
+• Backup v2: Granular JSON merge/replace
+• 100% Offline, Zero Trackers, Telemetry v3 opt-in with payload preview & 14-day PMF survey
 
-• Private On-Device Why Log & Trends
-Resolved crisis sessions are logged 100% locally. Review 30-day patterns to identify recurring triggers, peak hours, and actionable interventions. Never uploaded to the cloud.
+Free. Private. GPL-3.0 with App Store exception. Sotto is not a medical device and does not provide medical advice, diagnosis, or treatment. It is an assistive communication tool.
 
-• Customizable Trees & Safe Sharing
-Tailor questions to specific triggers using voice dictation. Export and share custom trees with teachers or therapists while keeping private crisis logs strictly excluded.
+github.com/triton1502oc/Sotto-iOS | Android available
+```
 
-FOR NON-SPEAKING & UNCLEAR VOICES:
-
-• Dignified Voice for Unclear Speech
-Whether non-verbal, in a shutdown, or speaking with quiet, slurred, or dysarthric speech, Sotto provides a crisp, adult voice and high-contrast cards—free of childish cartoons.
-
-• Safety & Bystander Hero Card
-High-contrast banner for non-verbal episodes and medical contacts. Show fullscreen to bystanders or first responders with digit-by-digit emergency phone number TTS read aloud.
-
-• Sensory Themes & Universal Grid
-Sensory palettes (Charcoal, OLED Black, Warm Amber, Slate Navy, Soft Parchment) with WCAG AAA contrast. Responsive layouts support all orientations on iPhone and iPad.
-
-• Quick-Speak Bar & Voice Dictation
-Type spontaneous thoughts with auto-expanding text, one-tap speech, voice dictation, and one-touch card creation.
-
-• Giant Fullscreen & Attention Chime
-Display any phrase across the entire screen in giant text for noisy spaces. Sound a gentle two-tone chime and haptic vibration to politely capture attention before speaking.
-
-• Natural Speech & Dual-Language TTS
-Natural flagship voices with rate and pitch controls. Display cards in one language while speaking in another (e.g., English text spoken in Indonesian) via offline translation.
-
-• Instant Offline QR Deck Sharing
-Exchange communication decks between caregivers, therapists, and users completely offline without accounts using high-density QR codes across iOS and Android.
-
-• 100% Offline Core & Privacy Guarantee
-Zero accounts, ads, or cloud speech recording. Your phrases, custom trees, and private logs never leave your device. Optional, strictly opt-in anonymous usability timing collects zero text or audio.
+### What's New
+```text
+First App Store release. Direct Yes/No primary for meltdowns — caregiver holds phone, individual taps to pinpoint. Why Finder moved to post-crisis explorer. Added 5 sensory themes, Safety cards, QR sharing with Android. Universal iPad.
 ```
 
 ### URLs
@@ -105,7 +90,7 @@ Zero accounts, ads, or cloud speech recording. Your phrases, custom trees, and p
 ### Screenshot Set Organization (App Store Review Compliant)
 Both folders contain 5 sequential screens matching App Store Connect review requirements:
 1. `01_aac_speech_board.png` – Low-stimulus AAC speech grid with Quick-Speak bar
-2. `02_two_way_partner_triage.png` – Caregiver yes/no crisis triage & 180° tabletop partner mode
+2. `02_two_way_partner_triage.png` – Caregiver yes/no crisis check-in & 180° tabletop partner mode
 3. `03_why_finder_tree.png` – Why Finder systematic root-cause discovery tree
 4. `04_whylog_analytics.png` – Private on-device Why Log with 30-day pattern insights
 5. `05_bystander_safety_card.png` – Fullscreen Bystander Hero card with TTS readout
@@ -133,12 +118,7 @@ When completing the **App Privacy** section in App Store Connect:
 
 When submitting for App Review, provide this note for the reviewer:
 ```text
-Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
-- Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
-- Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
-- App Intents and Siri Shortcuts (Open Emergency Triage, Show Safety Card) provide hands-free and hardware Action Button emergency navigation for users during sensory shutdowns and acute freezes.
-- No login or account is required. All data is stored locally on the device in UserDefaults.
-- Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
+Sotto is assistive communication AAC for autistic teens/adults and families. Text-to-speech cards and direct Yes/No buttons for situational communication. NOT a medical device, no diagnosis/treatment. No accounts, no data core. Optional opt-in anonymous timing only (zero text/speech). GPL-3.0 with App Store exception in LICENSE. Safety card contact is user-entered.
 ```
 
 ---
@@ -148,12 +128,12 @@ Sotto is an assistive communication (AAC) app for autistic and non-verbal indivi
 Submit this pitch to Apple Developer Relations / App Store Editorial under the **Inclusivity & Accessibility** nomination:
 
 ### Pitch Summary:
-* **App:** Sotto - Assistive AAC Speech
-* **Category:** Accessibility, Medical, Utilities
+* **App:** Sotto
+* **Category:** Accessibility, Utilities, Productivity
 * **Target Audience:** Autistic teens & adults, situational non-speaking users, parents & caregivers navigating meltdowns.
 
 ### What Makes Sotto Unique:
-1. **Crisis-First Interaction Design**: Traditional AAC apps assume calm, continuous symbol communication. Sotto is purpose-built for the acute verbal shutdown / sensory meltdown crisis loop. The Two-Way HUD with 180° tabletop rotation gives families an immediate, low-demand binary triage tool (`Yes`, `No`, `Not sure`, `Stop`) with zero cognitive pressure.
+1. **Crisis-First Interaction Design**: Traditional AAC apps assume calm, continuous symbol communication. Sotto is purpose-built for the acute verbal shutdown / sensory meltdown crisis loop. The Two-Way HUD with 180° tabletop rotation gives families an immediate, low-demand binary check-in (`Yes`, `No`, `Not sure`, `Stop`) with zero cognitive pressure.
 2. **Adult Neurodivergent Dignity**: Mature typography, high-contrast sensory-calm palettes (Charcoal, OLED Pure Black, Warm Amber, Slate Navy, Soft Parchment), and zero patronizing pediatric cartoon icons.
 3. **Deep Apple Ecosystem Integration**: 1-press hardware launch via the iPhone Action Button, Accessibility Back Tap, and Siri Shortcuts using native `AppIntents`.
 4. **100% Offline Privacy Guarantee**: Zero cloud accounts, zero ads, zero trackers. Rated "Data Not Collected" on App Privacy labels. Features high-density offline QR deck sharing directly between devices without internet.

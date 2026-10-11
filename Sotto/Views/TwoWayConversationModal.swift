@@ -16,6 +16,7 @@ private struct WhyQuestionOption: Identifiable {
 }
 
 public struct TwoWayConversationModal: View {
+    @Environment(\.sottoPalette) private var palette
     public let allPhrases: [Phrase]
     public let categories: [String]
     public let whyFinderRepository: WhyFinderRepositoryProtocol
@@ -32,6 +33,8 @@ public struct TwoWayConversationModal: View {
     @State private var showKeyboardInput: Bool = false
     @State private var manualInputText: String = ""
     @State private var whySessionSaved: Bool = false
+    @State private var showPostResolutionPrompt: Bool = false
+    @State private var triggerLoggedFeedback: String? = nil
     
     // Why Finder session state
     @StateObject private var whySession: WhyFinderSession
@@ -118,7 +121,7 @@ public struct TwoWayConversationModal: View {
     
     public var body: some View {
         ZStack {
-            SottoTheme.background
+            palette.background
                 .ignoresSafeArea()
             
             if isFlipped {
@@ -212,6 +215,29 @@ public struct TwoWayConversationModal: View {
             .frame(maxHeight: .infinity)
             .padding(.horizontal, 16)
             
+            // Optional trigger feedback banner
+            if let feedback = triggerLoggedFeedback {
+                Text(feedback)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(SottoTheme.successText)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(SottoTheme.successContainer.opacity(0.8))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 16)
+            }
+            
+            // Post-Resolution Pattern Logger (Talk tab)
+            if showPostResolutionPrompt && activeTab == .freeform {
+                PostResolutionTriggerLogger(
+                    appLanguage: appLanguage,
+                    onLogTrigger: { logPostResolutionTrigger($0) },
+                    onDismiss: { showPostResolutionPrompt = false }
+                )
+                .padding(.horizontal, 16)
+            }
+            
             // Response Dock (4 Cards or Body Grid or Intensity Row)
             CaregiverResponseDock(
                 activeTab: activeTab,
@@ -220,12 +246,28 @@ public struct TwoWayConversationModal: View {
                 onYes: {
                     let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
                     handleUserResponse(displayText: label, ttsText: label)
-                    if activeTab == .whyFinder { whySession.answerYes() }
+                    if activeTab == .whyFinder {
+                        whySession.answerYes()
+                    } else {
+                        showPostResolutionPrompt = true
+                    }
                 },
                 onNo: {
                     let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
                     handleUserResponse(displayText: label, ttsText: label)
-                    if activeTab == .whyFinder { whySession.answerNo() }
+                    if activeTab == .whyFinder {
+                        whySession.answerNo()
+                    } else {
+                        showPostResolutionPrompt = true
+                    }
+                },
+                onWait: {
+                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
+                    handleUserResponse(displayText: label, ttsText: label)
+                },
+                onRepeat: {
+                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
+                    handleUserResponse(displayText: label, ttsText: label)
                 },
                 onNotSure: {
                     let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
@@ -328,12 +370,28 @@ public struct TwoWayConversationModal: View {
                     onYes: {
                         let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
                         handleUserResponse(displayText: label, ttsText: label)
-                        if activeTab == .whyFinder { whySession.answerYes() }
+                        if activeTab == .whyFinder {
+                            whySession.answerYes()
+                        } else {
+                            showPostResolutionPrompt = true
+                        }
                     },
                     onNo: {
                         let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
                         handleUserResponse(displayText: label, ttsText: label)
-                        if activeTab == .whyFinder { whySession.answerNo() }
+                        if activeTab == .whyFinder {
+                            whySession.answerNo()
+                        } else {
+                            showPostResolutionPrompt = true
+                        }
+                    },
+                    onWait: {
+                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
+                    },
+                    onRepeat: {
+                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
                     },
                     onNotSure: {
                         let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
@@ -360,6 +418,27 @@ public struct TwoWayConversationModal: View {
             .rotationEffect(.degrees(180))
             
             // Caregiver controls facing the caregiver at the bottom
+            if let feedback = triggerLoggedFeedback {
+                Text(feedback)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(SottoTheme.successText)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(SottoTheme.successContainer.opacity(0.8))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 16)
+            }
+            
+            if showPostResolutionPrompt && activeTab == .freeform {
+                PostResolutionTriggerLogger(
+                    appLanguage: appLanguage,
+                    onLogTrigger: { logPostResolutionTrigger($0) },
+                    onDismiss: { showPostResolutionPrompt = false }
+                )
+                .padding(.horizontal, 16)
+            }
+            
             if showKeyboardInput && activeTab == .freeform {
                 manualKeyboardRow
                     .padding(.horizontal, 16)
@@ -433,6 +512,60 @@ public struct TwoWayConversationModal: View {
                 intensity: entry.intensity,
                 durationMs: entry.endedAt - entry.startedAt
             )
+        }
+    }
+    
+    private func logPostResolutionTrigger(_ triggerKey: String) {
+        let areaId: String
+        switch triggerKey {
+        case "Pain": areaId = UserDefaultsWhyFinderRepository.areaBody
+        case "Noise": areaId = UserDefaultsWhyFinderRepository.areaSenses
+        case "Task": areaId = UserDefaultsWhyFinderRepository.areaHappened
+        case "Emotion": areaId = UserDefaultsWhyFinderRepository.areaFeelings
+        default: areaId = "other"
+        }
+        
+        let now = Int64(Date().timeIntervalSince1970 * 1000)
+        let promptText = activeFreeformText.isEmpty ? (isIndonesian ? "Pemeriksaan Ya/Tidak Langsung" : "Direct Yes/No Check-in") : activeFreeformText
+        let entry = WhyLogEntry(
+            id: UUID().uuidString,
+            startedAt: now - 3000,
+            endedAt: now,
+            outcome: .found,
+            areaId: areaId,
+            causeText: triggerKey,
+            bodyPart: nil,
+            intensity: nil,
+            note: nil,
+            privateNote: nil,
+            steps: [
+                WhyStep(
+                    questionText: promptText,
+                    answer: "yes"
+                )
+            ]
+        )
+        whyFinderRepository.addLog(entry)
+        UsabilityTracker.shared.recordActivation(key: "why_log_quick_trigger")
+        UsabilityTracker.shared.recordWhyFinder(
+            outcome: "found",
+            areaId: areaId,
+            depth: 1,
+            notSureCount: 0,
+            bodyPart: nil,
+            intensity: nil,
+            durationMs: 3000
+        )
+        
+        let label = LocaleHelper.getTriggerLabel(triggerKey, appLanguage: appLanguage)
+        triggerLoggedFeedback = LocaleHelper.getTriggerLoggedFeedback(label, appLanguage: appLanguage)
+        showPostResolutionPrompt = false
+        
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.success)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+            triggerLoggedFeedback = nil
         }
     }
     
@@ -784,6 +917,8 @@ private struct CaregiverResponseDock: View {
     let appLanguage: String
     let onYes: () -> Void
     let onNo: () -> Void
+    let onWait: () -> Void
+    let onRepeat: () -> Void
     let onNotSure: () -> Void
     let onStop: () -> Void
     let onSelectBodyPart: (String) -> Void
@@ -799,64 +934,115 @@ private struct CaregiverResponseDock: View {
             case .finished:
                 EmptyView()
             default:
-                fourCardDock
+                fourCardDock(isWhyFinder: true)
             }
         } else {
-            fourCardDock
+            fourCardDock(isWhyFinder: false)
         }
     }
     
     // Four Card Dock
-    private var fourCardDock: some View {
+    private func fourCardDock(isWhyFinder: Bool) -> some View {
         let strYes = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
         let strNo = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
         let strNotSure = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
         let strStop = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+        let strWait = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
+        let strRepeat = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
         
         return VStack(spacing: 8) {
-            // Row 1: YES & NO
+            // Row 1: YES & NO (Primary Crisis Buttons >= 80pt frame height with tactile haptics)
             HStack(spacing: 10) {
-                Button(action: onYes) {
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .heavy)
+                    impact.impactOccurred()
+                    onYes()
+                }) {
                     Text("✓ \(strYes)")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(SottoTheme.successText)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 56)
+                        .frame(minHeight: 80, maxHeight: 92)
                         .background(SottoTheme.successContainer)
-                        .cornerRadius(16)
+                        .cornerRadius(18)
+                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
                 }
                 
-                Button(action: onNo) {
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .heavy)
+                    impact.impactOccurred()
+                    onNo()
+                }) {
                     Text("✕ \(strNo)")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(SottoTheme.crisisStopText)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 56)
+                        .frame(minHeight: 80, maxHeight: 92)
                         .background(SottoTheme.crisisStopContainer)
-                        .cornerRadius(16)
+                        .cornerRadius(18)
+                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
                 }
             }
             
-            // Row 2: NOT SURE & STOP
+            // Row 2: Secondary choices (54pt height)
             HStack(spacing: 10) {
-                Button(action: onNotSure) {
-                    Text("? \(strNotSure)")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(SottoTheme.warningHighText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(SottoTheme.warningHighContainer)
-                        .cornerRadius(16)
-                }
-                
-                Button(action: onStop) {
-                    Text("⏹ \(strStop)")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(SottoTheme.neutralStoppedText)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 50)
-                        .background(SottoTheme.neutralStoppedContainer)
-                        .cornerRadius(16)
+                if isWhyFinder {
+                    Button(action: {
+                        let impact = UIImpactFeedbackGenerator(style: .medium)
+                        impact.impactOccurred()
+                        onNotSure()
+                    }) {
+                        Text("? \(strNotSure)")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SottoTheme.warningHighText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(SottoTheme.warningHighContainer)
+                            .cornerRadius(16)
+                    }
+                    
+                    Button(action: {
+                        let impact = UIImpactFeedbackGenerator(style: .medium)
+                        impact.impactOccurred()
+                        onStop()
+                    }) {
+                        Text("⏹ \(strStop)")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SottoTheme.neutralStoppedText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(SottoTheme.neutralStoppedContainer)
+                            .cornerRadius(16)
+                    }
+                } else {
+                    // Freeform / Talk mode: Wait & Repeat
+                    Button(action: {
+                        let impact = UIImpactFeedbackGenerator(style: .medium)
+                        impact.impactOccurred()
+                        onWait()
+                    }) {
+                        Text("⏳ \(strWait)")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SottoTheme.neutralDarkText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(SottoTheme.neutralDarkContainer)
+                            .cornerRadius(16)
+                    }
+                    
+                    Button(action: {
+                        let impact = UIImpactFeedbackGenerator(style: .medium)
+                        impact.impactOccurred()
+                        onRepeat()
+                    }) {
+                        Text("🔁 \(strRepeat)")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(SottoTheme.neutralDarkText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(SottoTheme.neutralDarkContainer)
+                            .cornerRadius(16)
+                    }
                 }
             }
         }
@@ -960,6 +1146,61 @@ private struct CaregiverResponseDock: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Post-Resolution Pattern Logger
+
+private struct PostResolutionTriggerLogger: View {
+    let appLanguage: String
+    let onLogTrigger: (String) -> Void
+    let onDismiss: () -> Void
+    
+    private let triggers = ["Pain", "Noise", "Task", "Emotion", "Other"]
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("📝 " + LocaleHelper.getTriggerLogHeader(appLanguage: appLanguage))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(SottoTheme.textPrimary)
+                Spacer()
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(SottoTheme.textSecondary)
+                        .padding(4)
+                }
+            }
+            
+            HStack(spacing: 6) {
+                ForEach(triggers, id: \.self) { triggerKey in
+                    let label = LocaleHelper.getTriggerLabel(triggerKey, appLanguage: appLanguage)
+                    Button(action: { onLogTrigger(triggerKey) }) {
+                        Text(label)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(SottoTheme.textPrimary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 38)
+                            .background(SottoTheme.surfaceVariant)
+                            .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(SottoTheme.primary.opacity(0.2), lineWidth: 1)
+                            )
+                    }
+                }
+            }
+        }
+        .padding(10)
+        .background(SottoTheme.surface)
+        .cornerRadius(14)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(SottoTheme.primary.opacity(0.3), lineWidth: 1)
+        )
     }
 }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct QuickSpeakBarView: View {
+    @Environment(\.sottoPalette) private var palette
     @Binding public var text: String
     public let onSpeak: (String) -> Void
     public let onFullscreen: (String) -> Void
@@ -32,7 +33,7 @@ public struct QuickSpeakBarView: View {
     public var body: some View {
         VStack(spacing: 8) {
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(palette.outlineVariant.opacity(0.6))
             
             // Tier 1: Multi-Line Text Input (1 to 4 lines) with Smart Mic/Clear Toggle
             HStack(alignment: .bottom, spacing: 8) {
@@ -95,7 +96,7 @@ public struct QuickSpeakBarView: View {
                     
                     Button(action: toggleDictation) {
                         Image(systemName: "mic")
-                            .foregroundColor(isNotEmpty ? SottoTheme.textSecondary : SottoTheme.textPrimary)
+                            .foregroundColor(isNotEmpty ? palette.textSecondary : palette.textPrimary)
                             .font(.system(size: 18))
                             .frame(width: 44, height: 44)
                             .contentShape(Rectangle())
@@ -106,11 +107,11 @@ public struct QuickSpeakBarView: View {
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
-            .background(SottoTheme.background)
+            .background(palette.background)
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(speechRecognizer.isRecording ? SottoTheme.danger : Color.white.opacity(0.12), lineWidth: 1)
+                    .stroke(speechRecognizer.isRecording ? SottoTheme.danger : palette.outlineVariant, lineWidth: 1)
             )
             .demoTarget("quickSpeak_textField")
             .padding(.horizontal, 12)
@@ -129,10 +130,14 @@ public struct QuickSpeakBarView: View {
                     }) {
                         Image(systemName: "arrow.up.left.and.arrow.down.right")
                             .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(isNotEmpty ? SottoTheme.textPrimary : SottoTheme.textDisabled)
+                            .foregroundColor(isNotEmpty ? palette.textPrimary : SottoTheme.textDisabled)
                             .frame(width: 44, height: 44)
-                            .background(SottoTheme.background)
+                            .background(palette.background)
                             .cornerRadius(10)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 10)
+                                    .stroke(palette.outlineVariant.opacity(0.7), lineWidth: 1)
+                            )
                             .contentShape(Rectangle())
                     }
                     .disabled(!isNotEmpty)
@@ -150,10 +155,14 @@ public struct QuickSpeakBarView: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(SottoTheme.primary)
+                                .foregroundColor(palette.accent)
                                 .frame(width: 44, height: 44)
-                                .background(SottoTheme.background)
+                                .background(palette.background)
                                 .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(palette.outlineVariant.opacity(0.7), lineWidth: 1)
+                                )
                                 .contentShape(Rectangle())
                         }
                         .accessibilityLabel("Save as phrase card")
@@ -177,9 +186,9 @@ public struct QuickSpeakBarView: View {
                         Image(systemName: "speaker.wave.2.fill")
                             .font(.system(size: 17, weight: .semibold))
                     }
-                    .foregroundColor(isNotEmpty ? SottoTheme.onPrimary : SottoTheme.textDisabled)
+                    .foregroundColor(isNotEmpty ? palette.background : SottoTheme.textDisabled)
                     .frame(width: 56, height: 44)
-                    .background(isNotEmpty ? SottoTheme.primary : SottoTheme.surfaceVariant)
+                    .background(isNotEmpty ? palette.accent : palette.surfaceVariant)
                     .cornerRadius(10)
                     .contentShape(Rectangle())
                 }
@@ -191,7 +200,7 @@ public struct QuickSpeakBarView: View {
             .padding(.horizontal, 12)
             .padding(.bottom, 6)
         }
-        .background(SottoTheme.surface)
+        .background(palette.surface)
         .onDisappear {
             speechRecognizer.stopRecording()
         }

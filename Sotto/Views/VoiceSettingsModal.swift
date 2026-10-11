@@ -107,10 +107,14 @@ public struct VoiceSettingsModal: View {
         availableVoices = SpeechService.shared.getAvailableVoices(forLocale: locale)
     }
     
+    private var currentThemePalette: SottoPalette {
+        SottoPalettes.palette(for: appTheme)
+    }
+    
     public var body: some View {
         NavigationView {
             ZStack {
-                SottoTheme.surface
+                currentThemePalette.surface
                     .ignoresSafeArea()
                 
                 ScrollView {
@@ -331,35 +335,42 @@ public struct VoiceSettingsModal: View {
                                 .foregroundColor(SottoTheme.textPrimary)
                             
                             VStack(spacing: 8) {
-                                ForEach(SottoPalettes.all, id: \.key) { palette in
-                                    let isSelected = appTheme == palette.key
+                                ForEach(SottoPalettes.all, id: \.key) { pal in
+                                    let isSelected = appTheme == pal.key
                                     Button(action: {
-                                        appTheme = palette.key
+                                        appTheme = pal.key
                                         applyChanges()
-                                        UsabilityTracker.shared.recordThemeSelected(theme: palette.key, voiceSettings: settings)
+                                        UsabilityTracker.shared.recordThemeSelected(theme: pal.key, voiceSettings: settings)
                                     }) {
                                         HStack(spacing: 12) {
-                                            // Preview swatch box
+                                            // 3-layer preview swatch: Background -> Card Surface -> Accent
                                             ZStack {
                                                 RoundedRectangle(cornerRadius: 8)
-                                                    .fill(palette.background)
-                                                    .frame(width: 28, height: 28)
+                                                    .fill(pal.background)
+                                                    .frame(width: 32, height: 32)
                                                     .overlay(
                                                         RoundedRectangle(cornerRadius: 8)
-                                                            .stroke(palette.outlineVariant, lineWidth: 1)
+                                                            .stroke(pal.outlineVariant, lineWidth: 1.5)
                                                     )
-                                                RoundedRectangle(cornerRadius: 3)
-                                                    .fill(palette.accent)
-                                                    .frame(width: 10, height: 10)
+                                                RoundedRectangle(cornerRadius: 4)
+                                                    .fill(pal.surface)
+                                                    .frame(width: 20, height: 20)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 4)
+                                                            .stroke(pal.outlineVariant, lineWidth: 1)
+                                                    )
+                                                RoundedRectangle(cornerRadius: 2)
+                                                    .fill(pal.accent)
+                                                    .frame(width: 8, height: 8)
                                             }
                                             
                                             VStack(alignment: .leading, spacing: 2) {
-                                                Text(palette.name)
+                                                Text(pal.name)
                                                     .font(.system(size: 15, weight: isSelected ? .bold : .medium))
-                                                    .foregroundColor(SottoTheme.textPrimary)
-                                                Text(palette.description)
+                                                    .foregroundColor(pal.textPrimary)
+                                                Text(pal.description)
                                                     .font(.system(size: 12))
-                                                    .foregroundColor(SottoTheme.textSecondary)
+                                                    .foregroundColor(pal.textSecondary)
                                             }
                                             
                                             Spacer()
@@ -367,16 +378,16 @@ public struct VoiceSettingsModal: View {
                                             if isSelected {
                                                 Image(systemName: "checkmark.circle.fill")
                                                     .font(.system(size: 18))
-                                                    .foregroundColor(SottoTheme.primary)
+                                                    .foregroundColor(pal.accent)
                                             }
                                         }
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 10)
-                                        .background(isSelected ? SottoTheme.primary.opacity(0.12) : SottoTheme.background)
+                                        .background(isSelected ? pal.accent.opacity(0.12) : pal.surface)
                                         .cornerRadius(12)
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 12)
-                                                .stroke(isSelected ? SottoTheme.primary : palette.outlineVariant.opacity(0.4), lineWidth: isSelected ? 2 : 1)
+                                                .stroke(isSelected ? pal.accent : pal.outlineVariant, lineWidth: isSelected ? 2 : 1)
                                         )
                                     }
                                 }

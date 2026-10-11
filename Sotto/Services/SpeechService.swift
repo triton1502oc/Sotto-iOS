@@ -146,17 +146,22 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
     }
     
     public static func bestVoice(forLanguage languageCode: String, preferredIdentifier: String? = nil) -> AVSpeechSynthesisVoice? {
-        if let id = preferredIdentifier, !id.isEmpty, let voice = AVSpeechSynthesisVoice(identifier: id) {
-            return voice
-        }
-        
-        let allVoices = AVSpeechSynthesisVoice.speechVoices()
         let normalizedCode = languageCode.replacingOccurrences(of: "_", with: "-").lowercased()
         let langPrefix = String(normalizedCode.prefix(2))
         
+        // Only use user-preferred voice if its language matches the target language prefix
+        if let id = preferredIdentifier, !id.isEmpty, let voice = AVSpeechSynthesisVoice(identifier: id) {
+            let vLang = voice.language.replacingOccurrences(of: "_", with: "-").lowercased()
+            if vLang == normalizedCode || vLang.starts(with: langPrefix) {
+                return voice
+            }
+        }
+        
+        let allVoices = AVSpeechSynthesisVoice.speechVoices()
+        
         // Filter candidate voices that match either the full code or prefix
         let candidates = allVoices.filter {
-            let vLang = $0.language.lowercased()
+            let vLang = $0.language.replacingOccurrences(of: "_", with: "-").lowercased()
             return vLang == normalizedCode || vLang.starts(with: langPrefix)
         }
         

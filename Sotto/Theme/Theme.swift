@@ -106,6 +106,17 @@ public enum SottoTheme {
     public static func accent(for theme: String) -> Color { palette(for: theme).accent }
 }
 
+private struct SottoPaletteKey: EnvironmentKey {
+    static let defaultValue: SottoPalette = SottoPalettes.charcoal
+}
+
+public extension EnvironmentValues {
+    var sottoPalette: SottoPalette {
+        get { self[SottoPaletteKey.self] }
+        set { self[SottoPaletteKey.self] = newValue }
+    }
+}
+
 public struct SottoPalette: Equatable {
     public let key: String
     public let name: String
@@ -129,7 +140,7 @@ public enum SottoPalettes {
         surfaceVariant: Color(hex: 0x2A2A2A),
         textPrimary: Color(hex: 0xE0E0E0),
         textSecondary: Color(hex: 0xAAAAAA),
-        outlineVariant: Color(hex: 0x424242),
+        outlineVariant: Color(hex: 0x383838),
         accent: Color(hex: 0xE0E0E0)
     )
     
@@ -138,8 +149,8 @@ public enum SottoPalettes {
         name: "OLED Black",
         description: "Pure black, maximum contrast",
         background: Color(hex: 0x000000),
-        surface: Color(hex: 0x121212),
-        surfaceVariant: Color(hex: 0x1E1E1E),
+        surface: Color(hex: 0x141414),
+        surfaceVariant: Color(hex: 0x222222),
         textPrimary: Color(hex: 0xFFFFFF),
         textSecondary: Color(hex: 0xB0B0B0),
         outlineVariant: Color(hex: 0x333333),
@@ -150,39 +161,39 @@ public enum SottoPalettes {
         key: VoiceSettings.themeWarmAmber,
         name: "Warm Amber",
         description: "Low blue light, reduced strain",
-        background: Color(hex: 0x191512),
-        surface: Color(hex: 0x241E1A),
-        surfaceVariant: Color(hex: 0x322A24),
-        textPrimary: Color(hex: 0xEAE0D5),
-        textSecondary: Color(hex: 0xBFAFA0),
-        outlineVariant: Color(hex: 0x483C34),
-        accent: Color(hex: 0xD4A373)
+        background: Color(hex: 0x1A1410),
+        surface: Color(hex: 0x271E18),
+        surfaceVariant: Color(hex: 0x382C22),
+        textPrimary: Color(hex: 0xF2E6D8),
+        textSecondary: Color(hex: 0xC4B2A0),
+        outlineVariant: Color(hex: 0x4A3A2C),
+        accent: Color(hex: 0xDBA368)
     )
     
     public static let slateNavy = SottoPalette(
         key: VoiceSettings.themeSlateNavy,
         name: "Slate Navy",
         description: "Cool slate, calm focus",
-        background: Color(hex: 0x0F141C),
-        surface: Color(hex: 0x161E2A),
-        surfaceVariant: Color(hex: 0x202A3A),
-        textPrimary: Color(hex: 0xDEE3EB),
-        textSecondary: Color(hex: 0xA8B4C4),
-        outlineVariant: Color(hex: 0x2B3A50),
-        accent: Color(hex: 0x8FA8C8)
+        background: Color(hex: 0x0B121C),
+        surface: Color(hex: 0x142030),
+        surfaceVariant: Color(hex: 0x1E2F46),
+        textPrimary: Color(hex: 0xE2E9F3),
+        textSecondary: Color(hex: 0x94A7C0),
+        outlineVariant: Color(hex: 0x263B54),
+        accent: Color(hex: 0x7EA5D8)
     )
     
     public static let softParchment = SottoPalette(
         key: VoiceSettings.themeSoftParchment,
         name: "Soft Parchment",
         description: "Daylight reading, anti-halation",
-        background: Color(hex: 0xF5F2EB),
-        surface: Color(hex: 0xEAE5DB),
-        surfaceVariant: Color(hex: 0xDFD9CE),
-        textPrimary: Color(hex: 0x1A1A1A),
-        textSecondary: Color(hex: 0x5A5752),
-        outlineVariant: Color(hex: 0xCCC5B8),
-        accent: Color(hex: 0x4A463F)
+        background: Color(hex: 0xF6F2EB),
+        surface: Color(hex: 0xEAE3D5),
+        surfaceVariant: Color(hex: 0xDDD4C2),
+        textPrimary: Color(hex: 0x1C1917),
+        textSecondary: Color(hex: 0x5C574F),
+        outlineVariant: Color(hex: 0xD0C6B4),
+        accent: Color(hex: 0x44403C)
     )
     
     public static let all: [SottoPalette] = [

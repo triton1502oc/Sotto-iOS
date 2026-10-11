@@ -7,8 +7,11 @@ public final class EmergencyLaunchManager: ObservableObject {
     public static let shared = EmergencyLaunchManager()
     
     public enum Action: String, Equatable {
-        case triage
+        case partner
         case safetyCard
+        
+        // Backward-compatibility alias
+        public static let triage = Action.partner
     }
     
     @Published public var pendingAction: Action? = nil
@@ -28,19 +31,25 @@ extension Notification.Name {
 // MARK: - App Intents (iOS 16+)
 
 @available(iOS 16.0, *)
-public struct OpenEmergencyTriageIntent: AppIntent {
-    public static var title: LocalizedStringResource = "Open Emergency Triage"
-    public static var description = IntentDescription("Opens Sotto directly to the Two-Way crisis triage HUD.")
+public struct OpenEmergencyPartnerIntent: AppIntent {
+    public static var title: LocalizedStringResource = "Open Partner Mode"
+    public static var description = IntentDescription("Opens Sotto directly to the Two-Way crisis partner mode HUD.")
     public static var openAppWhenRun: Bool = true
     
     public init() {}
 
     @MainActor
     public func perform() async throws -> some IntentResult {
-        EmergencyLaunchManager.shared.trigger(.triage)
+        EmergencyLaunchManager.shared.trigger(.partner)
         return .result()
     }
 }
+
+@available(iOS 16.0, *)
+public typealias OpenPartnerModeIntent = OpenEmergencyPartnerIntent
+
+@available(iOS 16.0, *)
+public typealias OpenEmergencyTriageIntent = OpenEmergencyPartnerIntent
 
 @available(iOS 16.0, *)
 public struct OpenSafetyCardIntent: AppIntent {
@@ -63,13 +72,14 @@ public struct OpenSafetyCardIntent: AppIntent {
 public struct SottoShortcuts: AppShortcutsProvider {
     public static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: OpenEmergencyTriageIntent(),
+            intent: OpenEmergencyPartnerIntent(),
             phrases: [
-                "Open Emergency Triage in \(.applicationName)",
+                "Open Partner Mode in \(.applicationName)",
+                "Open \(.applicationName) Partner",
                 "Open \(.applicationName) Emergency",
-                "Caregiver Triage in \(.applicationName)"
+                "Partner Mode in \(.applicationName)"
             ],
-            shortTitle: "Emergency Triage",
+            shortTitle: "Partner Mode",
             systemImageName: "person.2.wave.2.fill"
         )
         AppShortcut(

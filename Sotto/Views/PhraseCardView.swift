@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct PhraseCardView: View {
+    @Environment(\.sottoPalette) private var palette
     public let phrase: Phrase
     public let isEditMode: Bool
     public let showAlternateSpeech: Bool
@@ -119,7 +120,7 @@ public struct PhraseCardView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 16)
-        .background(isEditMode ? SottoTheme.surfaceVariant : SottoTheme.safetyBackground)
+        .background(isEditMode ? palette.surfaceVariant : SottoTheme.safetyBackground)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -133,7 +134,7 @@ public struct PhraseCardView: View {
             Spacer()
             Text(phrase.text)
                 .font(.body.weight(.medium))
-                .foregroundColor(SottoTheme.textPrimary)
+                .foregroundColor(palette.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(hasSpokenText ? 3 : 4)
                 .minimumScaleFactor(0.75)
@@ -147,7 +148,7 @@ public struct PhraseCardView: View {
                         .font(.caption2)
                     Text(spoken)
                         .font(.caption)
-                        .foregroundColor(SottoTheme.textSecondary.opacity(0.7))
+                        .foregroundColor(palette.textSecondary.opacity(0.85))
                         .lineLimit(1)
                         .truncationMode(.tail)
                 }
@@ -157,7 +158,11 @@ public struct PhraseCardView: View {
         }
         .frame(maxWidth: .infinity)
         .aspectRatio(1.0, contentMode: .fit)
-        .background(isEditMode ? SottoTheme.surfaceVariant : SottoTheme.surface)
+        .background(isEditMode ? palette.surfaceVariant : palette.surface)
         .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isEditMode ? SottoTheme.confirm : palette.outlineVariant, lineWidth: 1)
+        )
     }
 }

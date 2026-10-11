@@ -27,10 +27,14 @@ public struct MainView: View {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
     
+    private var currentPalette: SottoPalette {
+        SottoPalettes.palette(for: viewModel.voiceSettings.appTheme)
+    }
+    
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
-                SottoTheme.background(for: viewModel.voiceSettings.appTheme)
+                currentPalette.background
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
@@ -122,8 +126,12 @@ public struct MainView: View {
                     viewModel.speakText(toSpeak.text, language: toSpeak.language)
                 },
                 onSpeakSecondary: { toSpeak in
-                    if let spoken = toSpeak.spokenText {
-                        viewModel.speakText(spoken, language: toSpeak.spokenLanguage ?? viewModel.voiceSettings.secondaryLanguage)
+                    let targetLang = viewModel.voiceSettings.secondaryLanguage
+                    if let spoken = toSpeak.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
+                        let spokenLang = (toSpeak.spokenLanguage?.isEmpty == false && toSpeak.spokenLanguage != LocaleHelper.langAuto)
+                            ? toSpeak.spokenLanguage!
+                            : targetLang
+                        viewModel.speakText(spoken, language: spokenLang)
                     }
                 },
                 onDismiss: {
@@ -399,6 +407,7 @@ public struct MainView: View {
             }
         }
         .preferredColorScheme(viewModel.voiceSettings.appTheme == VoiceSettings.themeSoftParchment ? .light : .dark)
+        .environment(\.sottoPalette, currentPalette)
     }
 }
 
@@ -407,9 +416,9 @@ public struct MainView: View {
     private func handleEmergencyAction(_ action: EmergencyLaunchManager.Action) {
         EmergencyLaunchManager.shared.pendingAction = nil
         switch action {
-        case .triage:
+        case .partner:
             viewModel.showTwoWayDialog = true
-            UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "triage", voiceSettings: viewModel.voiceSettings)
+            UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "partner_mode", voiceSettings: viewModel.voiceSettings)
         case .safetyCard:
             if let safetyCard = viewModel.phrases.first(where: { $0.isEmergency }) {
                 viewModel.activeFullscreenPhrase = safetyCard
@@ -438,7 +447,7 @@ public struct MainView: View {
             }
         } else if url.scheme == "sotto" {
             let host = url.host?.lowercased() ?? ""
-            if host == "triage" {
+            if host == "partner" || host == "emergency" || host == "triage" {
                 viewModel.showTwoWayDialog = true
             } else if host == "whylog" {
                 viewModel.showWhyLogDialog = true
@@ -477,7 +486,7 @@ public struct MainView: View {
         HStack {
             Text("Sotto")
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(SottoTheme.textPrimary)
+                .foregroundColor(currentPalette.textPrimary)
             
             Spacer()
             
@@ -503,10 +512,10 @@ public struct MainView: View {
                     Button(action: { viewModel.activeSpeechTarget = "primary" }) {
                         Text(primaryCode)
                             .font(.system(size: 12, weight: isPrimary ? .bold : .regular))
-                            .foregroundColor(isPrimary ? SottoTheme.onPrimary : SottoTheme.textSecondary)
+                            .foregroundColor(isPrimary ? currentPalette.background : currentPalette.textSecondary)
                             .padding(.horizontal, 8)
                             .frame(minWidth: 36, minHeight: 44)
-                            .background(isPrimary ? SottoTheme.primary : Color.clear)
+                            .background(isPrimary ? currentPalette.accent : Color.clear)
                             .cornerRadius(12)
                             .contentShape(Rectangle())
                     }
@@ -517,10 +526,10 @@ public struct MainView: View {
                     Button(action: { viewModel.activeSpeechTarget = "secondary" }) {
                         Text(secondaryCode)
                             .font(.system(size: 12, weight: !isPrimary ? .bold : .regular))
-                            .foregroundColor(!isPrimary ? SottoTheme.onPrimary : SottoTheme.textSecondary)
+                            .foregroundColor(!isPrimary ? currentPalette.background : currentPalette.textSecondary)
                             .padding(.horizontal, 8)
                             .frame(minWidth: 36, minHeight: 44)
-                            .background(!isPrimary ? SottoTheme.primary : Color.clear)
+                            .background(!isPrimary ? currentPalette.accent : Color.clear)
                             .cornerRadius(12)
                             .contentShape(Rectangle())
                     }
@@ -529,7 +538,7 @@ public struct MainView: View {
                     .demoTarget("langSwitch_secondary")
                 }
                 .padding(2)
-                .background(SottoTheme.surfaceVariant)
+                .background(currentPalette.surfaceVariant)
                 .cornerRadius(14)
                 .padding(.trailing, 4)
             }
@@ -552,7 +561,7 @@ public struct MainView: View {
             }) {
                 Image(systemName: "gearshape")
                     .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(SottoTheme.textSecondary)
+                    .foregroundColor(currentPalette.textSecondary)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
@@ -568,18 +577,18 @@ public struct MainView: View {
                 HStack(spacing: 4) {
                     Text(viewModel.isEditMode ? "✓" : "✏️")
                         .font(.system(size: 13))
-                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : SottoTheme.textPrimary)
+                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary)
                     Text(LocaleHelper.getActionEdit(isEditMode: viewModel.isEditMode, appLanguage: viewModel.voiceSettings.appLanguage))
                         .font(.system(size: 14, weight: viewModel.isEditMode ? .bold : .medium))
-                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : SottoTheme.textPrimary)
+                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary)
                 }
                 .padding(.horizontal, 12)
                 .frame(minHeight: 44)
-                .background(viewModel.isEditMode ? SottoTheme.confirm.opacity(0.15) : SottoTheme.surfaceVariant)
+                .background(viewModel.isEditMode ? SottoTheme.confirm.opacity(0.15) : currentPalette.surfaceVariant)
                 .cornerRadius(18)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18)
-                        .stroke(viewModel.isEditMode ? SottoTheme.confirm : Color.white.opacity(0.1), lineWidth: 1)
+                        .stroke(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.outlineVariant, lineWidth: 1)
                 )
                 .contentShape(Rectangle())
             }
@@ -589,7 +598,7 @@ public struct MainView: View {
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 6)
-        .background(SottoTheme.background(for: viewModel.voiceSettings.appTheme))
+        .background(currentPalette.background)
     }
     
     // MARK: - Category Filter Row
@@ -604,11 +613,15 @@ public struct MainView: View {
                 }) {
                     Text(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: viewModel.voiceSettings.appLanguage))
                         .font(.system(size: 14, weight: isAllSelected ? .bold : .regular))
-                        .foregroundColor(isAllSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                        .foregroundColor(isAllSelected ? currentPalette.textPrimary : currentPalette.textSecondary)
                         .padding(.horizontal, 14)
                         .frame(minHeight: 44)
-                        .background(isAllSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                        .background(isAllSelected ? currentPalette.surfaceVariant : currentPalette.surface)
                         .cornerRadius(20)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(isAllSelected ? currentPalette.accent.opacity(0.8) : currentPalette.outlineVariant, lineWidth: 1)
+                        )
                         .contentShape(Rectangle())
                 }
                 .accessibilityLabel(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: viewModel.voiceSettings.appLanguage))
@@ -660,18 +673,22 @@ public struct MainView: View {
                         }
                         .foregroundColor(
                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedText :
-                            (isSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                            (isSelected ? currentPalette.textPrimary : currentPalette.textSecondary)
                         )
                         .padding(.horizontal, 14)
                         .frame(minHeight: 44)
                         .background(
                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedBg :
-                            (isSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                            (isSelected ? currentPalette.surfaceVariant : currentPalette.surface)
                         )
                         .cornerRadius(20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(isEmergency && isSelected ? SottoTheme.emergencyBorder : Color.clear, lineWidth: 1)
+                                .stroke(
+                                    isEmergency && isSelected ? SottoTheme.emergencyBorder :
+                                    (isSelected ? currentPalette.accent.opacity(0.8) : currentPalette.outlineVariant),
+                                    lineWidth: 1
+                                )
                         )
                         .contentShape(Rectangle())
                     }
@@ -691,14 +708,14 @@ public struct MainView: View {
                             Text("Manage")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(SottoTheme.primary)
+                        .foregroundColor(currentPalette.accent)
                         .padding(.horizontal, 12)
                         .frame(minHeight: 44)
-                        .background(SottoTheme.surface)
+                        .background(currentPalette.surface)
                         .cornerRadius(20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(SottoTheme.primary.opacity(0.4), lineWidth: 1)
+                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
                         )
                         .contentShape(Rectangle())
                     }
@@ -714,18 +731,18 @@ public struct MainView: View {
                             Text("Add")
                                 .font(.system(size: 14, weight: .semibold))
                         }
-                        .foregroundColor(SottoTheme.primary)
+                        .foregroundColor(currentPalette.accent)
                         .padding(.horizontal, 12)
                         .frame(minHeight: 44)
-                        .background(SottoTheme.surface)
+                        .background(currentPalette.surface)
                         .cornerRadius(20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(SottoTheme.primary.opacity(0.4), lineWidth: 1)
+                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
                         )
                         .contentShape(Rectangle())
                     }
-                    .accessibilityLabel("Add new category")
+                    .accessibilityLabel("Add category")
                 }
             }
             .padding(.horizontal, 16)

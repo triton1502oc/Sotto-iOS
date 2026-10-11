@@ -271,13 +271,14 @@ public final class UsabilityTracker {
         }
     }
 
-    public func recordActivation(key: String, voiceSettings: VoiceSettings) {
-        guard voiceSettings.shareUsabilityMetrics else { return }
+    public func recordActivation(key: String, voiceSettings: VoiceSettings? = nil) {
+        let settings = voiceSettings ?? UserDefaultsVoiceSettingsRepository().getVoiceSettings()
+        guard settings.shareUsabilityMetrics else { return }
         queue.async {
             if !self.recordedActivations.contains(key) {
                 self.recordedActivations.insert(key)
                 let event = UsabilityEvent(intent: "Activation", durationMs: 0, outcome: key)
-                self.appendAndSync(event, voiceSettings: voiceSettings)
+                self.appendAndSync(event, voiceSettings: settings)
             }
         }
     }
@@ -440,7 +441,7 @@ public final class UsabilityTracker {
     }
 
     public static var currentAppVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.6.1"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.7.0"
         return "v\(version)"
     }
 

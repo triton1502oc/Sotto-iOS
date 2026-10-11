@@ -127,11 +127,11 @@ public enum PhraseBackupHelper {
             "phrases": phrasesArray
         ]
         
-        guard let data = try? JSONSerialization.data(withJSONObject: root, options: []),
-              let jsonStr = String(data: data, encoding: .utf8) else {
+        guard let data = try? JSONSerialization.data(withJSONObject: root, options: []) else {
             return "{}"
         }
-        return jsonStr
+        let b64 = data.base64EncodedString()
+        return "SOTTO:v1:\(b64)"
     }
     
     public static func parseJson(_ jsonString: String) -> BackupData? {
@@ -139,13 +139,31 @@ public enum PhraseBackupHelper {
     }
     
     /// Parses a JSON string containing either a structured backup object or a raw array of phrases.
+    /// Also unpacks SOTTO:v1:<base64> strings and raw base64 payloads for seamless Android-iOS QR parity.
     public static func parseBackupJson(_ jsonString: String) throws -> BackupData {
-        let trimmed = jsonString.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else {
+        let trimmedInput = jsonString.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedInput.isEmpty else {
             throw BackupError.emptyContent
         }
         
-        guard let data = trimmed.data(using: .utf8),
+        var resolvedJson = trimmedInput
+        if trimmedInput.hasPrefix("SOTTO:v1:") {
+            let b64 = String(trimmedInput.dropFirst("SOTTO:v1:".count)).trimmingCharacters(in: .whitespacesAndNewlines)
+            if let decodedData = Data(base64Encoded: b64),
+               let decodedStr = String(data: decodedData, encoding: .utf8) {
+                resolvedJson = decodedStr.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        } else if !trimmedInput.hasPrefix("{") && !trimmedInput.hasPrefix("[") {
+            if let decodedData = Data(base64Encoded: trimmedInput),
+               let decodedStr = String(data: decodedData, encoding: .utf8) {
+                let candidate = decodedStr.trimmingCharacters(in: .whitespacesAndNewlines)
+                if candidate.hasPrefix("{") || candidate.hasPrefix("[") {
+                    resolvedJson = candidate
+                }
+            }
+        }
+        
+        guard let data = resolvedJson.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data) else {
             throw BackupError.unrecognizedFormat
         }

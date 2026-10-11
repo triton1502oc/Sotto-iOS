@@ -130,16 +130,16 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 
 ## Step 6: App Store Listing & Review Submission
 
-1. In App Store Connect, go to **iOS App > 1.6.2 Prepare for Submission**.
+1. In App Store Connect, go to **iOS App > 1.7.0 Prepare for Submission**.
 2. Fill in the listing details using [APP_STORE_LISTING.md](APP_STORE_LISTING.md):
    - **Promotional Text**:
      ```text
-     Dignified, one-touch AAC speech communication for autistic teens, adults, and non-speaking users. Low-stimulus themes, Partner Mode, Safety card, and 100% private.
+     Calm yes/no communication for caregivers reaching autistic loved ones in shutdowns, paired with a dignified low-stimulus AAC speech board & Action Button launch.
      ```
    - **Description**: Paste the full description from `APP_STORE_LISTING.md`.
    - **Keywords**:
      ```text
-     aac,autism,speech,assistive,talk,tts,nonverbal,communication,mute,autistic,safety,text to speech
+     aac,autism,shutdown,meltdown,nonspeaking,yesno,caregiver,tts,offline,autistic
      ```
    - **Support URL**: `https://github.com/triton1502oc/Sotto-iOS/issues`
    - **Marketing URL**: `https://github.com/triton1502oc/Sotto-iOS`
@@ -161,7 +161,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
      Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
      - Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
      - Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
-     - App Intents and Siri Shortcuts (Open Emergency Triage, Show Safety Card) provide hands-free and hardware Action Button emergency navigation for users during sensory shutdowns and acute freezes.
+     - App Intents and Siri Shortcuts (Open Partner Mode, Show Safety Card) provide hands-free and hardware Action Button emergency navigation for users during sensory shutdowns and acute freezes.
      - No login or account is required. All data is stored locally on the device in UserDefaults.
      - Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
      ```

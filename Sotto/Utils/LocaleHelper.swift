@@ -236,6 +236,28 @@ public enum LocaleHelper {
         }
     }
     
+    public static func getTriggerLabel(_ triggerKey: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch triggerKey.lowercased() {
+        case "pain": return isIndonesian ? "Nyeri" : "Pain"
+        case "noise": return isIndonesian ? "Bising" : "Noise"
+        case "task": return isIndonesian ? "Tugas" : "Task"
+        case "emotion": return isIndonesian ? "Emosi" : "Emotion"
+        case "other": return isIndonesian ? "Lainnya" : "Other"
+        default: return triggerKey
+        }
+    }
+    
+    public static func getTriggerLogHeader(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Catat pemicu ke Catatan Why" : "Log crisis trigger to Why Log"
+    }
+    
+    public static func getTriggerLoggedFeedback(_ triggerLabel: String, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Pemicu tercatat: \(triggerLabel) ✓" : "Trigger logged: \(triggerLabel) ✓"
+    }
+    
     public static func formatDigitsForSpeech(_ text: String) -> String {
         // Matches sequences of digits (phone numbers) with optional international prefix, dashes, parens, spaces
         let pattern = "(\\+?[0-9][0-9\\s\\-\\(\\)]{3,}[0-9])"

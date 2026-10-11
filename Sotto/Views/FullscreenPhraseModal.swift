@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct FullscreenPhraseModal: View {
+    @Environment(\.sottoPalette) private var palette
     public let phrase: Phrase
     public let voiceSettings: VoiceSettings
     public let onSpeak: (Phrase) -> Void
@@ -56,7 +57,7 @@ public struct FullscreenPhraseModal: View {
     
     public var body: some View {
         ZStack {
-            (isEmergency ? Color(hex: 0x1E1710) : SottoTheme.background)
+            (isEmergency ? Color(hex: 0x1E1710) : palette.background)
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
@@ -94,7 +95,7 @@ public struct FullscreenPhraseModal: View {
                 VStack(spacing: 16) {
                     Text(phrase.text)
                         .font(.system(size: (isEmergency && phrase.text.count > 60) ? 36 : 48, weight: .bold))
-                        .foregroundColor(isEmergency ? SottoTheme.emergencyText : SottoTheme.textPrimary)
+                        .foregroundColor(isEmergency ? SottoTheme.emergencyText : palette.textPrimary)
                         .multilineTextAlignment(.center)
                         .lineSpacing(10)
                         .minimumScaleFactor(0.5)
@@ -106,12 +107,12 @@ public struct FullscreenPhraseModal: View {
                                 .font(.system(size: 20))
                             Text(spoken)
                                 .font(.system(size: 22, weight: .medium))
-                                .foregroundColor(SottoTheme.textSecondary)
+                                .foregroundColor(palette.textSecondary)
                                 .multilineTextAlignment(.center)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(SottoTheme.surfaceVariant.opacity(0.6))
+                        .background(palette.surfaceVariant.opacity(0.8))
                         .cornerRadius(12)
                         .padding(.horizontal, 20)
                     }
@@ -127,10 +128,10 @@ public struct FullscreenPhraseModal: View {
                             Text("Speak (\(primaryLangLabel))")
                                 .font(.system(size: 15, weight: .bold))
                                 .lineLimit(1)
-                                .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : SottoTheme.onPrimary)
+                                .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : palette.background)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
+                                .background(isEmergency ? SottoTheme.emergencyBorder : palette.accent)
                                 .cornerRadius(16)
                         }
                         .demoTarget("fullscreen_speakPrimary")
@@ -141,11 +142,15 @@ public struct FullscreenPhraseModal: View {
                             Text("Speak (\(secondaryLangLabel))")
                                 .font(.system(size: 15, weight: .bold))
                                 .lineLimit(1)
-                                .foregroundColor(SottoTheme.textPrimary)
+                                .foregroundColor(palette.textPrimary)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 56)
-                                .background(SottoTheme.surfaceVariant)
+                                .background(palette.surfaceVariant)
                                 .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(palette.outlineVariant, lineWidth: 1)
+                                )
                         }
                         .demoTarget("fullscreen_speakSecondary")
                     }
@@ -161,10 +166,10 @@ public struct FullscreenPhraseModal: View {
                             Text("Speak Aloud")
                                 .font(.system(size: 22, weight: .bold))
                         }
-                        .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : SottoTheme.onPrimary)
+                        .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : palette.background)
                         .frame(maxWidth: .infinity)
                         .frame(height: 64)
-                        .background(isEmergency ? SottoTheme.emergencyBorder : SottoTheme.primary)
+                        .background(isEmergency ? SottoTheme.emergencyBorder : palette.accent)
                         .cornerRadius(16)
                     }
                     .demoTarget("fullscreen_speakButton")

@@ -556,6 +556,14 @@ final class SottoTests: XCTestCase {
         // Dynamic accessors
         XCTAssertEqual(SottoTheme.background(for: VoiceSettings.themeCharcoal), charcoal.background)
         XCTAssertEqual(SottoTheme.surface(for: VoiceSettings.themeOledBlack), oledBlack.surface)
+        XCTAssertEqual(SottoTheme.accent(for: VoiceSettings.themeWarmAmber), warmAmber.accent)
+        XCTAssertEqual(SottoTheme.outline(for: VoiceSettings.themeSlateNavy), slateNavy.outlineVariant)
+        
+        // Palettes must have distinctly different surfaces & backgrounds
+        XCTAssertNotEqual(oledBlack.background, warmAmber.background)
+        XCTAssertNotEqual(slateNavy.background, softParchment.background)
+        XCTAssertNotEqual(warmAmber.surface, slateNavy.surface)
+        XCTAssertNotEqual(charcoal.surface, softParchment.surface)
     }
     
     // MARK: - Safety Reframing & Consolidated Migration Tests
@@ -906,6 +914,12 @@ final class SottoTests: XCTestCase {
         let fallbackVoice = SpeechService.bestVoice(forLanguage: "en-US", preferredIdentifier: "non.existent.voice.id")
         XCTAssertNotNil(fallbackVoice)
         XCTAssertTrue(SpeechService.isDignifiedVoice(fallbackVoice!))
+        
+        // When user has preferred English voice configured, requesting Indonesian MUST resolve to Damayanti, NOT the English voice
+        let dualSecondaryVoice = SpeechService.bestVoice(forLanguage: "id-ID", preferredIdentifier: enVoice?.identifier)
+        XCTAssertNotNil(dualSecondaryVoice)
+        XCTAssertEqual(dualSecondaryVoice?.name.lowercased(), "damayanti")
+        XCTAssertNotEqual(dualSecondaryVoice?.identifier, enVoice?.identifier)
     }
     
     func testCompactQRExportAndRoundtrip() {
@@ -1042,24 +1056,68 @@ final class SottoTests: XCTestCase {
             expectation.fulfill()
         }
         
-        manager.trigger(.triage)
+        manager.trigger(.partner)
         
         wait(for: [expectation], timeout: 2.0)
+        XCTAssertEqual(receivedAction, .partner)
         XCTAssertEqual(receivedAction, .triage)
         
         NotificationCenter.default.removeObserver(observer)
         manager.pendingAction = nil
     }
     
+    func testExportCompactPhrasesForQRAndParseSottoV1Prefix() throws {
+        let samplePhrases = [
+            Phrase(text: "I cannot speak right now.", language: "en", isEmergency: true),
+            Phrase(text: "Thank you.", language: "en", isEmergency: false, category: .social)
+        ]
+        let sampleCategories = ["Social", "Needs"]
+        
+        let qrPayload = PhraseBackupHelper.exportCompactPhrasesForQR(phrases: samplePhrases, categories: sampleCategories)
+        XCTAssertTrue(qrPayload.hasPrefix("SOTTO:v1:"), "QR payload must be prefixed with SOTTO:v1: for Android parity")
+        
+        // Test parsing SOTTO:v1: prefix
+        let parsedFromPrefix = try PhraseBackupHelper.parseBackupJson(qrPayload)
+        XCTAssertEqual(parsedFromPrefix.phrases.count, 2)
+        XCTAssertEqual(parsedFromPrefix.phrases[0].text, "I cannot speak right now.")
+        XCTAssertTrue(parsedFromPrefix.phrases[0].isEmergency)
+        
+        // Test parsing raw base64 without prefix
+        let b64 = String(qrPayload.dropFirst("SOTTO:v1:".count))
+        let parsedFromB64 = try PhraseBackupHelper.parseBackupJson(b64)
+        XCTAssertEqual(parsedFromB64.phrases.count, 2)
+        
+        // Test parsing raw JSON string
+        let rawData = try XCTUnwrap(Data(base64Encoded: b64))
+        let rawJson = try XCTUnwrap(String(data: rawData, encoding: .utf8))
+        let parsedFromRawJson = try PhraseBackupHelper.parseBackupJson(rawJson)
+        XCTAssertEqual(parsedFromRawJson.phrases.count, 2)
+    }
+    
+    func testLocaleHelperTriggerLabels() {
+        XCTAssertEqual(LocaleHelper.getTriggerLabel("Pain", appLanguage: "en"), "Pain")
+        XCTAssertEqual(LocaleHelper.getTriggerLabel("Pain", appLanguage: "id"), "Nyeri")
+        XCTAssertEqual(LocaleHelper.getTriggerLabel("Noise", appLanguage: "en"), "Noise")
+        XCTAssertEqual(LocaleHelper.getTriggerLabel("Noise", appLanguage: "id"), "Bising")
+        
+        let enHeader = LocaleHelper.getTriggerLogHeader(appLanguage: "en")
+        let idHeader = LocaleHelper.getTriggerLogHeader(appLanguage: "id")
+        XCTAssertTrue(enHeader.contains("Log"))
+        XCTAssertTrue(idHeader.contains("Catat"))
+        
+        let feedback = LocaleHelper.getTriggerLoggedFeedback("Pain", appLanguage: "en")
+        XCTAssertTrue(feedback.contains("Pain"))
+    }
+    
     func testUsabilityTrackerRecordEmergencyShortcut() {
         var settings = VoiceSettings()
         settings.shareUsabilityMetrics = true
         
-        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "triage", voiceSettings: settings)
+        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "partner_mode", voiceSettings: settings)
         UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "safety_card", voiceSettings: settings)
         
         settings.shareUsabilityMetrics = false
-        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "triage", voiceSettings: settings)
+        UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "partner_mode", voiceSettings: settings)
     }
 }
 
