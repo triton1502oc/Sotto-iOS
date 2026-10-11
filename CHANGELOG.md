@@ -3,6 +3,19 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.6.3] - 2026-10-11
+
+### Added
+- **App Intents & Hardware Action Button Launch**: Integrated App Intents and `SottoShortcuts` (`EmergencyLaunchManager`) enabling eyes-free, hardware Action Button, iOS Back Tap, and Siri Shortcuts ("Open Emergency Triage", "Show Safety Card") emergency crisis navigation during acute shutdowns and cognitive freezes (#18). Includes privacy-preserving activation telemetry tracking (`shortcut_action_button`).
+- **Curated Situational Scenario Decks**: Curated situational phrase decks with scannable offline QR codes for Medical & ER triage, Public Transit navigation, School & Special Education environments, and Dental Care visits in `docs/SCENARIO_DECKS.md` (#19).
+- **Synchronized Video Previews & Media Links**: Broadcast-ready 16:9 App Store preview (`sotto_app_store_preview.mp4` / https://youtu.be/Qk76_dPfbko) and 9:16 Shorts/Reels preview (`sotto_vertical_preview.mp4` / https://youtube.com/shorts/7jKnRHIvJv8) featuring neural baritone narration, ambient bed, and Attention Chime across documentation and listings.
+- **CI/CD Automation Suite**: Configured GitHub Actions continuous integration (`ios.yml`) and automated Release packaging workflow (`release.yml`) producing release IPA artifacts matching the Android release pipeline.
+- **Unified Creative Asset Library**: Standardized App Store Connect screenshots for iPhone Dynamic Island (1206x2622) and iPad 13-inch (2064x2752), Product Page Headers (21:9, 16:9), and Search Result Creatives in 24-bit RGB with an automated generation script (`scripts/build_assets.sh`).
+
+### Changed
+- **App Store Optimization & Accessibility Pitch**: Refined App Store Connect metadata, keywords, submission guide, and checklist focusing on caregiver crisis de-escalation, dignity-first AAC, and 100% offline privacy guarantees in `docs/APP_STORE_LISTING.md` and `docs/APP_STORE_SUBMISSION_CHECKLIST.md` (#20).
+- **Support & Feedback Links**: Updated Settings feedback and issue reporting links to point directly to Sotto-iOS GitHub issues.
+
 ## [v1.6.2] - 2026-10-10
 
 ### Added
