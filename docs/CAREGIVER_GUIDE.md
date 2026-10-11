@@ -15,6 +15,9 @@ Sotto is designed around a simple reality:
 - **Support for Unclear Speech**: Offers an instant, clear voice for individuals whose natural speech is slurred, dysarthric, or exhausted under stress.
 - **100% Offline & Private**: Audio, phrases, and crisis logs never leave your local device.
 
+> [!TIP]
+> **Video Walkthrough**: Watch Partner Mode and Why Finder demonstrated in action on [YouTube](https://youtu.be/Qk76_dPfbko) or as a quick overview on [YouTube Shorts](https://youtube.com/shorts/7jKnRHIvJv8).
+
 ```
                       ┌────────────────────────────────────────┐
                       │              SOTTO APP                 │

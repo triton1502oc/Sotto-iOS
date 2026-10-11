@@ -80,6 +80,8 @@ Zero accounts, ads, or cloud speech recording. Your phrases, custom trees, and p
 * **Support URL:** `https://github.com/triton1502oc/Sotto-iOS/issues`
 * **Marketing URL:** `https://github.com/triton1502oc/Sotto-iOS`
 * **Privacy Policy URL:** `https://github.com/triton1502oc/Sotto-iOS/blob/main/PRIVACY_POLICY.md`
+* **Video Demo (YouTube):** `https://youtu.be/Qk76_dPfbko`
+* **Video Demo (YouTube Shorts):** `https://youtube.com/shorts/7jKnRHIvJv8`
 
 ---
 
@@ -97,8 +99,8 @@ Zero accounts, ads, or cloud speech recording. Your phrases, custom trees, and p
 | **Search Result Asset (3:2 Retina)** | 3840 x 2560 px (3:2, 24-bit RGB, no alpha) | Available: `assets/app_store_search_result_3840x2560.png` |
 | **Search Result Asset (3:2 Standard)** | 1920 x 1280 px (3:2, 24-bit RGB, no alpha) | Available: `assets/app_store_search_result_1920x1280.png` |
 | **Search Result Asset (Universal)** | 5244 x 2950 px (16:9, 24-bit RGB, no alpha) | Available: `assets/app_store_search_result_5244x2950.png` |
-| **App Store Preview Video (Master)** | 1920 x 1080 px (16:9 Landscape @ 30fps) | ✅ Ready: [`demo/sotto_app_store_preview.mp4`](../demo/sotto_app_store_preview.mp4) |
-| **Social / Vertical Video (Shorts/Reels)** | 1080 x 1920 px (9:16 Portrait @ 30fps) | ✅ Ready: [`demo/sotto_vertical_preview.mp4`](../demo/sotto_vertical_preview.mp4) |
+| **App Store Preview Video (Master)** | 1920 x 1080 px (16:9 Landscape @ 30fps) | ✅ Ready: [`demo/sotto_app_store_preview.mp4`](../demo/sotto_app_store_preview.mp4) ([YouTube](https://youtu.be/Qk76_dPfbko)) |
+| **Social / Vertical Video (Shorts/Reels)** | 1080 x 1920 px (9:16 Portrait @ 30fps) | ✅ Ready: [`demo/sotto_vertical_preview.mp4`](../demo/sotto_vertical_preview.mp4) ([YouTube Shorts](https://youtube.com/shorts/7jKnRHIvJv8)) |
 
 ### Screenshot Set Organization (App Store Review Compliant)
 Both folders contain 5 sequential screens matching App Store Connect review requirements:

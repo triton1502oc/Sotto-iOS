@@ -4,6 +4,12 @@
   <img src="assets/sotto_ios_banner.png" alt="Sotto for iOS Banner" width="100%" />
 </p>
 
+<p align="center">
+  🎬 <b>Video Demo:</b> 
+  <a href="https://youtu.be/Qk76_dPfbko">YouTube (Master Preview)</a> •
+  <a href="https://youtube.com/shorts/7jKnRHIvJv8">YouTube Shorts</a>
+</p>
+
 **TL;DR**: Sotto (*"under one's breath"*) is a calm yes/no tool for caregivers to reach autistic teens & adults in meltdowns and verbal shutdowns, paired with a dignified, low-stimulation AAC speech board for self-expression.
 
 This repository is the native iOS (SwiftUI) port of [Sotto Android](https://github.com/triton1502oc/Sotto) with 1:1 feature parity and zero third-party dependencies.
@@ -60,8 +66,8 @@ Provide non-speaking individuals, those with unclear or dysfluent speech, and an
 
 High-definition, synchronized demo videos showcasing Sotto's flagship assistive communication and crisis navigation features on iOS:
 
-- **App Store Preview (Master)**: [`demo/sotto_app_store_preview.mp4`](demo/sotto_app_store_preview.mp4) (60s, 1920×1080 Landscape, Neural Baritone + Andrew + Ambient Bed + Chime)
-- **Shorts / Reels / TikTok (Vertical)**: [`demo/sotto_vertical_preview.mp4`](demo/sotto_vertical_preview.mp4) (60s, 1080×1920 Portrait 9:16)
+- **App Store Preview (Master)**: [`demo/sotto_app_store_preview.mp4`](demo/sotto_app_store_preview.mp4) (60s, 1920×1080 Landscape, Neural Baritone + Andrew + Ambient Bed + Chime) — [Watch on YouTube](https://youtu.be/Qk76_dPfbko)
+- **Shorts / Reels / TikTok (Vertical)**: [`demo/sotto_vertical_preview.mp4`](demo/sotto_vertical_preview.mp4) (60s, 1080×1920 Portrait 9:16) — [Watch on YouTube Shorts](https://youtube.com/shorts/7jKnRHIvJv8)
 - **English Simulator Demo**: [`demo/sotto_demo_en.mp4`](demo/sotto_demo_en.mp4) (~64s, 1206×2622 Portrait, Samantha & Damayanti)
 - **Indonesian Simulator Demo**: [`demo/sotto_demo_id.mp4`](demo/sotto_demo_id.mp4) (~64s, 1206×2622 Portrait, Damayanti & Samantha)
 

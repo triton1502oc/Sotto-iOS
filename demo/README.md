@@ -7,12 +7,14 @@ High-definition demo videos and reproduction scripts showcasing Sotto's flagship
 
 ## Demo Videos
 
-| Video | Format | Primary Lang | Audio / Voice | Specs | File |
+| Video | Format | Primary Lang | Audio / Voice | Specs | File & Links |
 |---|---|---|---|---|---|
-| **App Store Preview (Master)** | 16:9 Landscape | `en-US` | Neural Baritone Christopher + Andrew + Ambient Bed + Chime | 1920×1080 @ 30fps, 60s | [`sotto_app_store_preview.mp4`](sotto_app_store_preview.mp4) |
-| **Shorts / Reels / TikTok (Vertical)** | 9:16 Portrait | `en-US` | Neural Baritone Christopher + Andrew + Ambient Bed + Chime | 1080×1920 @ 30fps, 60s | [`sotto_vertical_preview.mp4`](sotto_vertical_preview.mp4) |
+| **App Store Preview (Master)** | 16:9 Landscape | `en-US` | Neural Baritone Christopher + Andrew + Ambient Bed + Chime | 1920×1080 @ 30fps, 60s | [`sotto_app_store_preview.mp4`](sotto_app_store_preview.mp4)<br>• [Watch on YouTube](https://youtu.be/Qk76_dPfbko) |
+| **Shorts / Reels / TikTok (Vertical)** | 9:16 Portrait | `en-US` | Neural Baritone Christopher + Andrew + Ambient Bed + Chime | 1080×1920 @ 30fps, 60s | [`sotto_vertical_preview.mp4`](sotto_vertical_preview.mp4)<br>• [Watch on YouTube Shorts](https://youtube.com/shorts/7jKnRHIvJv8) |
 | **English Device Demo** | 9:19.5 Portrait | `en-US` | Samantha & Damayanti | 1206×2622 @ 30fps, ~64s | [`sotto_demo_en.mp4`](sotto_demo_en.mp4) |
 | **Indonesian Device Demo** | 9:19.5 Portrait | `id-ID` | Damayanti & Samantha | 1206×2622 @ 30fps, ~64s | [`sotto_demo_id.mp4`](sotto_demo_id.mp4) |
+
+*YouTube Links: [Master Preview Video](https://youtu.be/Qk76_dPfbko) • [YouTube Shorts](https://youtube.com/shorts/7jKnRHIvJv8)*
 
 ---
 
