@@ -670,7 +670,7 @@ public struct VoiceSettingsModal: View {
                                 .font(.system(size: 13))
                                 .foregroundColor(SottoTheme.textSecondary.opacity(0.6))
                             
-                            Link(destination: URL(string: "https://github.com/triton1502oc/Sotto/issues")!) {
+                            Link(destination: URL(string: "https://github.com/triton1502oc/Sotto-iOS/issues")!) {
                                 Text("💬  Feedback & Suggestions")
                                     .font(.system(size: 14))
                                     .foregroundColor(SottoTheme.primary.opacity(0.8))
