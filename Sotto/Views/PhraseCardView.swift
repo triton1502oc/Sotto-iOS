@@ -6,6 +6,7 @@ public struct PhraseCardView: View {
     public let isEditMode: Bool
     public let showAlternateSpeech: Bool
     public let appLanguage: String
+    public let cardLayout: String
     public let onTap: () -> Void
     public let onLongPress: () -> Void
     
@@ -14,6 +15,7 @@ public struct PhraseCardView: View {
         isEditMode: Bool,
         showAlternateSpeech: Bool = false,
         appLanguage: String = "system",
+        cardLayout: String = VoiceSettings.cardLayoutSquare,
         onTap: @escaping () -> Void,
         onLongPress: @escaping () -> Void
     ) {
@@ -21,8 +23,13 @@ public struct PhraseCardView: View {
         self.isEditMode = isEditMode
         self.showAlternateSpeech = showAlternateSpeech
         self.appLanguage = appLanguage
+        self.cardLayout = cardLayout
         self.onTap = onTap
         self.onLongPress = onLongPress
+    }
+    
+    private var isCompact: Bool {
+        cardLayout == VoiceSettings.cardLayoutCompact
     }
     
     private var hasSpokenText: Bool {
@@ -83,9 +90,8 @@ public struct PhraseCardView: View {
     private var emergencyCardContent: some View {
         VStack(spacing: 8) {
             // Safety Badge
-            HStack(spacing: 4) {
-                Text("🛡️")
-                    .font(.subheadline)
+            HStack(spacing: 5) {
+                SottoIconView(.shield, size: 12, tint: SottoTheme.safetyBadgeText)
                 Text(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: appLanguage))
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(SottoTheme.safetyBadgeText)
@@ -105,9 +111,8 @@ public struct PhraseCardView: View {
                 .padding(.horizontal, 12)
             
             if hasSpokenText, let spoken = phrase.spokenText {
-                HStack(spacing: 4) {
-                    Text("🗣️")
-                        .font(.caption)
+                HStack(spacing: 5) {
+                    SottoIconView(.volumeUp, size: 12, tint: Color(hex: 0xFFFFCC80).opacity(0.8))
                     Text(spoken)
                         .font(.subheadline)
                         .foregroundColor(Color(hex: 0xFFFFCC80).opacity(0.8))
@@ -126,6 +131,13 @@ public struct PhraseCardView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(SottoTheme.safetyBorder, lineWidth: 1.5)
         )
+        .overlay(alignment: .topTrailing) {
+            if isEditMode {
+                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.6))
+                    .padding(10)
+                    .accessibilityLabel("Drag to reorder")
+            }
+        }
     }
     
     @ViewBuilder
@@ -136,16 +148,15 @@ public struct PhraseCardView: View {
                 .font(.body.weight(.medium))
                 .foregroundColor(palette.textPrimary)
                 .multilineTextAlignment(.center)
-                .lineLimit(hasSpokenText ? 3 : 4)
+                .lineLimit(hasSpokenText ? 2 : (isCompact ? 3 : 4))
                 .minimumScaleFactor(0.75)
                 .padding(.horizontal, 12)
-                .padding(.top, 8)
+                .padding(.top, 6)
             
             if hasSpokenText, let spoken = phrase.spokenText {
-                Spacer().frame(height: 4)
+                Spacer().frame(height: 3)
                 HStack(spacing: 4) {
-                    Text("🗣️")
-                        .font(.caption2)
+                    SottoIconView(.volumeUp, size: 10, tint: palette.textSecondary.opacity(0.85))
                     Text(spoken)
                         .font(.caption)
                         .foregroundColor(palette.textSecondary.opacity(0.85))
@@ -157,12 +168,19 @@ public struct PhraseCardView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .aspectRatio(1.0, contentMode: .fit)
+        .aspectRatio(isCompact ? 1.25 : 1.0, contentMode: .fit)
         .background(isEditMode ? palette.surfaceVariant : palette.surface)
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(isEditMode ? SottoTheme.confirm : palette.outlineVariant, lineWidth: 1)
         )
+        .overlay(alignment: .topTrailing) {
+            if isEditMode {
+                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.6))
+                    .padding(8)
+                    .accessibilityLabel("Drag to reorder")
+            }
+        }
     }
 }

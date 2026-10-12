@@ -451,7 +451,7 @@ public final class MainViewModel: ObservableObject {
         UsabilityTracker.shared.endIntent(
             "QuickSpeak",
             outcome: "completed",
-            contextTag: "len_\(trimmed.count)",
+            contextTag: "dock_v2 len_\(trimmed.count)",
             voiceSettings: voiceSettings
         )
         
@@ -487,7 +487,7 @@ public final class MainViewModel: ObservableObject {
             "QuickSpeak",
             outcome: "aborted",
             frictionTag: "cleared_text",
-            contextTag: "len_\(quickText.count)",
+            contextTag: "dock_v2 len_\(quickText.count)",
             voiceSettings: voiceSettings
         )
     }

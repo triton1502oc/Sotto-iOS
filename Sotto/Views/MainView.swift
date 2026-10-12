@@ -61,10 +61,22 @@ public struct MainView: View {
                             viewModel.speakQuickText(text)
                         },
                         onFullscreen: { text in
+                            UsabilityTracker.shared.endIntent(
+                                "QuickSpeak",
+                                outcome: "shown_fullscreen",
+                                contextTag: "dock_v2 len_\(text.count)",
+                                voiceSettings: viewModel.voiceSettings
+                            )
                             let phrase = Phrase(text: text, language: LocaleHelper.langAuto)
                             viewModel.activeFullscreenPhrase = phrase
                         },
                         onSaveAsCard: { text in
+                            UsabilityTracker.shared.endIntent(
+                                "QuickSpeak",
+                                outcome: "saved_as_card",
+                                contextTag: "dock_v2 len_\(text.count)",
+                                voiceSettings: viewModel.voiceSettings
+                            )
                             viewModel.initialAddText = text
                             viewModel.showAddPhraseDialog = true
                         },
@@ -544,14 +556,21 @@ public struct MainView: View {
                 .padding(.trailing, 4)
             }
             
-            // Partner Mode (🤝)
+            // Partner Mode
             Button(action: {
                 viewModel.showTwoWayDialog = true
             }) {
-                Text("🤝")
-                    .font(.system(size: 20))
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(currentPalette.surfaceVariant)
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
+                        )
+                    SottoIconView(.partnerMode, size: 20, tint: currentPalette.accent)
+                }
+                .contentShape(Rectangle())
             }
             .accessibilityLabel("Open Partner mode for communication partner")
             .demoTarget("topBar_listenModeButton")
@@ -560,25 +579,42 @@ public struct MainView: View {
             Button(action: {
                 viewModel.showVoiceSettingsDialog = true
             }) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundColor(currentPalette.textSecondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(currentPalette.surfaceVariant)
+                        .frame(width: 44, height: 44)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
+                        )
+                    Image(systemName: "gearshape")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(currentPalette.textSecondary)
+                }
+                .contentShape(Rectangle())
             }
             .accessibilityLabel("Settings")
             .demoTarget("topBar_voiceButton")
             
-            // Edit / Done Button
+            // Edit / Done Button (12pt container with animated switch)
             Button(action: {
+                let entering = !viewModel.isEditMode
                 withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.isEditMode.toggle()
+                    viewModel.isEditMode = entering
                 }
+                UsabilityTracker.shared.startIntent("edit_mode_toggle")
+                UsabilityTracker.shared.endIntent(
+                    "edit_mode_toggle",
+                    outcome: entering ? "enter" : "exit",
+                    voiceSettings: viewModel.voiceSettings
+                )
             }) {
-                HStack(spacing: 4) {
-                    Text(viewModel.isEditMode ? "✓" : "✏️")
-                        .font(.system(size: 13))
-                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary)
+                HStack(spacing: 6) {
+                    SottoIconView(
+                        viewModel.isEditMode ? .check : .edit,
+                        size: 14,
+                        tint: viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary
+                    )
                     Text(LocaleHelper.getActionEdit(isEditMode: viewModel.isEditMode, appLanguage: viewModel.voiceSettings.appLanguage))
                         .font(.system(size: 14, weight: viewModel.isEditMode ? .bold : .medium))
                         .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary)
@@ -586,9 +622,9 @@ public struct MainView: View {
                 .padding(.horizontal, 12)
                 .frame(minHeight: 44)
                 .background(viewModel.isEditMode ? SottoTheme.confirm.opacity(0.15) : currentPalette.surfaceVariant)
-                .cornerRadius(18)
+                .cornerRadius(12)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 18)
+                    RoundedRectangle(cornerRadius: 12)
                         .stroke(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.outlineVariant, lineWidth: 1)
                 )
                 .contentShape(Rectangle())
@@ -635,42 +671,16 @@ public struct MainView: View {
                     let catObj = PhraseCategory(catName)
                     let isSelected = viewModel.selectedCategory == catObj
                     let isEmergency = catObj == .emergency
-                    let isProtectedFromDelete = Phrase.isUndeletableCategory(catName)
-                    let isProtectedFromRename = Phrase.isUnrenamableCategory(catName)
                     
                     Button(action: {
-                        if viewModel.isEditMode && !isProtectedFromRename {
-                            categoryRenameInput = catName
-                            categoryToRename = catName
-                        } else {
-                            viewModel.selectedCategory = catObj
-                        }
+                        viewModel.selectedCategory = catObj
                     }) {
                         HStack(spacing: 6) {
                             if isEmergency {
-                                Text("🛡️")
-                                    .font(.system(size: 12))
+                                SottoIconView(.shield, size: 12, tint: SottoTheme.safetyBadgeText)
                             }
                             Text(LocaleHelper.getCategoryDisplayName(catName, appLanguage: viewModel.voiceSettings.appLanguage))
                                 .font(.system(size: 14, weight: isSelected ? .bold : .regular))
-                            
-                            if viewModel.isEditMode && !isProtectedFromRename {
-                                Text("✏️")
-                                    .font(.system(size: 11))
-                            }
-                            
-                            if viewModel.isEditMode && !isProtectedFromDelete {
-                                Button(action: {
-                                    categoryToDelete = catName
-                                }) {
-                                    Image(systemName: "xmark")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundColor(SottoTheme.destructiveRed)
-                                        .frame(width: 44, height: 44)
-                                        .contentShape(Rectangle())
-                                }
-                                .accessibilityLabel("Delete category \(catName)")
-                            }
                         }
                         .foregroundColor(
                             isEmergency && isSelected ? SottoTheme.emergencyChipSelectedText :
@@ -698,20 +708,18 @@ public struct MainView: View {
                     .demoTarget("chip_\(catName)")
                 }
                 
-                // In Edit Mode: Manage Categories & Add Category Chips
-                if viewModel.isEditMode {
-                    Button(action: {
-                        viewModel.showManageCategoriesDialog = true
-                    }) {
-                        HStack(spacing: 4) {
-                            Text("↕")
-                                .font(.system(size: 14, weight: .bold))
-                            Text("Manage")
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .foregroundColor(currentPalette.accent)
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: 44)
+                // Anchored Tune Button (opens ManageCategoriesModal) (#34)
+                Button(action: {
+                    UsabilityTracker.shared.startIntent("manage_categories_open")
+                    UsabilityTracker.shared.endIntent(
+                        "manage_categories_open",
+                        outcome: "opened",
+                        voiceSettings: viewModel.voiceSettings
+                    )
+                    viewModel.showManageCategoriesDialog = true
+                }) {
+                    SottoIconView(.tune, size: 16, tint: currentPalette.accent)
+                        .frame(width: 44, height: 44)
                         .background(currentPalette.surface)
                         .cornerRadius(20)
                         .overlay(
@@ -719,16 +727,17 @@ public struct MainView: View {
                                 .stroke(currentPalette.outlineVariant, lineWidth: 1)
                         )
                         .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Manage categories")
-                    
+                }
+                .accessibilityLabel("Manage categories")
+                
+                // In Edit Mode: Add Category Chip
+                if viewModel.isEditMode {
                     Button(action: {
                         newCategoryNameInput = ""
                         showAddCategoryAlert = true
                     }) {
                         HStack(spacing: 4) {
-                            Text("+")
-                                .font(.system(size: 14, weight: .bold))
+                            SottoIconView(.add, size: 13, tint: currentPalette.accent)
                             Text("Add")
                                 .font(.system(size: 14, weight: .semibold))
                         }
@@ -831,6 +840,7 @@ public struct MainView: View {
                             isEditMode: viewModel.isEditMode,
                             showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
                             appLanguage: viewModel.voiceSettings.appLanguage,
+                            cardLayout: viewModel.voiceSettings.cardLayout,
                             onTap: {
                                 if viewModel.isEditMode {
                                     viewModel.phraseToEdit = phrase
@@ -851,6 +861,7 @@ public struct MainView: View {
                                     isEditMode: viewModel.isEditMode,
                                     showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
                                     appLanguage: viewModel.voiceSettings.appLanguage,
+                                    cardLayout: viewModel.voiceSettings.cardLayout,
                                     onTap: {
                                         if viewModel.isEditMode {
                                             viewModel.phraseToEdit = phrase

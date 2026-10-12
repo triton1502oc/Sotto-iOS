@@ -38,117 +38,82 @@ public struct ExportBackupModal: View {
                 SottoTheme.surface
                     .ignoresSafeArea()
                 
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 18) {
                     Text("Export library phrases, categories, question trees, or private logs as a backup file.")
                         .font(.system(size: 14))
                         .foregroundColor(SottoTheme.textSecondary)
                     
-                    VStack(spacing: 12) {
+                    VStack(spacing: 10) {
                         // Option 1: Phrases & Categories
-                        Toggle(isOn: $exportPhrases) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Phrases & Categories")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(SottoTheme.textPrimary)
-                                Text("\(phraseCount) phrases")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(SottoTheme.textSecondary)
-                            }
-                        }
-                        .tint(SottoTheme.primary)
-                        .padding(12)
-                        .background(SottoTheme.surfaceVariant.opacity(0.4))
-                        .cornerRadius(12)
+                        selectableOptionCard(
+                            checked: exportPhrases,
+                            onToggle: { exportPhrases.toggle() },
+                            icon: .cards,
+                            title: "Phrases & Categories",
+                            subtitle: "\(phraseCount) phrases"
+                        )
                         
                         // Option 2: Question Tree
-                        Toggle(isOn: $exportTree) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Why Finder Question Tree")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(SottoTheme.textPrimary)
-                                Text("\(areaCount) narrowing areas")
-                                    .font(.system(size: 13))
-                                    .foregroundColor(SottoTheme.textSecondary)
-                            }
-                        }
-                        .tint(SottoTheme.primary)
-                        .padding(12)
-                        .background(SottoTheme.surfaceVariant.opacity(0.4))
-                        .cornerRadius(12)
-                        
-                        // Option 3: Private Why Log
-                        VStack(alignment: .leading, spacing: 6) {
-                            Toggle(isOn: $exportLog) {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Private Why Log")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundColor(SottoTheme.textPrimary)
-                                    Text("\(logCount) saved session records")
-                                        .font(.system(size: 13))
-                                        .foregroundColor(SottoTheme.textSecondary)
-                                }
-                            }
-                            .tint(SottoTheme.primary)
-                            
-                            if exportLog {
-                                Text("⚠️ Caution: Includes sensitive offline logs with health/care notes.")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(SottoTheme.destructiveRed)
-                                    .padding(.top, 4)
-                            }
-                        }
-                        .padding(12)
-                        .background(
-                            exportLog
-                                ? SottoTheme.destructiveRed.opacity(0.12)
-                                : SottoTheme.surfaceVariant.opacity(0.4)
+                        selectableOptionCard(
+                            checked: exportTree,
+                            onToggle: { exportTree.toggle() },
+                            icon: .branch,
+                            title: "Why Finder Question Tree",
+                            subtitle: "\(areaCount) narrowing areas"
                         )
-                        .cornerRadius(12)
+                        
+                        // Option 3: Private Why Log (with warning)
+                        selectableOptionCard(
+                            checked: exportLog,
+                            onToggle: { exportLog.toggle() },
+                            icon: .shield,
+                            title: "Private Why Log",
+                            subtitle: "\(logCount) saved session records",
+                            warning: exportLog ? "Includes sensitive offline logs with health/care notes." : nil
+                        )
+                    }
+                    
+                    if let onShareQR = onShareQR {
+                        Button(action: {
+                            onShareQR(exportPhrases, exportTree, exportLog)
+                        }) {
+                            HStack(spacing: 8) {
+                                SottoIconView(.qrCodeScanner, size: 18, tint: SottoTheme.primary)
+                                Text("Share via QR Code Deck")
+                                    .font(.system(size: 15, weight: .medium))
+                            }
+                            .foregroundColor(SottoTheme.primary)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 48)
+                            .background(SottoTheme.surfaceVariant.opacity(0.4))
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(SottoTheme.primary.opacity(0.35), lineWidth: 1)
+                            )
+                        }
+                        .disabled(!hasSelection)
+                        .opacity(hasSelection ? 1.0 : 0.5)
                     }
                     
                     Spacer()
                     
-                    VStack(spacing: 12) {
-                        Button(action: {
-                            onExport(exportPhrases, exportTree, exportLog)
-                        }) {
-                            HStack(spacing: 8) {
-                                Image(systemName: "square.and.arrow.up")
-                                Text("Export .sotto File (AirDrop / Files)")
-                            }
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(hasSelection ? SottoTheme.onPrimary : SottoTheme.textSecondary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background(hasSelection ? SottoTheme.primary : SottoTheme.surfaceVariant)
-                            .cornerRadius(12)
+                    // Export File Action Button
+                    Button(action: {
+                        onExport(exportPhrases, exportTree, exportLog)
+                    }) {
+                        HStack(spacing: 8) {
+                            SottoIconView(.backup, size: 18, tint: .white)
+                            Text("Export Backup File")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.white)
                         }
-                        .disabled(!hasSelection)
-                        
-                        if let onShareQR = onShareQR {
-                            Button(action: {
-                                onShareQR(exportPhrases, exportTree, exportLog)
-                            }) {
-                                HStack(spacing: 8) {
-                                    Image(systemName: "qrcode")
-                                    Text("Share Phrases via QR Code")
-                                }
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(SottoTheme.textPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 48)
-                                .background(exportPhrases ? SottoTheme.surfaceVariant : SottoTheme.surfaceVariant.opacity(0.5))
-                                .cornerRadius(12)
-                            }
-                            .disabled(!exportPhrases)
-                            
-                            Text("💡 QR codes are optimized for vocabulary phrase decks. Full backups with question trees and logs are shared via .sotto File.")
-                                .font(.system(size: 12))
-                                .foregroundColor(SottoTheme.textSecondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 8)
-                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 52)
+                        .background(hasSelection ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.3))
+                        .cornerRadius(14)
                     }
+                    .disabled(!hasSelection)
                 }
                 .padding(20)
             }
@@ -163,5 +128,61 @@ public struct ExportBackupModal: View {
             }
         }
         .navigationViewStyle(.stack)
+    }
+    
+    @ViewBuilder
+    private func selectableOptionCard(
+        checked: Bool,
+        onToggle: @escaping () -> Void,
+        icon: SottoIcon,
+        title: String,
+        subtitle: String,
+        warning: String? = nil
+    ) -> some View {
+        Button(action: onToggle) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(checked ? SottoTheme.primary.opacity(0.15) : SottoTheme.surfaceVariant.opacity(0.6))
+                            .frame(width: 36, height: 36)
+                        SottoIconView(icon, size: 18, tint: checked ? SottoTheme.primary : SottoTheme.textSecondary)
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(SottoTheme.textPrimary)
+                        Text(subtitle)
+                            .font(.system(size: 13))
+                            .foregroundColor(SottoTheme.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    Image(systemName: checked ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 20))
+                        .foregroundColor(checked ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.5))
+                }
+                
+                if let warn = warning {
+                    HStack(spacing: 6) {
+                        SottoIconView(.warning, size: 13, tint: SottoTheme.destructiveRed)
+                        Text(warn)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(SottoTheme.destructiveRed)
+                    }
+                    .padding(.leading, 48)
+                }
+            }
+            .padding(12)
+            .background(checked ? SottoTheme.primary.opacity(0.08) : SottoTheme.surfaceVariant.opacity(0.3))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(checked ? SottoTheme.primary : Color.white.opacity(0.08), lineWidth: checked ? 1.5 : 1)
+            )
+            .contentShape(Rectangle())
+        }
     }
 }

@@ -41,15 +41,14 @@ public struct ManageCategoriesModal: View {
                         addErrorMessage = nil
                         showAddDialog = true
                     }) {
-                        HStack(spacing: 6) {
-                            Text("+")
-                                .font(.system(size: 16, weight: .bold))
+                        HStack(spacing: 8) {
+                            SottoIconView(.add, size: 16, tint: SottoTheme.primary)
                             Text("Add Category")
-                                .font(.system(size: 15, weight: .medium))
+                                .font(.system(size: 15, weight: .semibold))
                         }
                         .foregroundColor(SottoTheme.primary)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 48)
+                        .frame(height: 50)
                         .background(SottoTheme.surfaceVariant.opacity(0.6))
                         .cornerRadius(12)
                         .overlay(
@@ -65,21 +64,21 @@ public struct ManageCategoriesModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button(action: {
                         onDismiss()
+                    }) {
+                        Text("Done")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(SottoTheme.confirm)
+                            .frame(minHeight: 44)
                     }
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(SottoTheme.confirm)
                 }
             }
             // Add Category Alert / Sheet
             .alert("Add Category", isPresented: $showAddDialog) {
                 TextField("Category name", text: $newCategoryName)
                 Button("Add") {
-                    let success = viewModel.addCategory(newCategoryName)
-                    if !success {
-                        // show error
-                    }
+                    _ = viewModel.addCategory(newCategoryName)
                 }
                 Button("Cancel", role: .cancel) {}
             }
@@ -130,17 +129,20 @@ public struct ManageCategoriesModal: View {
         let isProtectedFromRename = Phrase.isUnrenamableCategory(catName)
         
         HStack(spacing: 8) {
-            // Fine-motor single-step up / down buttons
-            VStack(spacing: 2) {
+            // Fine-motor single-step up / down buttons (44pt touch targets)
+            VStack(spacing: 0) {
                 Button(action: {
                     if index > 0 {
                         viewModel.reorderCategories(fromIndex: index, toIndex: index - 1)
                     }
                 }) {
-                    Text("▲")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(index > 0 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25))
-                        .frame(width: 28, height: 20)
+                    SottoIconView(
+                        .arrowUp,
+                        size: 13,
+                        tint: index > 0 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25)
+                    )
+                    .frame(width: 36, height: 22)
+                    .contentShape(Rectangle())
                 }
                 .disabled(index == 0)
                 
@@ -149,13 +151,17 @@ public struct ManageCategoriesModal: View {
                         viewModel.reorderCategories(fromIndex: index, toIndex: index + 1)
                     }
                 }) {
-                    Text("▼")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(index < viewModel.categories.count - 1 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25))
-                        .frame(width: 28, height: 20)
+                    SottoIconView(
+                        .arrowDown,
+                        size: 13,
+                        tint: index < viewModel.categories.count - 1 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25)
+                    )
+                    .frame(width: 36, height: 22)
+                    .contentShape(Rectangle())
                 }
                 .disabled(index >= viewModel.categories.count - 1)
             }
+            .frame(width: 36)
             
             // Category Name & Badges
             VStack(alignment: .leading, spacing: 2) {
@@ -176,32 +182,33 @@ public struct ManageCategoriesModal: View {
             
             Spacer()
             
-            // Rename button
+            // Rename button (44pt target)
             if !isProtectedFromRename {
                 Button(action: {
                     renameValue = catName
                     categoryToRename = catName
                 }) {
-                    Text("✏️")
-                        .font(.system(size: 14))
-                        .frame(width: 32, height: 32)
+                    SottoIconView(.edit, size: 16, tint: SottoTheme.textSecondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Rename category \(catName)")
             }
             
-            // Delete button
+            // Delete button (44pt target)
             if !isProtectedFromDelete {
                 Button(action: {
                     categoryToDeleteConfirm = catName
                 }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(SottoTheme.destructiveRed)
-                        .frame(width: 32, height: 32)
+                    SottoIconView(.delete, size: 16, tint: SottoTheme.destructiveRed)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Delete category \(catName)")
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .background(
             isEmergency
                 ? SottoTheme.emergencyChipBg

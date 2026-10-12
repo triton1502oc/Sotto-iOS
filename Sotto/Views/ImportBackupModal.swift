@@ -6,7 +6,13 @@ public struct ImportBackupModal: View {
     public let onReplace: () -> Void
     public let onDismiss: () -> Void
     
+    @State private var selectedMode: ImportMode = .merge
     @State private var showReplaceConfirm: Bool = false
+    
+    public enum ImportMode {
+        case merge
+        case replace
+    }
     
     public init(
         backupData: BackupData,
@@ -26,7 +32,7 @@ public struct ImportBackupModal: View {
                 SottoTheme.surface
                     .ignoresSafeArea()
                 
-                VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 18) {
                     if backupData.phrases.isEmpty && backupData.whyTree != nil {
                         // Tree-only file (e.g. therapist shared tree)
                         treeOnlyContent
@@ -70,22 +76,32 @@ public struct ImportBackupModal: View {
                 .foregroundColor(SottoTheme.textPrimary)
             
             if let areas = backupData.whyTree?.areas {
-                Text("• Includes \(areas.count) question areas")
-                    .font(.system(size: 14))
-                    .foregroundColor(SottoTheme.primary)
+                HStack(spacing: 8) {
+                    SottoIconView(.branch, size: 16, tint: SottoTheme.primary)
+                    Text("Includes \(areas.count) question areas")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(SottoTheme.primary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(SottoTheme.primary.opacity(0.1))
+                .cornerRadius(12)
             }
             
             Button(action: {
                 onMerge()
                 onDismiss()
             }) {
-                Text("Import Question Tree")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 50)
-                    .background(SottoTheme.primary)
-                    .cornerRadius(12)
+                HStack(spacing: 8) {
+                    SottoIconView(.restore, size: 18, tint: .white)
+                    Text("Import Question Tree")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 50)
+                .background(SottoTheme.primary)
+                .cornerRadius(12)
             }
             .padding(.top, 12)
         }
@@ -95,25 +111,34 @@ public struct ImportBackupModal: View {
     
     private var standardBackupContent: some View {
         VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Backup Content Summary")
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(SottoTheme.textPrimary)
                 
-                Text("\(backupData.phrases.count) phrases across \(backupData.categories.count) categories")
-                    .font(.system(size: 14))
-                    .foregroundColor(SottoTheme.textSecondary)
+                HStack(spacing: 8) {
+                    SottoIconView(.cards, size: 15, tint: SottoTheme.primary)
+                    Text("\(backupData.phrases.count) phrases across \(backupData.categories.count) categories")
+                        .font(.system(size: 14))
+                        .foregroundColor(SottoTheme.textSecondary)
+                }
                 
                 if let tree = backupData.whyTree {
-                    Text("• Why Finder Question Tree (\(tree.areas.count) areas)")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(SottoTheme.primary)
+                    HStack(spacing: 8) {
+                        SottoIconView(.branch, size: 15, tint: SottoTheme.primary)
+                        Text("Why Finder Question Tree (\(tree.areas.count) areas)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(SottoTheme.primary)
+                    }
                 }
                 
                 if let logs = backupData.whyLog, !logs.isEmpty {
-                    Text("• Private Why Log (\(logs.count) sessions)")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(SottoTheme.warning)
+                    HStack(spacing: 8) {
+                        SottoIconView(.shield, size: 15, tint: SottoTheme.warning)
+                        Text("Private Why Log (\(logs.count) sessions)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(SottoTheme.warning)
+                    }
                 }
             }
             .padding(14)
@@ -126,46 +151,94 @@ public struct ImportBackupModal: View {
                 .foregroundColor(SottoTheme.textSecondary)
                 .padding(.top, 4)
             
-            // Merge Button
-            Button(action: {
-                onMerge()
-                onDismiss()
-            }) {
-                VStack(spacing: 2) {
-                    Text("Merge with Existing Library")
-                        .font(.system(size: 15, weight: .bold))
-                    Text("Adds new phrases and categories without deleting existing items")
-                        .font(.system(size: 12))
-                        .opacity(0.8)
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(SottoTheme.primary)
-                .cornerRadius(12)
-            }
+            // Mode Option 1: Merge
+            importModeCard(
+                mode: .merge,
+                title: "Merge with Existing Library",
+                description: "Adds new phrases and categories without deleting existing items",
+                isDestructive: false
+            )
             
-            // Replace Button
+            // Mode Option 2: Replace
+            importModeCard(
+                mode: .replace,
+                title: "Replace Entire Library",
+                description: "Replaces library with backup file (preserves Emergency)",
+                isDestructive: true
+            )
+            
+            // Proceed Action CTA Button
             Button(action: {
-                showReplaceConfirm = true
-            }) {
-                VStack(spacing: 2) {
-                    Text("Replace Entire Library")
-                        .font(.system(size: 15, weight: .bold))
-                    Text("Replaces library with backup file (preserves Emergency)")
-                        .font(.system(size: 12))
-                        .opacity(0.8)
+                if selectedMode == .replace {
+                    showReplaceConfirm = true
+                } else {
+                    onMerge()
+                    onDismiss()
                 }
-                .foregroundColor(SottoTheme.destructiveRed)
+            }) {
+                HStack(spacing: 8) {
+                    SottoIconView(.restore, size: 18, tint: .white)
+                    Text(selectedMode == .replace ? "Proceed with Replace" : "Merge Library")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                }
                 .frame(maxWidth: .infinity)
-                .frame(height: 54)
-                .background(SottoTheme.destructiveRed.opacity(0.12))
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(SottoTheme.destructiveRed.opacity(0.4), lineWidth: 1)
-                )
+                .frame(height: 52)
+                .background(selectedMode == .replace ? SottoTheme.destructiveRed : SottoTheme.primary)
+                .cornerRadius(14)
             }
+            .padding(.top, 8)
+        }
+    }
+    
+    @ViewBuilder
+    private func importModeCard(
+        mode: ImportMode,
+        title: String,
+        description: String,
+        isDestructive: Bool
+    ) -> some View {
+        let isSelected = selectedMode == mode
+        Button(action: {
+            selectedMode = mode
+        }) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(isSelected && isDestructive ? SottoTheme.destructiveRed : SottoTheme.textPrimary)
+                    Text(description)
+                        .font(.system(size: 12))
+                        .foregroundColor(SottoTheme.textSecondary)
+                }
+                
+                Spacer()
+                
+                Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
+                    .font(.system(size: 18))
+                    .foregroundColor(
+                        isSelected
+                            ? (isDestructive ? SottoTheme.destructiveRed : SottoTheme.primary)
+                            : SottoTheme.textSecondary.opacity(0.4)
+                    )
+            }
+            .padding(12)
+            .background(
+                isSelected
+                    ? (isDestructive ? SottoTheme.destructiveRed.opacity(0.12) : SottoTheme.primary.opacity(0.08))
+                    : SottoTheme.surfaceVariant.opacity(0.3)
+            )
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        isSelected
+                            ? (isDestructive ? SottoTheme.destructiveRed : SottoTheme.primary)
+                            : Color.white.opacity(0.08),
+                        lineWidth: isSelected ? 1.5 : 1
+                    )
+            )
+            .contentShape(Rectangle())
         }
     }
 }

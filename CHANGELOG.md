@@ -3,6 +3,22 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.7.2] - 2026-10-12
+
+### Added
+- **Tactile Response Dock & Caregiver Menu Modernization**: Elevated 2x2 grid response dock with rounded 20pt surfaces, tactile haptics, crisp SF Symbols via `SottoIcon`, and tonal contrast across all sensory themes ([#30](https://github.com/triton1502oc/Sotto-iOS/issues/30), [#23](https://github.com/triton1502oc/Sotto-iOS/issues/23)).
+- **Responsive Trigger Logger Strip**: Inline horizontal chip selector following binary crisis resolution with semantic category icons (`Pain`, `Noise`, `Task`, `Emotion`, `Other`) for fast on-device logging to Why Log ([#31](https://github.com/triton1502oc/Sotto-iOS/issues/31), [#23](https://github.com/triton1502oc/Sotto-iOS/issues/23)).
+- **Animated 180° Partner Flip Rotation**: Smooth 300ms rotational perspective flip animation for caregiver view toggling respecting Reduce Motion settings ([#32](https://github.com/triton1502oc/Sotto-iOS/issues/32), [#23](https://github.com/triton1502oc/Sotto-iOS/issues/23)).
+- **Main Screen Modern Top App Bar**: Streamlined navigation bar with unified SF Symbol action containers and animated edit mode toggle pill ([#33](https://github.com/triton1502oc/Sotto-iOS/issues/33), [#24](https://github.com/triton1502oc/Sotto-iOS/issues/24)).
+- **Single-Row QuickSpeak Dock Capsule**: Modernized ~56pt single-row QuickSpeak dock capsule with embedded inline triggers (mic, fullscreen, clear, add card) and primary filled Speak CTA ([#35](https://github.com/triton1502oc/Sotto-iOS/issues/35), [#24](https://github.com/triton1502oc/Sotto-iOS/issues/24)).
+- **Compact Card Density Option**: User-configurable compact card layout option (`cardLayout: "compact"`, `1.25:1` aspect ratio) saving +25% screen space while preserving square default for motor memory, with drag reorder grip indicators in edit mode ([#36](https://github.com/triton1502oc/Sotto-iOS/issues/36), [#24](https://github.com/triton1502oc/Sotto-iOS/issues/24)).
+- **Streamlined Category Strip & Category Manager**: Category filter strip with anchored customize button (`SottoIcon.tune`) and modernized sheet dialog ([#34](https://github.com/triton1502oc/Sotto-iOS/issues/34), [#24](https://github.com/triton1502oc/Sotto-iOS/issues/24)).
+- **Categorized 3-Tab Settings Dialog**: Reorganized Voice Settings into 3 focused tabs ("Voice & Speech", "Appearance & Safety", "Data & Backup") with session persistence and telemetry ([#38](https://github.com/triton1502oc/Sotto-iOS/issues/38), [#25](https://github.com/triton1502oc/Sotto-iOS/issues/25)).
+- **Settings SF Symbol Badges & Tool Tiles**: Replaced emoji section headers with 32pt tonal icon badges and converted secondary tools to modern list tiles with trailing chevrons ([#37](https://github.com/triton1502oc/Sotto-iOS/issues/37), [#25](https://github.com/triton1502oc/Sotto-iOS/issues/25)).
+- **Modernized Sub-Modals**: Polished Why Log, Why Tree Editor, and Backup/Restore modals with SF Symbols and selection tiles ([#39](https://github.com/triton1502oc/Sotto-iOS/issues/39), [#25](https://github.com/triton1502oc/Sotto-iOS/issues/25)).
+- **Floating Communicator Parity Architecture**: Comprehensive proposal (`docs/FLOATING_COMMUNICATOR_PROPOSAL.md`) specifying Interactive Live Activities & Dynamic Island (`ActivityKit` with `LiveActivityIntent`) as the compliant iOS counterpart to Android PiP ([#28](https://github.com/triton1502oc/Sotto-iOS/issues/28)).
+- **Round-Trip Export/Import Fidelity Unit Tests**: Added automated unit test verifying 100% data fidelity across phrases, categories, Why Tree, and Why Log export/import cycles ([#39](https://github.com/triton1502oc/Sotto-iOS/issues/39), [#40](https://github.com/triton1502oc/Sotto-iOS/issues/40)).
+
 ## [v1.7.1] - 2026-10-12
 
 ### Added

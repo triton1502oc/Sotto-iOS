@@ -81,20 +81,26 @@ public struct WhyLogModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if !logs.isEmpty {
-                        Button("Clear All") {
+                        Button(action: {
                             showClearConfirm = true
+                        }) {
+                            Text("Clear All")
+                                .font(.system(size: 14))
+                                .foregroundColor(SottoTheme.destructiveRed)
+                                .frame(minHeight: 44)
                         }
-                        .font(.system(size: 14))
-                        .foregroundColor(SottoTheme.destructiveRed)
                     }
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button(action: {
                         onDismiss()
+                    }) {
+                        Text("Done")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(SottoTheme.confirm)
+                            .frame(minHeight: 44)
                     }
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(SottoTheme.confirm)
                 }
             }
             .alert("Clear All Logs?", isPresented: $showClearConfirm) {
@@ -128,10 +134,14 @@ public struct WhyLogModal: View {
     // MARK: - Empty State
     
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 14) {
             Spacer()
-            Text("📋")
-                .font(.system(size: 48))
+            ZStack {
+                Circle()
+                    .fill(SottoTheme.primary.opacity(0.12))
+                    .frame(width: 64, height: 64)
+                SottoIconView(.docTextMagnifyingglass, size: 32, tint: SottoTheme.primary)
+            }
             Text("No sessions recorded yet")
                 .font(.system(size: 17, weight: .medium))
                 .foregroundColor(SottoTheme.textSecondary)
@@ -184,8 +194,9 @@ public struct WhyLogModal: View {
             .joined(separator: ", ")
         
         return VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("📊 30-Day Patterns")
+            HStack(spacing: 8) {
+                SottoIconView(.analytics, size: 16, tint: SottoTheme.primary)
+                Text("30-Day Patterns")
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(SottoTheme.textPrimary)
                 Spacer()
@@ -231,27 +242,27 @@ public struct WhyLogModal: View {
         let dateStr = formatter.string(from: date)
         
         let outcomeColor: Color
-        let outcomeIcon: String
+        let outcomeIcon: SottoIcon
         let outcomeText: String
         switch entry.outcome {
         case .found:
             outcomeColor = SottoTheme.successGreen
-            outcomeIcon = "🎯"
+            outcomeIcon = .target
             outcomeText = "Resolved"
         case .stopped:
             outcomeColor = SottoTheme.warning
-            outcomeIcon = "⏸"
+            outcomeIcon = .pause
             outcomeText = "Stopped"
         case .notFound:
             outcomeColor = SottoTheme.textSecondary
-            outcomeIcon = "🔍"
+            outcomeIcon = .search
             outcomeText = "Unresolved"
         }
         
         return VStack(alignment: .leading, spacing: 8) {
             HStack {
-                HStack(spacing: 4) {
-                    Text(outcomeIcon)
+                HStack(spacing: 5) {
+                    SottoIconView(outcomeIcon, size: 13, tint: outcomeColor)
                     Text(outcomeText)
                         .font(.system(size: 13, weight: .bold))
                         .foregroundColor(outcomeColor)
@@ -270,11 +281,11 @@ public struct WhyLogModal: View {
                 Button(action: {
                     entryToDelete = entry
                 }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(SottoTheme.textSecondary.opacity(0.6))
-                        .padding(4)
+                    SottoIconView(.delete, size: 15, tint: SottoTheme.destructiveRed.opacity(0.75))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Delete log entry")
             }
             
             if let cause = entry.causeText, !cause.isEmpty {
@@ -310,11 +321,13 @@ public struct WhyLogModal: View {
             }
             
             if let note = entry.privateNote, !note.isEmpty {
-                Text("Note: \(note)")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(SottoTheme.textSecondary)
-                    .italic()
-                    .padding(.top, 2)
+                HStack(spacing: 6) {
+                    SottoIconView(.noteAlt, size: 13, tint: SottoTheme.textSecondary)
+                    Text(note)
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundColor(SottoTheme.textSecondary)
+                }
+                .padding(.top, 2)
             }
         }
         .padding(14)

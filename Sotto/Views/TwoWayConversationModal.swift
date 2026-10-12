@@ -17,6 +17,9 @@ private struct WhyQuestionOption: Identifiable {
 
 public struct TwoWayConversationModal: View {
     @Environment(\.sottoPalette) private var palette
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AccessibilityFocusState private var isPromptFocused: Bool
+
     public let allPhrases: [Phrase]
     public let categories: [String]
     public let whyFinderRepository: WhyFinderRepositoryProtocol
@@ -127,10 +130,12 @@ public struct TwoWayConversationModal: View {
             palette.background
                 .ignoresSafeArea()
             
-            if isFlipped {
-                flippedLayout
+            if reduceMotion {
+                conversationLayout
+                    .id(isFlipped)
+                    .transition(.opacity)
             } else {
-                normalLayout
+                conversationLayout
             }
         }
         .sheet(isPresented: $showQuestionsSheet) {
@@ -156,6 +161,7 @@ public struct TwoWayConversationModal: View {
                 contextTag: contextTag,
                 voiceSettings: voiceSettings
             )
+            isPromptFocused = true
             
             if flipped {
                 if !isPad {
@@ -203,89 +209,74 @@ public struct TwoWayConversationModal: View {
         }
     }
     
-    // MARK: - Normal Side-by-Side Layout
+    // MARK: - Animated Unified Conversation Layout (180° Flip Support)
     
-    private var normalLayout: some View {
-        VStack(spacing: 10) {
-            // Receptive display card
-            CaregiverDisplayCard(
-                activeTab: activeTab,
-                whyState: whySession.currentState,
-                whyPromptText: whyPromptText,
-                activeFreeformText: activeFreeformText,
-                lastReply: lastReply,
-                isListening: speechRecognizer.isRecording,
-                appLanguage: appLanguage,
-                onRestartWhyTree: {
-                    whySession.restart()
-                    whySessionSaved = false
-                },
-                onFinish: {
-                    speechRecognizer.stopRecording()
-                    onDismiss()
-                },
-                onReadAloudPrompt: {
-                    let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
-                    if !text.isEmpty { onSpeakResponse(text) }
-                }
-            )
-            .frame(maxHeight: .infinity)
-            .padding(.horizontal, 16)
-            
-            // Response Dock (4 Cards or Body Grid or Intensity Row)
-            CaregiverResponseDock(
-                activeTab: activeTab,
-                whyState: whySession.currentState,
-                appLanguage: appLanguage,
-                onYes: {
-                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                    if activeTab == .whyFinder {
-                        whySession.answerYes()
-                    } else {
-                        showPostResolutionPrompt = true
+    private var conversationLayout: some View {
+        VStack(spacing: 8) {
+            // Patient display and responses rotated 180° facing partner across table when flipped
+            VStack(spacing: 10) {
+                CaregiverDisplayCard(
+                    activeTab: activeTab,
+                    whyState: whySession.currentState,
+                    whyPromptText: whyPromptText,
+                    activeFreeformText: activeFreeformText,
+                    lastReply: lastReply,
+                    isListening: speechRecognizer.isRecording,
+                    appLanguage: appLanguage,
+                    isPromptFocused: $isPromptFocused,
+                    onRestartWhyTree: {
+                        whySession.restart()
+                        whySessionSaved = false
+                    },
+                    onFinish: {
+                        speechRecognizer.stopRecording()
+                        onDismiss()
+                    },
+                    onReadAloudPrompt: {
+                        let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
+                        if !text.isEmpty { onSpeakResponse(text) }
                     }
-                },
-                onNo: {
-                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                    if activeTab == .whyFinder {
-                        whySession.answerNo()
-                    } else {
-                        showPostResolutionPrompt = true
+                )
+                .frame(maxHeight: .infinity)
+                
+                CaregiverResponseDock(
+                    activeTab: activeTab,
+                    whyState: whySession.currentState,
+                    appLanguage: appLanguage,
+                    onYes: {
+                        handlePartnerResponse(action: "yes")
+                    },
+                    onNo: {
+                        handlePartnerResponse(action: "no")
+                    },
+                    onWait: {
+                        handlePartnerResponse(action: "wait")
+                    },
+                    onRepeat: {
+                        handlePartnerResponse(action: "repeat")
+                    },
+                    onNotSure: {
+                        handlePartnerResponse(action: "not_sure")
+                    },
+                    onStop: {
+                        handlePartnerResponse(action: "stop")
+                    },
+                    onSelectBodyPart: { partKey in
+                        let label = LocaleHelper.getBodyRegionLabel(partKey, appLanguage: appLanguage)
+                        handleUserResponse(displayText: label, ttsText: label)
+                        whySession.selectBodyPart(partKey)
+                    },
+                    onSelectIntensity: { level in
+                        handleUserResponse(displayText: "\(level)", ttsText: "\(level)")
+                        whySession.selectIntensity(level)
                     }
-                },
-                onWait: {
-                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                },
-                onRepeat: {
-                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                },
-                onNotSure: {
-                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                    if activeTab == .whyFinder { whySession.answerNotSure() }
-                },
-                onStop: {
-                    let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                    if activeTab == .whyFinder { whySession.stop() }
-                },
-                onSelectBodyPart: { partKey in
-                    let label = LocaleHelper.getBodyRegionLabel(partKey, appLanguage: appLanguage)
-                    handleUserResponse(displayText: label, ttsText: label)
-                    whySession.selectBodyPart(partKey)
-                },
-                onSelectIntensity: { level in
-                    handleUserResponse(displayText: "\(level)", ttsText: "\(level)")
-                    whySession.selectIntensity(level)
-                }
-            )
+                )
+            }
             .padding(.horizontal, 16)
+            .rotationEffect(.degrees(isFlipped ? 180 : 0))
+            .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.8), value: isFlipped)
             
-            // Optional trigger feedback banner
+            // Caregiver controls facing the caregiver at the bottom
             if let feedback = triggerLoggedFeedback {
                 Text(feedback)
                     .font(.system(size: 13, weight: .bold))
@@ -298,23 +289,21 @@ public struct TwoWayConversationModal: View {
                     .padding(.horizontal, 16)
             }
             
-            // Post-Resolution Pattern Logger (Talk tab)
             if showPostResolutionPrompt && activeTab == .freeform {
                 PostResolutionTriggerLogger(
                     appLanguage: appLanguage,
+                    voiceSettings: voiceSettings,
                     onLogTrigger: { logPostResolutionTrigger($0) },
                     onDismiss: { showPostResolutionPrompt = false }
                 )
                 .padding(.horizontal, 16)
             }
             
-            // Keyboard Input Row (if toggled)
             if showKeyboardInput && activeTab == .freeform {
                 manualKeyboardRow
                     .padding(.horizontal, 16)
             }
             
-            // Bottom Action Menu
             CaregiverBottomMenu(
                 activeTab: $activeTab,
                 isFlipped: $isFlipped,
@@ -354,153 +343,48 @@ public struct TwoWayConversationModal: View {
         .padding(.top, 8)
     }
     
-    // MARK: - Flipped Partner View (180° rotation)
-    
-    private var flippedLayout: some View {
-        VStack(spacing: 8) {
-            // Patient display and responses rotated 180° facing partner across the table
-            VStack(spacing: 10) {
-                CaregiverDisplayCard(
-                    activeTab: activeTab,
-                    whyState: whySession.currentState,
-                    whyPromptText: whyPromptText,
-                    activeFreeformText: activeFreeformText,
-                    lastReply: lastReply,
-                    isListening: speechRecognizer.isRecording,
-                    appLanguage: appLanguage,
-                    onRestartWhyTree: {
-                        whySession.restart()
-                        whySessionSaved = false
-                    },
-                    onFinish: {
-                        speechRecognizer.stopRecording()
-                        onDismiss()
-                    },
-                    onReadAloudPrompt: {
-                        let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
-                        if !text.isEmpty { onSpeakResponse(text) }
-                    }
-                )
-                .frame(maxHeight: .infinity)
-                
-                CaregiverResponseDock(
-                    activeTab: activeTab,
-                    whyState: whySession.currentState,
-                    appLanguage: appLanguage,
-                    onYes: {
-                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                        if activeTab == .whyFinder {
-                            whySession.answerYes()
-                        } else {
-                            showPostResolutionPrompt = true
-                        }
-                    },
-                    onNo: {
-                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                        if activeTab == .whyFinder {
-                            whySession.answerNo()
-                        } else {
-                            showPostResolutionPrompt = true
-                        }
-                    },
-                    onWait: {
-                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                    },
-                    onRepeat: {
-                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                    },
-                    onNotSure: {
-                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                        if activeTab == .whyFinder { whySession.answerNotSure() }
-                    },
-                    onStop: {
-                        let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                        if activeTab == .whyFinder { whySession.stop() }
-                    },
-                    onSelectBodyPart: { partKey in
-                        let label = LocaleHelper.getBodyRegionLabel(partKey, appLanguage: appLanguage)
-                        handleUserResponse(displayText: label, ttsText: label)
-                        whySession.selectBodyPart(partKey)
-                    },
-                    onSelectIntensity: { level in
-                        handleUserResponse(displayText: "\(level)", ttsText: "\(level)")
-                        whySession.selectIntensity(level)
-                    }
-                )
+    private func handlePartnerResponse(action: String) {
+        UsabilityTracker.shared.startIntent("partner_response")
+        UsabilityTracker.shared.endIntent(
+            "partner_response",
+            outcome: action,
+            voiceSettings: voiceSettings
+        )
+        
+        switch action {
+        case "yes":
+            let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
+            handleUserResponse(displayText: label, ttsText: label)
+            if activeTab == .whyFinder {
+                whySession.answerYes()
+            } else {
+                showPostResolutionPrompt = true
             }
-            .padding(.horizontal, 16)
-            .rotationEffect(.degrees(180))
-            
-            // Caregiver controls facing the caregiver at the bottom
-            if let feedback = triggerLoggedFeedback {
-                Text(feedback)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(SottoTheme.successText)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(SottoTheme.successContainer.opacity(0.8))
-                    .cornerRadius(12)
-                    .padding(.horizontal, 16)
+        case "no":
+            let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
+            handleUserResponse(displayText: label, ttsText: label)
+            if activeTab == .whyFinder {
+                whySession.answerNo()
+            } else {
+                showPostResolutionPrompt = true
             }
-            
-            if showPostResolutionPrompt && activeTab == .freeform {
-                PostResolutionTriggerLogger(
-                    appLanguage: appLanguage,
-                    onLogTrigger: { logPostResolutionTrigger($0) },
-                    onDismiss: { showPostResolutionPrompt = false }
-                )
-                .padding(.horizontal, 16)
-            }
-            
-            if showKeyboardInput && activeTab == .freeform {
-                manualKeyboardRow
-                    .padding(.horizontal, 16)
-            }
-            
-            CaregiverBottomMenu(
-                activeTab: $activeTab,
-                isFlipped: $isFlipped,
-                showPostResolutionPrompt: $showPostResolutionPrompt,
-                hasWhyFinder: !whySession.tree.areas.isEmpty,
-                appLanguage: appLanguage,
-                voiceSettings: voiceSettings,
-                isListening: speechRecognizer.isRecording,
-                canStepBack: whySession.canStepBack(),
-                canSpeakPrompt: (activeTab == .whyFinder ? !whyPromptText.isEmpty : !activeFreeformText.isEmpty),
-                onToggleListening: {
-                    toggleListening()
-                },
-                onSpeakPrompt: {
-                    speechRecognizer.stopRecording()
-                    let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
-                    if !text.isEmpty { onSpeakResponse(text) }
-                },
-                onPickCard: {
-                    speechRecognizer.stopRecording()
-                    showQuestionsSheet = true
-                },
-                onStepBack: {
-                    speechRecognizer.stopRecording()
-                    whySession.stepBack()
-                },
-                onToggleKeyboard: {
-                    speechRecognizer.stopRecording()
-                    showKeyboardInput.toggle()
-                },
-                onDismiss: {
-                    speechRecognizer.stopRecording()
-                    onDismiss()
-                }
-            )
+        case "wait":
+            let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
+            handleUserResponse(displayText: label, ttsText: label)
+        case "repeat":
+            let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
+            handleUserResponse(displayText: label, ttsText: label)
+        case "not_sure":
+            let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
+            handleUserResponse(displayText: label, ttsText: label)
+            if activeTab == .whyFinder { whySession.answerNotSure() }
+        case "stop":
+            let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
+            handleUserResponse(displayText: label, ttsText: label)
+            if activeTab == .whyFinder { whySession.stop() }
+        default:
+            break
         }
-        .padding(.top, 8)
     }
     
     // MARK: - Helpers
@@ -806,6 +690,7 @@ public struct TwoWayConversationModal: View {
 // MARK: - Receptive Display Card
 
 private struct CaregiverDisplayCard: View {
+    @Environment(\.sottoPalette) private var palette
     let activeTab: CaregiverTab
     let whyState: WhyFinderState
     let whyPromptText: String
@@ -813,28 +698,30 @@ private struct CaregiverDisplayCard: View {
     let lastReply: String?
     let isListening: Bool
     let appLanguage: String
+    var isPromptFocused: AccessibilityFocusState<Bool>.Binding
     let onRestartWhyTree: () -> Void
     let onFinish: () -> Void
     let onReadAloudPrompt: () -> Void
     
     var body: some View {
         VStack(spacing: 12) {
-            // Status reply / listening badge
+            // Status reply / steady listening badge
             HStack {
                 if let reply = lastReply {
                     let prefix = LocaleHelper.getTwoWayActionLabel(actionKey: "replied_prefix", appLanguage: appLanguage)
-                    Text("✓ \(prefix)\(reply)")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
-                        .background(SottoTheme.successGreen)
-                        .cornerRadius(12)
+                    HStack(spacing: 6) {
+                        SottoIconView(.check, size: 12, tint: .white)
+                        Text("\(prefix)\(reply)")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(SottoTheme.successGreen)
+                    .cornerRadius(12)
                 } else if isListening {
                     HStack(spacing: 6) {
-                        Circle()
-                            .fill(SottoTheme.recordingPulseRed)
-                            .frame(width: 8, height: 8)
+                        SottoIconView(.mic, size: 12, tint: SottoTheme.recordingPulseRed)
                         Text(LocaleHelper.getTwoWayActionLabel(actionKey: "listening", appLanguage: appLanguage))
                             .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(SottoTheme.recordingPulseRed)
@@ -851,49 +738,56 @@ private struct CaregiverDisplayCard: View {
             
             if activeTab == .whyFinder, case .finished(let outcome, _, let cause, let part, let intensity, _, _, _) = whyState {
                 // Finished State
-                let outcomeTitle: String = {
+                let (outcomeIcon, outcomeTitle): (SottoIcon, String) = {
                     switch outcome {
-                    case .found: return "🎯 " + LocaleHelper.getTwoWayActionLabel(actionKey: "cause_found", appLanguage: appLanguage)
-                    case .stopped: return "⏸ " + LocaleHelper.getTwoWayActionLabel(actionKey: "stopped", appLanguage: appLanguage)
-                    default: return "🔍 " + LocaleHelper.getTwoWayActionLabel(actionKey: "unresolved", appLanguage: appLanguage)
+                    case .found: return (.target, LocaleHelper.getTwoWayActionLabel(actionKey: "cause_found", appLanguage: appLanguage))
+                    case .stopped: return (.pause, LocaleHelper.getTwoWayActionLabel(actionKey: "stopped", appLanguage: appLanguage))
+                    default: return (.search, LocaleHelper.getTwoWayActionLabel(actionKey: "unresolved", appLanguage: appLanguage))
                     }
                 }()
                 
                 VStack(spacing: 14) {
-                    Text(outcomeTitle)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(SottoTheme.textPrimary)
+                    HStack(spacing: 8) {
+                        SottoIconView(outcomeIcon, size: 22, tint: palette.textPrimary)
+                        Text(outcomeTitle)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(palette.textPrimary)
+                    }
                     
                     if outcome == .found, let c = cause, !c.isEmpty {
                         VStack(spacing: 4) {
                             Text(c)
                                 .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(SottoTheme.primary)
+                                .foregroundColor(palette.accent)
                             
                             if let p = part, !p.isEmpty {
                                 let partLabel = LocaleHelper.getBodyRegionLabel(p, appLanguage: appLanguage)
                                 let intensityStr = intensity != nil ? " • \(intensity!)/5" : ""
                                 Text("\(partLabel)\(intensityStr)")
                                     .font(.system(size: 15))
-                                    .foregroundColor(SottoTheme.textSecondary)
+                                    .foregroundColor(palette.textSecondary)
                             }
                         }
                         .padding(14)
                         .frame(maxWidth: .infinity)
-                        .background(SottoTheme.primary.opacity(0.15))
+                        .background(palette.accent.opacity(0.15))
                         .cornerRadius(12)
                     }
                     
                     HStack(spacing: 12) {
                         Button(action: onRestartWhyTree) {
-                            Text("🔄 " + LocaleHelper.getTwoWayActionLabel(actionKey: "restart", appLanguage: appLanguage))
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(SottoTheme.textPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 44)
-                                .background(SottoTheme.surfaceVariant)
-                                .cornerRadius(10)
+                            HStack(spacing: 6) {
+                                SottoIconView(.refresh, size: 15, tint: palette.textPrimary)
+                                Text(LocaleHelper.getTwoWayActionLabel(actionKey: "restart", appLanguage: appLanguage))
+                                    .font(.system(size: 15, weight: .semibold))
+                                    .foregroundColor(palette.textPrimary)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(10)
                         }
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "restart", appLanguage: appLanguage))
                         
                         Button(action: onFinish) {
                             Text(LocaleHelper.getTwoWayActionLabel(actionKey: "done", appLanguage: appLanguage))
@@ -904,6 +798,7 @@ private struct CaregiverDisplayCard: View {
                                 .background(SottoTheme.confirm)
                                 .cornerRadius(10)
                         }
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "done", appLanguage: appLanguage))
                     }
                 }
             } else {
@@ -913,21 +808,24 @@ private struct CaregiverDisplayCard: View {
                 Button(action: onReadAloudPrompt) {
                     Text(prompt.isEmpty ? hint : prompt)
                         .font(.system(size: prompt.count < 40 ? 30 : 22, weight: .bold))
-                        .foregroundColor(prompt.isEmpty ? SottoTheme.textSecondary.opacity(0.5) : SottoTheme.textPrimary)
+                        .foregroundColor(prompt.isEmpty ? palette.textSecondary.opacity(0.6) : palette.textPrimary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 16)
                 }
+                .accessibilityFocused(isPromptFocused)
+                .accessibilityLabel(prompt.isEmpty ? hint : prompt)
+                .accessibilityHint(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
             }
             
             Spacer()
         }
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(SottoTheme.surface)
+        .background(palette.surface)
         .cornerRadius(24)
         .overlay(
             RoundedRectangle(cornerRadius: 24)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .stroke(palette.outlineVariant.opacity(0.4), lineWidth: 1)
         )
     }
 }
@@ -935,6 +833,7 @@ private struct CaregiverDisplayCard: View {
 // MARK: - Caregiver Response Dock
 
 private struct CaregiverResponseDock: View {
+    @Environment(\.sottoPalette) private var palette
     let activeTab: CaregiverTab
     let whyState: WhyFinderState
     let appLanguage: String
@@ -964,7 +863,7 @@ private struct CaregiverResponseDock: View {
         }
     }
     
-    // Four Card Dock
+    // Four Card Dock (20pt radius shapes, tonal tactile palettes, haptics)
     private func fourCardDock(isWhyFinder: Bool) -> some View {
         let strYes = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
         let strNo = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
@@ -981,33 +880,41 @@ private struct CaregiverResponseDock: View {
                     impact.impactOccurred()
                     onYes()
                 }) {
-                    Text("✓ \(strYes)")
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(SottoTheme.successText)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 80, maxHeight: 92)
-                        .background(SottoTheme.successContainer)
-                        .cornerRadius(18)
-                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                    HStack(spacing: 8) {
+                        SottoIconView(.check, size: 24, tint: SottoTheme.successText)
+                        Text(strYes)
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundColor(SottoTheme.successText)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 80, maxHeight: 92)
+                    .background(SottoTheme.successContainer)
+                    .cornerRadius(20)
+                    .shadow(color: Color.black.opacity(0.18), radius: 3, x: 0, y: 2)
                 }
+                .accessibilityLabel(strYes)
                 
                 Button(action: {
                     let impact = UIImpactFeedbackGenerator(style: .heavy)
                     impact.impactOccurred()
                     onNo()
                 }) {
-                    Text("✕ \(strNo)")
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(SottoTheme.crisisStopText)
-                        .frame(maxWidth: .infinity)
-                        .frame(minHeight: 80, maxHeight: 92)
-                        .background(SottoTheme.crisisStopContainer)
-                        .cornerRadius(18)
-                        .shadow(color: Color.black.opacity(0.2), radius: 3, x: 0, y: 2)
+                    HStack(spacing: 8) {
+                        SottoIconView(.close, size: 24, tint: SottoTheme.crisisStopText)
+                        Text(strNo)
+                            .font(.system(size: 26, weight: .bold))
+                            .foregroundColor(SottoTheme.crisisStopText)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 80, maxHeight: 92)
+                    .background(SottoTheme.crisisStopContainer)
+                    .cornerRadius(20)
+                    .shadow(color: Color.black.opacity(0.18), radius: 3, x: 0, y: 2)
                 }
+                .accessibilityLabel(strNo)
             }
             
-            // Row 2: Secondary choices (54pt height)
+            // Row 2: Secondary choices (54pt height >= 44pt)
             HStack(spacing: 10) {
                 if isWhyFinder {
                     Button(action: {
@@ -1015,28 +922,36 @@ private struct CaregiverResponseDock: View {
                         impact.impactOccurred()
                         onNotSure()
                     }) {
-                        Text("? \(strNotSure)")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(SottoTheme.warningHighText)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(SottoTheme.warningHighContainer)
-                            .cornerRadius(16)
+                        HStack(spacing: 6) {
+                            SottoIconView(.questionmark, size: 18, tint: SottoTheme.warningHighText)
+                            Text(strNotSure)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(SottoTheme.warningHighText)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(SottoTheme.warningHighContainer)
+                        .cornerRadius(20)
                     }
+                    .accessibilityLabel(strNotSure)
                     
                     Button(action: {
                         let impact = UIImpactFeedbackGenerator(style: .medium)
                         impact.impactOccurred()
                         onStop()
                     }) {
-                        Text("⏹ \(strStop)")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(SottoTheme.neutralStoppedText)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(SottoTheme.neutralStoppedContainer)
-                            .cornerRadius(16)
+                        HStack(spacing: 6) {
+                            SottoIconView(.stop, size: 18, tint: SottoTheme.neutralStoppedText)
+                            Text(strStop)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(SottoTheme.neutralStoppedText)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(SottoTheme.neutralStoppedContainer)
+                        .cornerRadius(20)
                     }
+                    .accessibilityLabel(strStop)
                 } else {
                     // Freeform / Talk mode: Wait & Repeat
                     Button(action: {
@@ -1044,28 +959,36 @@ private struct CaregiverResponseDock: View {
                         impact.impactOccurred()
                         onWait()
                     }) {
-                        Text("⏳ \(strWait)")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(SottoTheme.neutralDarkText)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(SottoTheme.neutralDarkContainer)
-                            .cornerRadius(16)
+                        HStack(spacing: 6) {
+                            SottoIconView(.hourglass, size: 18, tint: SottoTheme.neutralDarkText)
+                            Text(strWait)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(SottoTheme.neutralDarkText)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(SottoTheme.neutralDarkContainer)
+                        .cornerRadius(20)
                     }
+                    .accessibilityLabel(strWait)
                     
                     Button(action: {
                         let impact = UIImpactFeedbackGenerator(style: .medium)
                         impact.impactOccurred()
                         onRepeat()
                     }) {
-                        Text("🔁 \(strRepeat)")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(SottoTheme.neutralDarkText)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 54)
-                            .background(SottoTheme.neutralDarkContainer)
-                            .cornerRadius(16)
+                        HStack(spacing: 6) {
+                            SottoIconView(.replay, size: 18, tint: SottoTheme.neutralDarkText)
+                            Text(strRepeat)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(SottoTheme.neutralDarkText)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(SottoTheme.neutralDarkContainer)
+                        .cornerRadius(20)
                     }
+                    .accessibilityLabel(strRepeat)
                 }
             }
         }
@@ -1083,39 +1006,55 @@ private struct CaregiverResponseDock: View {
                     Button(action: { onSelectBodyPart(region) }) {
                         Text(LocaleHelper.getBodyRegionLabel(region, appLanguage: appLanguage))
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(SottoTheme.textPrimary)
+                            .foregroundColor(palette.textPrimary)
                             .frame(maxWidth: .infinity)
-                            .frame(height: 42)
-                            .background(SottoTheme.surfaceVariant)
-                            .cornerRadius(10)
+                            .frame(height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
                             .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant.opacity(0.4), lineWidth: 1)
                             )
                     }
                 }
             }
             
             HStack(spacing: 10) {
-                Button(action: onNotSure) {
-                    Text("? \(strNotSure)")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(12)
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onNotSure()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.questionmark, size: 16, tint: palette.textPrimary)
+                        Text(strNotSure)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(palette.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(palette.surfaceVariant)
+                    .cornerRadius(20)
                 }
+                .accessibilityLabel(strNotSure)
                 
-                Button(action: onStop) {
-                    Text("⏹ \(strStop)")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(12)
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onStop()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.stop, size: 16, tint: palette.textPrimary)
+                        Text(strStop)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(palette.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(palette.surfaceVariant)
+                    .cornerRadius(20)
                 }
+                .accessibilityLabel(strStop)
             }
         }
     }
@@ -1142,31 +1081,47 @@ private struct CaregiverResponseDock: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 58)
                             .background(colors[level - 1])
-                            .cornerRadius(14)
+                            .cornerRadius(16)
                     }
                 }
             }
             
             HStack(spacing: 10) {
-                Button(action: onNotSure) {
-                    Text("? \(strNotSure)")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(12)
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onNotSure()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.questionmark, size: 16, tint: palette.textPrimary)
+                        Text(strNotSure)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(palette.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(palette.surfaceVariant)
+                    .cornerRadius(20)
                 }
+                .accessibilityLabel(strNotSure)
                 
-                Button(action: onStop) {
-                    Text("⏹ \(strStop)")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 44)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(12)
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onStop()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.stop, size: 16, tint: palette.textPrimary)
+                        Text(strStop)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(palette.textPrimary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 48)
+                    .background(palette.surfaceVariant)
+                    .cornerRadius(20)
                 }
+                .accessibilityLabel(strStop)
             }
         }
     }
@@ -1175,54 +1130,79 @@ private struct CaregiverResponseDock: View {
 // MARK: - Post-Resolution Pattern Logger
 
 private struct PostResolutionTriggerLogger: View {
+    @Environment(\.sottoPalette) private var palette
     let appLanguage: String
+    let voiceSettings: VoiceSettings
     let onLogTrigger: (String) -> Void
     let onDismiss: () -> Void
     
-    private let triggers = ["Pain", "Noise", "Task", "Emotion", "Other"]
+    private let triggers: [(key: String, icon: SottoIcon)] = [
+        ("Pain", .crossCase),
+        ("Noise", .speakerWave3),
+        ("Task", .checklist),
+        ("Emotion", .heart),
+        ("Other", .ellipsisCircle)
+    ]
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             HStack {
-                Text("📝 " + LocaleHelper.getTriggerLogHeader(appLanguage: appLanguage))
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(SottoTheme.textPrimary)
+                HStack(spacing: 6) {
+                    SottoIconView(.noteAlt, size: 16, tint: palette.textSecondary)
+                    Text(LocaleHelper.getTriggerLogHeader(appLanguage: appLanguage))
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(palette.textPrimary)
+                }
                 Spacer()
                 Button(action: onDismiss) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(SottoTheme.textSecondary)
-                        .padding(4)
+                    SottoIconView(.close, size: 14, tint: palette.textSecondary)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
+                .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "dismiss", appLanguage: appLanguage))
             }
             
-            HStack(spacing: 6) {
-                ForEach(triggers, id: \.self) { triggerKey in
-                    let label = LocaleHelper.getTriggerLabel(triggerKey, appLanguage: appLanguage)
-                    Button(action: { onLogTrigger(triggerKey) }) {
-                        Text(label)
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(SottoTheme.textPrimary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 38)
-                            .background(SottoTheme.surfaceVariant)
-                            .cornerRadius(10)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(SottoTheme.primary.opacity(0.2), lineWidth: 1)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(triggers, id: \.key) { item in
+                        let label = LocaleHelper.getTriggerLabel(item.key, appLanguage: appLanguage)
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("trigger_logged")
+                            UsabilityTracker.shared.endIntent(
+                                "trigger_logged",
+                                outcome: item.key.lowercased(),
+                                voiceSettings: voiceSettings
                             )
+                            onLogTrigger(item.key)
+                        }) {
+                            HStack(spacing: 6) {
+                                SottoIconView(item.icon, size: 14, tint: palette.accent)
+                                Text(label)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(palette.textPrimary)
+                                    .lineLimit(1)
+                            }
+                            .padding(.horizontal, 14)
+                            .frame(minHeight: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant.opacity(0.5), lineWidth: 1)
+                            )
+                        }
+                        .accessibilityLabel(label)
                     }
                 }
+                .padding(.horizontal, 2)
             }
         }
-        .padding(10)
-        .background(SottoTheme.surface)
-        .cornerRadius(14)
+        .padding(12)
+        .background(palette.surface)
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(SottoTheme.primary.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(palette.outlineVariant.opacity(0.6), lineWidth: 1)
         )
     }
 }

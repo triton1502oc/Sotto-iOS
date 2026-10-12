@@ -231,6 +231,7 @@ public enum LocaleHelper {
         case "cause_found": return isIndonesian ? "Penyebab Ditemukan" : "Cause Found"
         case "unresolved": return isIndonesian ? "Belum Selesai" : "Unresolved"
         case "stopped": return isIndonesian ? "Berhenti" : "Stopped"
+        case "dismiss": return isIndonesian ? "Tutup" : "Dismiss"
         case "mic_hint": return isIndonesian ? "Ketuk mikrofon untuk bicara…" : "Tap mic to speak to user…"
         default: return actionKey
         }
@@ -256,6 +257,37 @@ public enum LocaleHelper {
     public static func getTriggerLoggedFeedback(_ triggerLabel: String, appLanguage: String = "system") -> String {
         let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
         return isIndonesian ? "Pemicu tercatat: \(triggerLabel) ✓" : "Trigger logged: \(triggerLabel) ✓"
+    }
+    
+    public static func getSettingsTabTitle(tab: Int, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        switch tab {
+        case 0:
+            return isIndonesian ? "Suara & Ucapan" : "Voice & Speech"
+        case 1:
+            return isIndonesian ? "Tampilan & Keamanan" : "Appearance & Safety"
+        default:
+            return isIndonesian ? "Data & Cadangan" : "Data & Backup"
+        }
+    }
+    
+    public static func getCardLayoutTitle(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Proporsi Kartu Frasa" : "Phrase Card Proportions"
+    }
+    
+    public static func getCardLayoutDesc(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Pilih antara kartu persegi klasik atau persegi panjang ringkas (+25% kepadatan)" : "Choose between classic square or compact rectangular cards (+25% density)"
+    }
+    
+    public static func getCardLayoutOption(isCompact: Bool, appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        if isCompact {
+            return isIndonesian ? "Persegi Panjang Ringkas (1.25:1)" : "Compact Rectangular (1.25:1)"
+        } else {
+            return isIndonesian ? "Persegi Klasik (1:1)" : "Classic Square (1:1)"
+        }
     }
     
     public static func formatDigitsForSpeech(_ text: String) -> String {

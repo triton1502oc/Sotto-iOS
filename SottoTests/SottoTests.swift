@@ -1185,6 +1185,99 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(flipEvents[0].contextTag, "ipad")
         XCTAssertEqual(flipEvents[1].contextTag, "phone")
     }
+    
+    // MARK: - Export and Import Round Trip Fidelity Tests (Milestone v1.7.2 - Ticket #39)
+    
+    func testExportAndImportRoundTripPreservesFullFidelity() {
+        let samplePhrases = [
+            Phrase(id: UUID(), text: "I need help right now.", language: "en", isEmergency: true, category: .emergency),
+            Phrase(id: UUID(), text: "Please wait a moment.", language: "en", isEmergency: false, category: .needs),
+            Phrase(id: UUID(), text: "Terima kasih", spokenText: "Terima kasih banyak", spokenLanguage: "id", language: "id", isEmergency: false, category: .social)
+        ]
+        let sampleCategories = ["Needs", "Social", "Care", "Work", "Emergency", "General"]
+        let sampleTree = WhyTree(
+            areas: [
+                WhyArea(
+                    id: "sensory",
+                    question: "Is the environment overwhelming?",
+                    questions: [
+                        WhyQuestion(id: "q1", text: "Too noisy?", type: .plain),
+                        WhyQuestion(id: "q2", text: "Too bright?", type: .plain),
+                        WhyQuestion(id: "q3", text: "Where does it hurt?", type: .bodyPart),
+                        WhyQuestion(id: "q4", text: "How intense is it?", type: .intensity)
+                    ]
+                )
+            ]
+        )
+        let sampleLogs = [
+            WhyLogEntry(
+                id: "roundtrip-log-1",
+                startedAt: 1700000000000,
+                endedAt: 1700000045000,
+                outcome: .found,
+                areaId: "sensory",
+                causeText: "Too noisy",
+                bodyPart: "head",
+                intensity: 4,
+                note: "Calmed down with ear defenders"
+            )
+        ]
+        
+        // 1. Export
+        let exportedJson = PhraseBackupHelper.exportToJson(
+            phrases: samplePhrases,
+            categories: sampleCategories,
+            whyTree: sampleTree,
+            whyLog: sampleLogs
+        )
+        XCTAssertFalse(exportedJson.isEmpty)
+        
+        // 2. Parse (Import)
+        guard let importedData = PhraseBackupHelper.parseJson(exportedJson) else {
+            XCTFail("Failed to parse exported JSON")
+            return
+        }
+        
+        // Verify Phrases
+        XCTAssertEqual(importedData.phrases.count, samplePhrases.count)
+        for (i, original) in samplePhrases.enumerated() {
+            let imported = importedData.phrases[i]
+            XCTAssertEqual(imported.text, original.text)
+            XCTAssertEqual(imported.spokenText, original.spokenText)
+            XCTAssertEqual(imported.spokenLanguage, original.spokenLanguage)
+            XCTAssertEqual(imported.category, original.category)
+            XCTAssertEqual(imported.isEmergency, original.isEmergency)
+        }
+        
+        // Verify Categories
+        XCTAssertEqual(importedData.categories, sampleCategories)
+        
+        // Verify Why Tree
+        guard let importedTree = importedData.whyTree, let importedArea = importedTree.areas.first else {
+            XCTFail("Missing imported whyTree or area")
+            return
+        }
+        XCTAssertEqual(importedTree.areas.count, 1)
+        XCTAssertEqual(importedArea.id, "sensory")
+        XCTAssertEqual(importedArea.question, "Is the environment overwhelming?")
+        XCTAssertEqual(importedArea.questions.count, 4)
+        XCTAssertEqual(importedArea.questions[2].type, WhyQuestionType.bodyPart)
+        XCTAssertEqual(importedArea.questions[3].type, WhyQuestionType.intensity)
+        
+        // Verify Why Log
+        guard let importedLogList = importedData.whyLog, let importedLog = importedLogList.first else {
+            XCTFail("Missing imported whyLog")
+            return
+        }
+        XCTAssertEqual(importedLogList.count, 1)
+        XCTAssertEqual(importedLog.id, "roundtrip-log-1")
+        XCTAssertEqual(importedLog.outcome, WhyOutcome.found)
+        XCTAssertEqual(importedLog.areaId, "sensory")
+        XCTAssertEqual(importedLog.causeText, "Too noisy")
+        XCTAssertEqual(importedLog.bodyPart, "head")
+        XCTAssertEqual(importedLog.intensity, 4)
+        XCTAssertEqual(importedLog.note, "Calmed down with ear defenders")
+    }
 }
 
 

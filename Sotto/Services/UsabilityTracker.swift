@@ -420,7 +420,7 @@ public final class UsabilityTracker {
             default: customBucket = "20_plus"
             }
             let safety = settings.showSafetyCards ? 1 : 0
-            let tag = "chime=\(chime);bi=\(bilingual);sec=\(secLang);rate=\(rateBucket);cust=\(customBucket);theme=\(settings.appTheme);safety_cards_visible=\(safety)"
+            let tag = "chime=\(chime);bi=\(bilingual);sec=\(secLang);rate=\(rateBucket);cust=\(customBucket);theme=\(settings.appTheme);safety_cards_visible=\(safety);card_layout=\(settings.cardLayout)"
             let event = UsabilityEvent(
                 intent: "SettingsState",
                 durationMs: 0,

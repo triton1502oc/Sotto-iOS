@@ -61,17 +61,17 @@ public struct WhyTreeEditorModal: View {
                                 newQuestionType = .plain
                                 showAddQuestion = true
                             }) {
-                                HStack(spacing: 4) {
-                                    Text("+")
-                                        .font(.system(size: 14, weight: .bold))
+                                HStack(spacing: 6) {
+                                    SottoIconView(.add, size: 14, tint: SottoTheme.primary)
                                     Text("Add Question")
                                         .font(.system(size: 13, weight: .medium))
                                 }
                                 .foregroundColor(SottoTheme.primary)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, 12)
+                                .frame(minHeight: 44)
                                 .background(SottoTheme.surfaceVariant)
                                 .cornerRadius(12)
+                                .contentShape(Rectangle())
                             }
                         }
                         .padding(.horizontal, 16)
@@ -98,46 +98,98 @@ public struct WhyTreeEditorModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
-                        Button(role: .destructive, action: { showResetConfirm = true }) {
+                        Button(role: .destructive, action: {
+                            showResetConfirm = true
+                        }) {
                             Label("Reset to Defaults", systemImage: "arrow.counterclockwise")
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 16))
+                            .font(.system(size: 17))
                             .foregroundColor(SottoTheme.textSecondary)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
                     }
                 }
                 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") {
+                    Button(action: {
                         onDismiss()
+                    }) {
+                        Text("Done")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(SottoTheme.confirm)
+                            .frame(minHeight: 44)
                     }
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(SottoTheme.confirm)
                 }
             }
-            // Edit Opening Question Alert
-            .alert("Edit Area Question", isPresented: Binding(
-                get: { editingAreaQuestion != nil },
-                set: { if !$0 { editingAreaQuestion = nil } }
-            )) {
-                TextField("Question text", text: $areaQuestionText)
-                Button("Save") {
-                    if let aIndex = currentAreaIndex {
-                        var areas = tree.areas
-                        let existing = areas[aIndex]
-                        areas[aIndex] = WhyArea(
-                            id: existing.id,
-                            question: areaQuestionText.trimmingCharacters(in: .whitespacesAndNewlines),
-                            questions: existing.questions
-                        )
-                        updateTree(WhyTree(areas: areas))
+            // Edit Area Question Sheet
+            .sheet(item: $editingAreaQuestion) { area in
+                NavigationView {
+                    ZStack {
+                        SottoTheme.surface.ignoresSafeArea()
+                        
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Edit Opening Question")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(SottoTheme.textSecondary)
+                            
+                            HStack(spacing: 8) {
+                                TextField("Enter question...", text: $areaQuestionText)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(SottoTheme.textPrimary)
+                                    .padding(12)
+                                    .background(SottoTheme.background)
+                                    .cornerRadius(10)
+                                    .onSubmit {
+                                        if speechService.isRecording { speechService.stopRecording() }
+                                    }
+                                
+                                Button(action: {
+                                    toggleDictation(forAreaQuestion: true)
+                                }) {
+                                    SottoIconView(
+                                        .mic,
+                                        size: 18,
+                                        tint: speechService.isRecording ? SottoTheme.destructiveRed : SottoTheme.primary
+                                    )
+                                    .frame(width: 44, height: 44)
+                                    .background(SottoTheme.background)
+                                    .cornerRadius(10)
+                                }
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(20)
                     }
-                    editingAreaQuestion = nil
+                    .navigationTitle("Area Opening Question")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                if speechService.isRecording { speechService.stopRecording() }
+                                editingAreaQuestion = nil
+                            }
+                        }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Save") {
+                                if speechService.isRecording { speechService.stopRecording() }
+                                let trimmed = areaQuestionText.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !trimmed.isEmpty, let aIndex = currentAreaIndex {
+                                    var areas = tree.areas
+                                    let existing = areas[aIndex]
+                                    areas[aIndex] = WhyArea(id: existing.id, question: trimmed, questions: existing.questions)
+                                    updateTree(WhyTree(areas: areas))
+                                }
+                                editingAreaQuestion = nil
+                            }
+                            .bold()
+                            .foregroundColor(SottoTheme.confirm)
+                        }
+                    }
                 }
-                Button("Cancel", role: .cancel) {
-                    editingAreaQuestion = nil
-                }
+                .navigationViewStyle(.stack)
             }
             // Add Question Sheet
             .sheet(isPresented: $showAddQuestion) {
@@ -221,13 +273,14 @@ public struct WhyTreeEditorModal: View {
                             .font(.system(size: 14, weight: isSelected ? .bold : .regular))
                             .foregroundColor(isSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
                             .padding(.horizontal, 14)
-                            .padding(.vertical, 8)
+                            .frame(minHeight: 44)
                             .background(isSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
                             .cornerRadius(18)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 18)
                                     .stroke(isSelected ? SottoTheme.primary.opacity(0.4) : Color.white.opacity(0.1), lineWidth: 1)
                             )
+                            .contentShape(Rectangle())
                     }
                 }
             }
@@ -248,9 +301,14 @@ public struct WhyTreeEditorModal: View {
                     areaQuestionText = area.question
                     editingAreaQuestion = area
                 }) {
-                    Text("✏️ Edit")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(SottoTheme.primary)
+                    HStack(spacing: 4) {
+                        SottoIconView(.edit, size: 13, tint: SottoTheme.primary)
+                        Text("Edit")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(SottoTheme.primary)
+                    }
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
                 }
             }
             
@@ -269,29 +327,36 @@ public struct WhyTreeEditorModal: View {
     }
     
     private func questionRow(areaIndex: Int, qIndex: Int, question: WhyQuestion) -> some View {
-        HStack(spacing: 10) {
-            // Fine-motor reorder ▲ / ▼
-            VStack(spacing: 2) {
+        HStack(spacing: 8) {
+            // Reorder ▲ / ▼ (enforcing 44pt touch targets)
+            VStack(spacing: 0) {
                 Button(action: {
                     moveQuestion(areaIndex: areaIndex, from: qIndex, to: qIndex - 1)
                 }) {
-                    Text("▲")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(qIndex > 0 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25))
-                        .frame(width: 26, height: 18)
+                    SottoIconView(
+                        .arrowUp,
+                        size: 13,
+                        tint: qIndex > 0 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25)
+                    )
+                    .frame(width: 36, height: 22)
+                    .contentShape(Rectangle())
                 }
                 .disabled(qIndex == 0)
                 
                 Button(action: {
                     moveQuestion(areaIndex: areaIndex, from: qIndex, to: qIndex + 1)
                 }) {
-                    Text("▼")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(qIndex < currentArea!.questions.count - 1 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25))
-                        .frame(width: 26, height: 18)
+                    SottoIconView(
+                        .arrowDown,
+                        size: 13,
+                        tint: qIndex < currentArea!.questions.count - 1 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25)
+                    )
+                    .frame(width: 36, height: 22)
+                    .contentShape(Rectangle())
                 }
                 .disabled(qIndex >= currentArea!.questions.count - 1)
             }
+            .frame(width: 36)
             
             // Question text & Type Badge
             VStack(alignment: .leading, spacing: 4) {
@@ -300,39 +365,46 @@ public struct WhyTreeEditorModal: View {
                     .foregroundColor(SottoTheme.textPrimary)
                 
                 if question.type == .bodyPart {
-                    Text("🎯 Body Part Grid")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(SottoTheme.primary)
+                    HStack(spacing: 4) {
+                        SottoIconView(.target, size: 11, tint: SottoTheme.primary)
+                        Text("Body Part Grid")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(SottoTheme.primary)
+                    }
                 } else if question.type == .intensity {
-                    Text("📊 Intensity Scale (1-5)")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(SottoTheme.warning)
+                    HStack(spacing: 4) {
+                        SottoIconView(.analytics, size: 11, tint: SottoTheme.warning)
+                        Text("Intensity Scale (1-5)")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(SottoTheme.warning)
+                    }
                 }
             }
             
             Spacer()
             
-            // Edit
+            // Edit Button (44pt target)
             Button(action: {
                 questionToEdit = (qIndex, question)
             }) {
-                Text("✏️")
-                    .font(.system(size: 13))
-                    .frame(width: 30, height: 30)
+                SottoIconView(.edit, size: 15, tint: SottoTheme.textSecondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Edit question")
             
-            // Delete
+            // Delete Button (44pt target)
             Button(action: {
                 deleteQuestion(areaIndex: areaIndex, qIndex: qIndex)
             }) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(SottoTheme.destructiveRed)
-                    .frame(width: 30, height: 30)
+                SottoIconView(.delete, size: 15, tint: SottoTheme.destructiveRed.opacity(0.75))
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Delete question")
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.vertical, 8)
         .background(SottoTheme.surface)
         .cornerRadius(12)
         .overlay(
@@ -371,60 +443,63 @@ public struct WhyTreeEditorModal: View {
                                 }
                             }
                         
-                        if !textBinding.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                            Button(action: {
-                                speechService.stopRecording()
-                                textBinding.wrappedValue = ""
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 18))
-                                    .foregroundColor(SottoTheme.textSecondary)
-                                    .frame(width: 44, height: 44)
-                                    .contentShape(Rectangle())
-                            }
-                            .accessibilityLabel("Clear question text")
-                        }
-                        
                         Button(action: {
-                            if speechService.isRecording {
-                                speechService.stopRecording()
-                            } else {
-                                speechService.requestPermissions { granted in
-                                    if granted {
-                                        let baseText = textBinding.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
-                                        speechService.startRecording { recognizedText in
-                                            let clean = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
-                                            if baseText.isEmpty {
-                                                textBinding.wrappedValue = clean
-                                            } else {
-                                                textBinding.wrappedValue = "\(baseText) \(clean)"
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            toggleDictation(forAreaQuestion: false)
                         }) {
-                            Image(systemName: speechService.isRecording ? "stop.fill" : "mic.fill")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(speechService.isRecording ? .white : SottoTheme.primary)
-                                .frame(width: 44, height: 44)
-                                .background(speechService.isRecording ? SottoTheme.danger : SottoTheme.surfaceVariant)
-                                .clipShape(Circle())
+                            SottoIconView(
+                                .mic,
+                                size: 18,
+                                tint: speechService.isRecording ? SottoTheme.destructiveRed : SottoTheme.primary
+                            )
+                            .frame(width: 44, height: 44)
+                            .background(SottoTheme.background)
+                            .cornerRadius(10)
                         }
-                        .accessibilityLabel(speechService.isRecording ? "Stop recording question" : "Start recording question")
-                        .accessibilityHint("Dictates question text")
                     }
                     
-                    Text("Interaction Type")
+                    Text("Response Type")
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(SottoTheme.textSecondary)
+                        .padding(.top, 8)
                     
-                    Picker("Interaction Type", selection: typeBinding) {
-                        Text("Yes / No").tag(WhyQuestionType.plain)
-                        Text("Body Part Grid").tag(WhyQuestionType.bodyPart)
-                        Text("Intensity Scale (1-5)").tag(WhyQuestionType.intensity)
+                    VStack(spacing: 8) {
+                        let types: [(WhyQuestionType, String, String)] = [
+                            (.plain, "Yes / No / Wait", "Standard binary crisis response dock"),
+                            (.bodyPart, "Body Part Map", "Interactive anatomy selection grid"),
+                            (.intensity, "Intensity Scale", "1 to 5 numeric severity rating")
+                        ]
+                        
+                        ForEach(types, id: \.0) { t, name, desc in
+                            let isSelected = typeBinding.wrappedValue == t
+                            Button(action: { typeBinding.wrappedValue = t }) {
+                                HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(name)
+                                            .font(.system(size: 15, weight: isSelected ? .bold : .medium))
+                                            .foregroundColor(SottoTheme.textPrimary)
+                                        Text(desc)
+                                            .font(.system(size: 12))
+                                            .foregroundColor(SottoTheme.textSecondary)
+                                    }
+                                    
+                                    Spacer()
+                                    
+                                    if isSelected {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 18))
+                                            .foregroundColor(SottoTheme.primary)
+                                    }
+                                }
+                                .padding(12)
+                                .background(isSelected ? SottoTheme.primary.opacity(0.12) : SottoTheme.background)
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(isSelected ? SottoTheme.primary : Color.white.opacity(0.08), lineWidth: 1)
+                                )
+                            }
+                        }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                     
                     Spacer()
                 }
@@ -435,13 +510,13 @@ public struct WhyTreeEditorModal: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") {
-                        speechService.stopRecording()
+                        if speechService.isRecording { speechService.stopRecording() }
                         onCancel()
                     }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        speechService.stopRecording()
+                        if speechService.isRecording { speechService.stopRecording() }
                         onSave()
                     }
                     .bold()
@@ -450,22 +525,19 @@ public struct WhyTreeEditorModal: View {
             }
         }
         .navigationViewStyle(.stack)
-        .onDisappear {
-            speechService.stopRecording()
-        }
     }
     
     // MARK: - Mutators
     
     private func updateTree(_ newTree: WhyTree) {
-        repository.saveTree(newTree)
         tree = newTree
+        repository.saveTree(newTree)
     }
     
     private func moveQuestion(areaIndex: Int, from: Int, to: Int) {
+        guard to >= 0 && to < currentArea!.questions.count else { return }
         var areas = tree.areas
         var qList = areas[areaIndex].questions
-        guard from >= 0 && from < qList.count, to >= 0 && to < qList.count else { return }
         let item = qList.remove(at: from)
         qList.insert(item, at: to)
         areas[areaIndex] = WhyArea(id: areas[areaIndex].id, question: areas[areaIndex].question, questions: qList)
@@ -475,9 +547,28 @@ public struct WhyTreeEditorModal: View {
     private func deleteQuestion(areaIndex: Int, qIndex: Int) {
         var areas = tree.areas
         var qList = areas[areaIndex].questions
-        guard qIndex >= 0 && qIndex < qList.count else { return }
         qList.remove(at: qIndex)
         areas[areaIndex] = WhyArea(id: areas[areaIndex].id, question: areas[areaIndex].question, questions: qList)
         updateTree(WhyTree(areas: areas))
+    }
+    
+    private func toggleDictation(forAreaQuestion: Bool) {
+        if speechService.isRecording {
+            speechService.stopRecording()
+        } else {
+            speechService.requestPermissions { granted in
+                if granted {
+                    speechService.startRecording { text in
+                        if forAreaQuestion {
+                            areaQuestionText = text
+                        } else if questionToEdit != nil {
+                            questionToEdit!.question.text = text
+                        } else {
+                            newQuestionText = text
+                        }
+                    }
+                }
+            }
+        }
     }
 }

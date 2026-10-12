@@ -38,12 +38,27 @@ public enum SottoIcon: String, CaseIterable {
     case shield = "shield.fill"
     case explore = "compass"
     case listAlt = "list.bullet.rectangle"
+    case fullscreen = "arrow.up.left.and.arrow.down.right"
 
     // MARK: - Settings
     case recordVoiceOver = "waveform"
     case palette = "paintpalette.fill"
     case language = "globe"
     case hourglass = "hourglass"
+    case info = "info.circle"
+
+    // MARK: - Triggers & Secondary
+    case questionmark = "questionmark"
+    case crossCase = "cross.case.fill"
+    case speakerWave3 = "speaker.wave.3.fill"
+    case checklist = "checklist"
+    case heart = "heart.fill"
+    case ellipsisCircle = "ellipsis.circle"
+    case docTextMagnifyingglass = "doc.text.magnifyingglass"
+    case warning = "exclamationmark.triangle.fill"
+    case pause = "pause.fill"
+    case search = "magnifyingglass"
+    case target = "checkmark.circle.fill"
 
     public var systemName: String { rawValue }
 
@@ -113,6 +128,8 @@ public enum SottoIcon: String, CaseIterable {
             return isId ? "Pencari penyebab" : "Why finder"
         case .listAlt:
             return isId ? "Daftar" : "List"
+        case .fullscreen:
+            return isId ? "Layar penuh" : "Fullscreen"
         case .recordVoiceOver:
             return isId ? "Pengaturan suara" : "Voice settings"
         case .palette:
@@ -121,6 +138,30 @@ public enum SottoIcon: String, CaseIterable {
             return isId ? "Bahasa" : "Language"
         case .hourglass:
             return isId ? "Waktu tunggu" : "Timeout"
+        case .info:
+            return isId ? "Informasi" : "Information"
+        case .questionmark:
+            return isId ? "Ragu" : "Not sure"
+        case .crossCase:
+            return isId ? "Nyeri" : "Pain"
+        case .speakerWave3:
+            return isId ? "Kebisingan" : "Noise"
+        case .checklist:
+            return isId ? "Tugas" : "Task"
+        case .heart:
+            return isId ? "Emosi" : "Emotion"
+        case .ellipsisCircle:
+            return isId ? "Lainnya" : "Other"
+        case .docTextMagnifyingglass:
+            return isId ? "Dokumen log" : "Log documents"
+        case .warning:
+            return isId ? "Peringatan" : "Warning"
+        case .pause:
+            return isId ? "Jeda" : "Pause"
+        case .search:
+            return isId ? "Cari" : "Search"
+        case .target:
+            return isId ? "Tercapai" : "Resolved"
         }
     }
 }
