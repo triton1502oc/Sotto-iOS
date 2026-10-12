@@ -20,6 +20,7 @@ public struct TwoWayConversationModal: View {
     public let allPhrases: [Phrase]
     public let categories: [String]
     public let whyFinderRepository: WhyFinderRepositoryProtocol
+    public let voiceSettings: VoiceSettings
     public let appLanguage: String
     public let onSpeakResponse: (String) -> Void
     public let onDismiss: () -> Void
@@ -44,6 +45,7 @@ public struct TwoWayConversationModal: View {
         allPhrases: [Phrase],
         categories: [String] = [],
         whyFinderRepository: WhyFinderRepositoryProtocol = UserDefaultsWhyFinderRepository.shared,
+        voiceSettings: VoiceSettings = UserDefaultsVoiceSettingsRepository().getVoiceSettings(),
         appLanguage: String = "system",
         onSpeakResponse: @escaping (String) -> Void,
         onDismiss: @escaping () -> Void
@@ -51,6 +53,7 @@ public struct TwoWayConversationModal: View {
         self.allPhrases = allPhrases
         self.categories = categories
         self.whyFinderRepository = whyFinderRepository
+        self.voiceSettings = voiceSettings
         self.appLanguage = appLanguage
         self.onSpeakResponse = onSpeakResponse
         self.onDismiss = onDismiss
@@ -144,15 +147,29 @@ public struct TwoWayConversationModal: View {
             }
         }
         .onChange(of: isFlipped) { flipped in
+            let isPad = UIDevice.current.userInterfaceIdiom == .pad
+            let contextTag = isPad ? "ipad" : "phone"
+            UsabilityTracker.shared.startIntent("partner_flip")
+            UsabilityTracker.shared.endIntent(
+                "partner_flip",
+                outcome: flipped ? "flipped" : "unflipped",
+                contextTag: contextTag,
+                voiceSettings: voiceSettings
+            )
+            
             if flipped {
-                AppDelegate.orientationLock = .portrait
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                    windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+                if !isPad {
+                    AppDelegate.orientationLock = .portrait
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
+                    }
                 }
             } else {
-                AppDelegate.orientationLock = .all
-                if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                    windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+                if !isPad {
+                    AppDelegate.orientationLock = .all
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+                    }
                 }
             }
         }
@@ -215,29 +232,6 @@ public struct TwoWayConversationModal: View {
             .frame(maxHeight: .infinity)
             .padding(.horizontal, 16)
             
-            // Optional trigger feedback banner
-            if let feedback = triggerLoggedFeedback {
-                Text(feedback)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(SottoTheme.successText)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .frame(maxWidth: .infinity)
-                    .background(SottoTheme.successContainer.opacity(0.8))
-                    .cornerRadius(12)
-                    .padding(.horizontal, 16)
-            }
-            
-            // Post-Resolution Pattern Logger (Talk tab)
-            if showPostResolutionPrompt && activeTab == .freeform {
-                PostResolutionTriggerLogger(
-                    appLanguage: appLanguage,
-                    onLogTrigger: { logPostResolutionTrigger($0) },
-                    onDismiss: { showPostResolutionPrompt = false }
-                )
-                .padding(.horizontal, 16)
-            }
-            
             // Response Dock (4 Cards or Body Grid or Intensity Row)
             CaregiverResponseDock(
                 activeTab: activeTab,
@@ -291,6 +285,29 @@ public struct TwoWayConversationModal: View {
             )
             .padding(.horizontal, 16)
             
+            // Optional trigger feedback banner
+            if let feedback = triggerLoggedFeedback {
+                Text(feedback)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(SottoTheme.successText)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(SottoTheme.successContainer.opacity(0.8))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 16)
+            }
+            
+            // Post-Resolution Pattern Logger (Talk tab)
+            if showPostResolutionPrompt && activeTab == .freeform {
+                PostResolutionTriggerLogger(
+                    appLanguage: appLanguage,
+                    onLogTrigger: { logPostResolutionTrigger($0) },
+                    onDismiss: { showPostResolutionPrompt = false }
+                )
+                .padding(.horizontal, 16)
+            }
+            
             // Keyboard Input Row (if toggled)
             if showKeyboardInput && activeTab == .freeform {
                 manualKeyboardRow
@@ -301,7 +318,10 @@ public struct TwoWayConversationModal: View {
             CaregiverBottomMenu(
                 activeTab: $activeTab,
                 isFlipped: $isFlipped,
+                showPostResolutionPrompt: $showPostResolutionPrompt,
+                hasWhyFinder: !whySession.tree.areas.isEmpty,
                 appLanguage: appLanguage,
+                voiceSettings: voiceSettings,
                 isListening: speechRecognizer.isRecording,
                 canStepBack: whySession.canStepBack(),
                 canSpeakPrompt: (activeTab == .whyFinder ? !whyPromptText.isEmpty : !activeFreeformText.isEmpty),
@@ -447,7 +467,10 @@ public struct TwoWayConversationModal: View {
             CaregiverBottomMenu(
                 activeTab: $activeTab,
                 isFlipped: $isFlipped,
+                showPostResolutionPrompt: $showPostResolutionPrompt,
+                hasWhyFinder: !whySession.tree.areas.isEmpty,
                 appLanguage: appLanguage,
+                voiceSettings: voiceSettings,
                 isListening: speechRecognizer.isRecording,
                 canStepBack: whySession.canStepBack(),
                 canSpeakPrompt: (activeTab == .whyFinder ? !whyPromptText.isEmpty : !activeFreeformText.isEmpty),
@@ -1207,9 +1230,14 @@ private struct PostResolutionTriggerLogger: View {
 // MARK: - Caregiver Bottom Menu
 
 private struct CaregiverBottomMenu: View {
+    @Environment(\.sottoPalette) private var palette
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Binding var activeTab: CaregiverTab
     @Binding var isFlipped: Bool
+    @Binding var showPostResolutionPrompt: Bool
+    let hasWhyFinder: Bool
     let appLanguage: String
+    let voiceSettings: VoiceSettings
     let isListening: Bool
     let canStepBack: Bool
     let canSpeakPrompt: Bool
@@ -1220,171 +1248,430 @@ private struct CaregiverBottomMenu: View {
     let onToggleKeyboard: () -> Void
     let onDismiss: () -> Void
     
+    private var isIndonesian: Bool {
+        LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
-            // Line 1: Mode Switcher Tabs + Global Controls (Flip & Dismiss)
-            // Guided first, then Talk (matching Android layout)
-            HStack {
-                HStack(spacing: 8) {
-                    Button(action: { activeTab = .whyFinder }) {
-                        Text("🧭 \(LocaleHelper.getTwoWayTabLabel(isWhyFinder: true, appLanguage: appLanguage))")
-                            .font(.system(size: 13, weight: activeTab == .whyFinder ? .bold : .medium))
-                            .foregroundColor(activeTab == .whyFinder ? SottoTheme.onPrimary : SottoTheme.textSecondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(activeTab == .whyFinder ? SottoTheme.primary : SottoTheme.surface)
-                            .cornerRadius(16)
-                    }
-                    
-                    Button(action: { activeTab = .freeform }) {
-                        Text("💬 \(LocaleHelper.getTwoWayTabLabel(isWhyFinder: false, appLanguage: appLanguage))")
-                            .font(.system(size: 13, weight: activeTab == .freeform ? .bold : .medium))
-                            .foregroundColor(activeTab == .freeform ? SottoTheme.onPrimary : SottoTheme.textSecondary)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(activeTab == .freeform ? SottoTheme.primary : SottoTheme.surface)
-                            .cornerRadius(16)
+            // Line 1: Mode Switcher Tabs + Tool Capsule + Standalone Dismissal
+            HStack(spacing: 8) {
+                // Tabs: Guided / Talk
+                HStack(spacing: 6) {
+                    if hasWhyFinder {
+                        Button(action: {
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                                activeTab = .whyFinder
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                SottoIconView(
+                                    .branch,
+                                    size: 14,
+                                    tint: activeTab == .whyFinder ? palette.background : palette.textSecondary
+                                )
+                                Text(LocaleHelper.getTwoWayTabLabel(isWhyFinder: true, appLanguage: appLanguage))
+                                    .font(.system(size: 13, weight: activeTab == .whyFinder ? .bold : .medium))
+                                    .lineLimit(1)
+                            }
+                            .foregroundColor(activeTab == .whyFinder ? palette.background : palette.textSecondary)
+                            .padding(.horizontal, 10)
+                            .frame(height: 34)
+                            .background(activeTab == .whyFinder ? palette.accent : palette.surface)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant.opacity(activeTab == .whyFinder ? 0 : 0.6), lineWidth: 1)
+                            )
+                        }
+                        .accessibilityLabel(isIndonesian ? "Mode panduan" : "Guided mode")
+                        .accessibilityAddTraits(activeTab == .whyFinder ? [.isSelected, .isButton] : [.isButton])
+
+                        Button(action: {
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                                activeTab = .freeform
+                            }
+                        }) {
+                            HStack(spacing: 4) {
+                                SottoIconView(
+                                    .chat,
+                                    size: 14,
+                                    tint: activeTab == .freeform ? palette.background : palette.textSecondary
+                                )
+                                Text(LocaleHelper.getTwoWayTabLabel(isWhyFinder: false, appLanguage: appLanguage))
+                                    .font(.system(size: 13, weight: activeTab == .freeform ? .bold : .medium))
+                                    .lineLimit(1)
+                            }
+                            .foregroundColor(activeTab == .freeform ? palette.background : palette.textSecondary)
+                            .padding(.horizontal, 10)
+                            .frame(height: 34)
+                            .background(activeTab == .freeform ? palette.accent : palette.surface)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant.opacity(activeTab == .freeform ? 0 : 0.6), lineWidth: 1)
+                            )
+                        }
+                        .accessibilityLabel(isIndonesian ? "Mode bicara" : "Talk mode")
+                        .accessibilityAddTraits(activeTab == .freeform ? [.isSelected, .isButton] : [.isButton])
                     }
                 }
                 
                 Spacer()
                 
+                // Global Controls: Tool Capsule + Standalone Dismissal
                 HStack(spacing: 6) {
-                    Button(action: { withAnimation(.easeInOut(duration: 0.25)) { isFlipped.toggle() } }) {
-                        HStack(spacing: 4) {
-                            Text("🔄")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: isFlipped ? "flip_back" : "flip", appLanguage: appLanguage))
-                                .font(.system(size: 13, weight: .medium))
+                    // Tool Capsule: Log (Talk tab only) + Flip
+                    HStack(spacing: 2) {
+                        if activeTab == .freeform && hasWhyFinder {
+                            Button(action: {
+                                UsabilityTracker.shared.startIntent("partner_tool")
+                                UsabilityTracker.shared.endIntent(
+                                    "partner_tool",
+                                    outcome: "log",
+                                    voiceSettings: voiceSettings
+                                )
+                                withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) {
+                                    showPostResolutionPrompt.toggle()
+                                }
+                            }) {
+                                SottoIconView(
+                                    .noteAlt,
+                                    size: 16,
+                                    tint: showPostResolutionPrompt ? palette.accent : palette.textSecondary
+                                )
+                                .frame(width: 34, height: 34)
+                                .background(showPostResolutionPrompt ? palette.accent.opacity(0.18) : Color.clear)
+                                .cornerRadius(8)
+                            }
+                            .accessibilityLabel(isIndonesian ? "Catat pemicu" : "Log trigger")
+                            .accessibilityAddTraits(showPostResolutionPrompt ? [.isSelected, .isButton] : [.isButton])
                         }
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
-                        .background(SottoTheme.surface)
-                        .cornerRadius(16)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-                        )
-                    }
-                    
-                    Button(action: onDismiss) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(SottoTheme.textSecondary)
+                        
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("partner_tool")
+                            UsabilityTracker.shared.endIntent(
+                                "partner_tool",
+                                outcome: "flip",
+                                voiceSettings: voiceSettings
+                            )
+                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
+                                isFlipped.toggle()
+                            }
+                        }) {
+                            SottoIconView(
+                                .flipPartner,
+                                size: 16,
+                                tint: isFlipped ? palette.background : palette.textPrimary
+                            )
+                            .rotationEffect(.degrees(isFlipped ? 180 : 0))
                             .frame(width: 34, height: 34)
+                            .background(isFlipped ? palette.accent : Color.clear)
+                            .cornerRadius(8)
+                        }
+                        .accessibilityLabel(
+                            isFlipped
+                                ? LocaleHelper.getTwoWayActionLabel(actionKey: "flip_back", appLanguage: appLanguage)
+                                : LocaleHelper.getTwoWayActionLabel(actionKey: "flip", appLanguage: appLanguage)
+                        )
+                        .accessibilityAddTraits(isFlipped ? [.isSelected, .isButton] : [.isButton])
                     }
+                    .padding(2)
+                    .background(palette.surfaceVariant)
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(palette.outlineVariant, lineWidth: 1)
+                    )
+                    
+                    // Standalone Modal Dismissal (36pt visual, 44pt touch area)
+                    Button(action: {
+                        UsabilityTracker.shared.startIntent("partner_tool")
+                        UsabilityTracker.shared.endIntent(
+                            "partner_tool",
+                            outcome: "close",
+                            voiceSettings: voiceSettings
+                        )
+                        onDismiss()
+                    }) {
+                        SottoIconView(
+                            .close,
+                            size: 16,
+                            tint: palette.textSecondary
+                        )
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
+                    }
+                    .frame(minWidth: 44, minHeight: 44)
+                    .accessibilityLabel(isIndonesian ? "Tutup" : "Dismiss")
                 }
             }
             
-            // Line 2: Mode Actions
-            HStack(spacing: 8) {
+            // Line 2: Mode Actions (Asymmetric Dock & ViewThatFits Collapse)
+            GeometryReader { geo in
+                let availableWidth = geo.size.width
                 if activeTab == .whyFinder {
-                    Button(action: onSpeakPrompt) {
-                        HStack(spacing: 4) {
-                            Text("🔊")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
-                        }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(10)
-                    }
-                    .disabled(!canSpeakPrompt)
+                    let buttonCount: CGFloat = canStepBack ? 3 : 2
+                    let spacing: CGFloat = 8
+                    let btnWidth = max(44, (availableWidth - spacing * (buttonCount - 1)) / buttonCount)
                     
-                    Button(action: onPickCard) {
-                        HStack(spacing: 4) {
-                            Text("📋")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
-                        }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(10)
-                    }
-                    
-                    if canStepBack {
-                        Button(action: onStepBack) {
-                            HStack(spacing: 4) {
-                                Text("↩️")
-                                Text(LocaleHelper.getTwoWayActionLabel(actionKey: "back", appLanguage: appLanguage))
+                    HStack(spacing: spacing) {
+                        // Speak prompt
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("caregiver_action")
+                            UsabilityTracker.shared.endIntent(
+                                "caregiver_action",
+                                outcome: "speak",
+                                voiceSettings: voiceSettings
+                            )
+                            onSpeakPrompt()
+                        }) {
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 4) {
+                                    SottoIconView(.volumeUp, size: 16, tint: palette.textPrimary)
+                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 4)
+                                
+                                SottoIconView(.volumeUp, size: 18, tint: palette.textPrimary)
                             }
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(SottoTheme.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 38)
-                            .background(SottoTheme.surfaceVariant)
-                            .cornerRadius(10)
+                            .foregroundColor(palette.textPrimary)
+                            .frame(width: btnWidth, height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant, lineWidth: 1)
+                            )
+                        }
+                        .disabled(!canSpeakPrompt)
+                        .opacity(canSpeakPrompt ? 1.0 : 0.4)
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
+                        
+                        // Pick card
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("caregiver_action")
+                            UsabilityTracker.shared.endIntent(
+                                "caregiver_action",
+                                outcome: "cards",
+                                voiceSettings: voiceSettings
+                            )
+                            onPickCard()
+                        }) {
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 4) {
+                                    SottoIconView(.cards, size: 16, tint: palette.textPrimary)
+                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 4)
+                                
+                                SottoIconView(.cards, size: 18, tint: palette.textPrimary)
+                            }
+                            .foregroundColor(palette.textPrimary)
+                            .frame(width: btnWidth, height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant, lineWidth: 1)
+                            )
+                        }
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                        
+                        // Step back
+                        if canStepBack {
+                            Button(action: {
+                                UsabilityTracker.shared.startIntent("caregiver_action")
+                                UsabilityTracker.shared.endIntent(
+                                    "caregiver_action",
+                                    outcome: "back",
+                                    voiceSettings: voiceSettings
+                                )
+                                onStepBack()
+                            }) {
+                                ViewThatFits(in: .horizontal) {
+                                    HStack(spacing: 4) {
+                                        SottoIconView(.replay, size: 16, tint: palette.textPrimary)
+                                        Text(LocaleHelper.getTwoWayActionLabel(actionKey: "back", appLanguage: appLanguage))
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .lineLimit(1)
+                                    }
+                                    .padding(.horizontal, 4)
+                                    
+                                    SottoIconView(.replay, size: 18, tint: palette.textPrimary)
+                                }
+                                .foregroundColor(palette.textPrimary)
+                                .frame(width: btnWidth, height: 44)
+                                .background(palette.surfaceVariant)
+                                .cornerRadius(12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(palette.outlineVariant, lineWidth: 1)
+                                )
+                            }
+                            .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "back", appLanguage: appLanguage))
                         }
                     }
                 } else {
-                    Button(action: onSpeakPrompt) {
-                        HStack(spacing: 4) {
-                            Text("🔊")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
-                        }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(10)
-                    }
-                    .disabled(!canSpeakPrompt)
+                    // Talk tab: Asymmetric Dock (Speak, Cards, Hero Listen (1.5x), Type)
+                    let spacing: CGFloat = 6
+                    let unitWidth = max(44, (availableWidth - spacing * 3) / 4.5)
+                    let heroWidth = unitWidth * 1.5
+                    let companionWidth = unitWidth
                     
-                    Button(action: onPickCard) {
-                        HStack(spacing: 4) {
-                            Text("📋")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                    HStack(spacing: spacing) {
+                        // Companion 1: Speak
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("caregiver_action")
+                            UsabilityTracker.shared.endIntent(
+                                "caregiver_action",
+                                outcome: "speak",
+                                voiceSettings: voiceSettings
+                            )
+                            onSpeakPrompt()
+                        }) {
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 4) {
+                                    SottoIconView(.volumeUp, size: 16, tint: palette.textPrimary)
+                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 2)
+                                
+                                SottoIconView(.volumeUp, size: 18, tint: palette.textPrimary)
+                            }
+                            .foregroundColor(palette.textPrimary)
+                            .frame(width: companionWidth, height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant, lineWidth: 1)
+                            )
                         }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(10)
-                    }
-                    
-                    Button(action: onToggleListening) {
-                        HStack(spacing: 4) {
-                            Text(isListening ? "⏹" : "🎤")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: isListening ? "stop" : "mic", appLanguage: appLanguage))
+                        .disabled(!canSpeakPrompt)
+                        .opacity(canSpeakPrompt ? 1.0 : 0.4)
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
+                        
+                        // Companion 2: Cards
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("caregiver_action")
+                            UsabilityTracker.shared.endIntent(
+                                "caregiver_action",
+                                outcome: "cards",
+                                voiceSettings: voiceSettings
+                            )
+                            onPickCard()
+                        }) {
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 4) {
+                                    SottoIconView(.cards, size: 16, tint: palette.textPrimary)
+                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 2)
+                                
+                                SottoIconView(.cards, size: 18, tint: palette.textPrimary)
+                            }
+                            .foregroundColor(palette.textPrimary)
+                            .frame(width: companionWidth, height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant, lineWidth: 1)
+                            )
                         }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(isListening ? .white : SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(isListening ? SottoTheme.recordingPulseRed : SottoTheme.surfaceVariant)
-                        .cornerRadius(10)
-                    }
-                    
-                    Button(action: onToggleKeyboard) {
-                        HStack(spacing: 4) {
-                            Text("⌨️")
-                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "type", appLanguage: appLanguage))
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                        
+                        // HERO: Listen / Mic (weight 1.5x)
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("caregiver_action")
+                            UsabilityTracker.shared.endIntent(
+                                "caregiver_action",
+                                outcome: "listen",
+                                voiceSettings: voiceSettings
+                            )
+                            onToggleListening()
+                        }) {
+                            let heroLabel = LocaleHelper.getTwoWayActionLabel(actionKey: isListening ? "stop" : "mic", appLanguage: appLanguage)
+                            let heroBg = isListening ? SottoTheme.recordingPulseRed : palette.accent
+                            let heroContentColor = isListening ? Color.white : palette.background
+                            
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 4) {
+                                    SottoIconView(isListening ? .stop : .mic, size: 16, tint: heroContentColor)
+                                    Text(heroLabel)
+                                        .font(.system(size: 13, weight: .bold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 4)
+                                
+                                SottoIconView(isListening ? .stop : .mic, size: 18, tint: heroContentColor)
+                            }
+                            .foregroundColor(heroContentColor)
+                            .frame(width: heroWidth, height: 44)
+                            .background(heroBg)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(isListening ? SottoTheme.recordingDotRed : palette.accent, lineWidth: 1)
+                            )
                         }
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 38)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(10)
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: isListening ? "stop" : "mic", appLanguage: appLanguage))
+                        
+                        // Companion 3: Type
+                        Button(action: {
+                            UsabilityTracker.shared.startIntent("caregiver_action")
+                            UsabilityTracker.shared.endIntent(
+                                "caregiver_action",
+                                outcome: "type",
+                                voiceSettings: voiceSettings
+                            )
+                            onToggleKeyboard()
+                        }) {
+                            ViewThatFits(in: .horizontal) {
+                                HStack(spacing: 4) {
+                                    SottoIconView(.keyboard, size: 16, tint: palette.textPrimary)
+                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "type", appLanguage: appLanguage))
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .lineLimit(1)
+                                }
+                                .padding(.horizontal, 2)
+                                
+                                SottoIconView(.keyboard, size: 18, tint: palette.textPrimary)
+                            }
+                            .foregroundColor(palette.textPrimary)
+                            .frame(width: companionWidth, height: 44)
+                            .background(palette.surfaceVariant)
+                            .cornerRadius(12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(palette.outlineVariant, lineWidth: 1)
+                            )
+                        }
+                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "type", appLanguage: appLanguage))
                     }
                 }
             }
+            .frame(height: 44)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
-        .background(SottoTheme.surface.opacity(0.85))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(palette.surface.opacity(0.92))
         .cornerRadius(20)
         .overlay(
             RoundedRectangle(cornerRadius: 20)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                .stroke(palette.outlineVariant.opacity(0.5), lineWidth: 1)
         )
         .padding(.horizontal, 12)
-        .padding(.bottom, 6)
+        .padding(.bottom, 4)
     }
 }

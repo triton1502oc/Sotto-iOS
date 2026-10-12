@@ -7,7 +7,8 @@ build/
 *.xcuserstate
 xcuserdata/
 *.xcscmblueprint
-*.xcshareddata/xcodecloud/
+*.xcshareddata/
+Sotto.xcodeproj/xcshareddata/
 
 # Swift Package Manager
 .build/

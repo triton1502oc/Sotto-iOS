@@ -3,6 +3,19 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.7.1] - 2026-10-12
+
+### Added
+- **Shared SF Symbol Foundation (`SottoIcon.swift`)**: Centralized SF Symbol mapping mirroring Android Material Symbols Rounded across common actions, Partner Mode, Main screen, and Settings, eliminating system emoji inconsistencies. Verified for iOS 16.0+ availability with localized accessibility labels in English and Indonesian ([#26](https://github.com/triton1502oc/Sotto-iOS/issues/26), [#61](https://github.com/triton1502oc/Sotto/issues/61)).
+- **iOS Partner Mode Tool Capsule**: Grouped Partner Mode utility controls (`Log` and `Flip`) into a unified rounded container capsule (`palette.surfaceVariant`, `palette.outlineVariant` 1pt border, 12pt radius) with active filled accent container highlighting for Flip, smooth 180° rotation with haptic impact (Reduce Motion respected), inline trigger logger toggle in Talk tab, and standalone modal dismissal separation ([#22](https://github.com/triton1502oc/Sotto-iOS/issues/22), [#46](https://github.com/triton1502oc/Sotto/issues/46)). Includes privacy-preserving `partner_tool` telemetry (`log`, `flip`, `close`).
+
+### Changed
+- **Asymmetric Caregiver Action Dock**: Modernized Line 2 actions in `CaregiverBottomMenu` into an asymmetric layout prioritizing a prominent `Listen/Mic` hero button (~1.5× width) with steady low-stimulus recording tint and crisp SF Symbols ([#29](https://github.com/triton1502oc/Sotto-iOS/issues/29), [#50](https://github.com/triton1502oc/Sotto/issues/50)).
+
+### Fixed
+- **Caregiver Action Bar Label Truncation**: Fixed button label truncation on compact handset screens (375pt / iPhone SE) and elevated Dynamic Type scales (`.xxxLarge`) in English and Indonesian by collapsing companion actions (`Speak`, `Cards`, `Type` in Talk tab; `Speak`, `Cards`, `Back` in Guided tab) to icon-first controls using `ViewThatFits` while preserving full touch targets ($\ge 44\text{pt}$) and VoiceOver accessibility labels ([#29](https://github.com/triton1502oc/Sotto-iOS/issues/29), [#50](https://github.com/triton1502oc/Sotto/issues/50)). Includes privacy-preserving `caregiver_action` telemetry (`listen`, `speak`, `cards`, `type`, `back`).
+- **iPad Large-Screen Free Orientation in Partner Mode**: Lifted portrait orientation lock restrictions on iPad devices to allow free system rotation while maintaining the 180° flipped receptive UI, ensuring zero clipped cards in Split View and Stage Manager ([#27](https://github.com/triton1502oc/Sotto-iOS/issues/27), [#44](https://github.com/triton1502oc/Sotto/issues/44)). Includes device context tagging (`ipad` vs `phone`) in `partner_flip` telemetry.
+
 ## [v1.7.0] - 2026-10-11
 
 ### Added

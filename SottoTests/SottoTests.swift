@@ -1119,6 +1119,72 @@ final class SottoTests: XCTestCase {
         settings.shareUsabilityMetrics = false
         UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "partner_mode", voiceSettings: settings)
     }
+    
+    // MARK: - Milestone v1.7.1 Tests: SottoIcon & Partner Mode Telemetry
+    
+    func testSottoIconMappingsAndLocalization() {
+        for icon in SottoIcon.allCases {
+            XCTAssertFalse(icon.systemName.isEmpty, "Icon systemName must not be empty: \(icon)")
+            let enLabel = icon.accessibilityLabel(appLanguage: "en")
+            let idLabel = icon.accessibilityLabel(appLanguage: "id")
+            XCTAssertFalse(enLabel.isEmpty, "EN label must not be empty for \(icon)")
+            XCTAssertFalse(idLabel.isEmpty, "ID label must not be empty for \(icon)")
+        }
+        
+        // Verify key symbols
+        XCTAssertEqual(SottoIcon.close.systemName, "xmark")
+        XCTAssertEqual(SottoIcon.noteAlt.systemName, "square.and.pencil")
+        XCTAssertEqual(SottoIcon.flipPartner.systemName, "arrow.triangle.2.circlepath")
+        XCTAssertEqual(SottoIcon.branch.systemName, "arrow.triangle.branch")
+        XCTAssertEqual(SottoIcon.chat.systemName, "bubble.left.and.bubble.right.fill")
+        XCTAssertEqual(SottoIcon.volumeUp.systemName, "speaker.wave.2.fill")
+        XCTAssertEqual(SottoIcon.cards.systemName, "rectangle.stack")
+        XCTAssertEqual(SottoIcon.mic.systemName, "mic.fill")
+        XCTAssertEqual(SottoIcon.keyboard.systemName, "keyboard")
+    }
+    
+    func testPartnerModeV171TelemetryIntents() {
+        var settings = VoiceSettings()
+        settings.shareUsabilityMetrics = true
+        UsabilityTracker.shared.clearBuffer()
+        
+        // 1. partner_tool: log, flip, close
+        UsabilityTracker.shared.startIntent("partner_tool")
+        UsabilityTracker.shared.endIntent("partner_tool", outcome: "log", voiceSettings: settings)
+        
+        UsabilityTracker.shared.startIntent("partner_tool")
+        UsabilityTracker.shared.endIntent("partner_tool", outcome: "flip", voiceSettings: settings)
+        
+        UsabilityTracker.shared.startIntent("partner_tool")
+        UsabilityTracker.shared.endIntent("partner_tool", outcome: "close", voiceSettings: settings)
+        
+        // 2. caregiver_action: listen, speak, cards, type, back
+        for outcome in ["listen", "speak", "cards", "type", "back"] {
+            UsabilityTracker.shared.startIntent("caregiver_action")
+            UsabilityTracker.shared.endIntent("caregiver_action", outcome: outcome, voiceSettings: settings)
+        }
+        
+        // 3. partner_flip with contextTag ipad and phone
+        UsabilityTracker.shared.startIntent("partner_flip")
+        UsabilityTracker.shared.endIntent("partner_flip", outcome: "flipped", contextTag: "ipad", voiceSettings: settings)
+        
+        UsabilityTracker.shared.startIntent("partner_flip")
+        UsabilityTracker.shared.endIntent("partner_flip", outcome: "flipped", contextTag: "phone", voiceSettings: settings)
+        
+        let events = UsabilityTracker.shared.getPendingEvents(voiceSettings: settings)
+        let partnerToolEvents = events.filter { $0.intent == "partner_tool" }
+        XCTAssertEqual(partnerToolEvents.count, 3)
+        XCTAssertEqual(partnerToolEvents.map { $0.outcome }, ["log", "flip", "close"])
+        
+        let caregiverEvents = events.filter { $0.intent == "caregiver_action" }
+        XCTAssertEqual(caregiverEvents.count, 5)
+        XCTAssertEqual(caregiverEvents.map { $0.outcome }, ["listen", "speak", "cards", "type", "back"])
+        
+        let flipEvents = events.filter { $0.intent == "partner_flip" }
+        XCTAssertEqual(flipEvents.count, 2)
+        XCTAssertEqual(flipEvents[0].contextTag, "ipad")
+        XCTAssertEqual(flipEvents[1].contextTag, "phone")
+    }
 }
 
 

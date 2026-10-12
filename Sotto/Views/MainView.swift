@@ -107,6 +107,7 @@ public struct MainView: View {
                 allPhrases: viewModel.phrases,
                 categories: viewModel.categories,
                 whyFinderRepository: viewModel.whyFinderRepository,
+                voiceSettings: viewModel.voiceSettings,
                 appLanguage: viewModel.voiceSettings.appLanguage,
                 onSpeakResponse: { text in
                     viewModel.onTwoWayResponseSpoken()

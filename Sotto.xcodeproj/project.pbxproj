@@ -35,6 +35,7 @@
 		D3EA2EC4CCE185B808EC9BC0 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 787EE0C858C2EF6B6815D85B /* MainView.swift */; };
 		DA7CE9AD75CD9E56B3DD93A9 /* PhraseRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92208DF5C41416FDAE7DD8C9 /* PhraseRepository.swift */; };
 		DB6B73CD6F36992D2FB9BD3C /* VoiceSettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 378FC8A333BBE8CBF711C792 /* VoiceSettingsRepository.swift */; };
+		E286C883D5ED99BC5814F0E1 /* SottoIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F63F210515986F57E2CF09B /* SottoIcon.swift */; };
 		E2F281BAD097214432CC2E3B /* PhraseBackupHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7868CACEBF03455DD83199E4 /* PhraseBackupHelper.swift */; };
 		E47EF526BBC7E02278EA6898 /* VoiceSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95A15978C9724C96D4D6E1B4 /* VoiceSettingsModal.swift */; };
 		E98802E5AF4F31B95ABBCAC6 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81FBE274B9B8D2CD71D601A3 /* Theme.swift */; };
@@ -67,6 +68,7 @@
 		1E2E3A64F01B1861CC2D84A9 /* QRScannerModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerModal.swift; sourceTree = "<group>"; };
 		28BFAA6B00121FA865BF4353 /* QRCodeModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeModal.swift; sourceTree = "<group>"; };
 		2A94A254F9B50269EE1EAB8A /* Sotto.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Sotto.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F63F210515986F57E2CF09B /* SottoIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoIcon.swift; sourceTree = "<group>"; };
 		3208745C0B31F5EA1ABCFFCF /* ManageCategoriesModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageCategoriesModal.swift; sourceTree = "<group>"; };
 		378FC8A333BBE8CBF711C792 /* VoiceSettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSettingsRepository.swift; sourceTree = "<group>"; };
 		4EB1831C4F14CA69F722554B /* WhyFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhyFinder.swift; sourceTree = "<group>"; };
@@ -206,6 +208,7 @@
 		DDF7B00A0B9DCF08D3BD8860 /* Theme */ = {
 			isa = PBXGroup;
 			children = (
+				2F63F210515986F57E2CF09B /* SottoIcon.swift */,
 				81FBE274B9B8D2CD71D601A3 /* Theme.swift */,
 			);
 			path = Theme;
@@ -355,6 +358,7 @@
 				A5FD6DB9CB856DA2C090046B /* QRScannerModal.swift in Sources */,
 				3DDC0BE5B1377078B0E6621C /* QuickSpeakBarView.swift in Sources */,
 				814A321F8CABF94168522D57 /* SottoApp.swift in Sources */,
+				E286C883D5ED99BC5814F0E1 /* SottoIcon.swift in Sources */,
 				13194355F7DC73021586698F /* SottoShortcuts.swift in Sources */,
 				4CD6302713AC84FEFD20215E /* SpeechRecognizerService.swift in Sources */,
 				473A4D1EF52751EC7BDC3A64 /* SpeechService.swift in Sources */,

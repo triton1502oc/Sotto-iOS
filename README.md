@@ -43,7 +43,7 @@ We use Sotto in two distinct modes:
 ## Key Features
 
 ### 1. Direct Yes/No Crisis Navigation & Post-Crisis Explorer (Caregiver Mode)
-- **Two-Way Partner Mode & 180° Flip (`🤝`)**: Immediate crisis support for acute meltdowns and verbal shutdowns. Caregivers speak naturally or pick preset questions, flip the display 180° on a table, and the individual responds with one tap on huge 80pt+ targets (`Yes`, `No`, `Not sure`, `Stop`) with instant voice confirmation. Zero cognitive load.
+- **Two-Way Partner Mode & 180° Flip (`🤝`)**: Immediate crisis support for acute meltdowns and verbal shutdowns. Caregivers speak naturally or pick preset questions, flip the display 180° on a table, and the individual responds with one tap on huge 80pt+ targets (`Yes`, `No`, `Wait`, `Repeat` / `Not sure`, `Stop`) with instant voice confirmation. Zero cognitive load.
 - **Why Finder Post-Crisis Explorer (`🧭`)**: When distress triggers are unknown, Why Finder provides a gentle, post-crisis binary discovery tree to systematically uncover hidden physical discomfort (with body map locator), sensory overload, emotional fatigue, or routine disruptions without demanding open-ended answers.
 - **Private Pattern Log & 30-Day Trends**: Automatically logs resolved crisis events locally in private app storage. Highlights top 30-day root-cause patterns and peak time-of-day clusters to help families identify recurring environmental stressors.
 - **Customizable Inquiry Tree (`🌳`)**: Personalize questions and areas with voice dictation (`🎤`), sequence reordering, and one-tap defaults reset.
@@ -185,12 +185,15 @@ Sotto-iOS/
 
 ## Documentation & Development
 
+- **Caregiver & User Guide**: See [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md) for Two-Way Mode, phrase cards, and emergency protocols.
+- **Language & Localization**: See [docs/LANGUAGE_AND_LOCALIZATION.md](docs/LANGUAGE_AND_LOCALIZATION.md) for TTS voices, audio tuning, and offline translation.
 - **Running on Physical Device**: See [docs/RUNNING_ON_DEVICE.md](docs/RUNNING_ON_DEVICE.md) for signing and installation instructions.
 - **Curated Scenario Decks**: See [docs/SCENARIO_DECKS.md](docs/SCENARIO_DECKS.md) for scannable QR codes and printable phrase packs (Medical, Transit, School, Dental).
 - **Contributing & Architecture**: See [CONTRIBUTING.md](CONTRIBUTING.md) for design philosophy, architectural guardrails, and verification rules.
 - **Cross-Platform Workflow**: See [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md) for the Android-to-iOS porting guide and checklist.
 - **AI Agent Guidelines**: See [AGENTS.md](AGENTS.md) for universal flight rules for AI coding assistants.
 - **Changelog & Releases**: See [CHANGELOG.md](CHANGELOG.md) for version history.
+- **Android Reference App**: See [Sotto Android](https://github.com/triton1502oc/Sotto).
 
 ---
 
