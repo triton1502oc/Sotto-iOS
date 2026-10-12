@@ -56,9 +56,14 @@ Free. Private. GPL-3.0 with App Store exception. Sotto is not a medical device a
 github.com/triton1502oc/Sotto-iOS | Android available
 ```
 
-### What's New
+### What's New *(v1.7.2)*
 ```text
-First App Store release. Direct Yes/No primary for meltdowns — caregiver holds phone, individual taps to pinpoint. Why Finder moved to post-crisis explorer. Added 5 sensory themes, Safety cards, QR sharing with Android. Universal iPad.
+• Modernized Caregiver HUD: Elevated 2x2 response dock with tactile haptics and smooth 180° flip animation.
+• 1-Tap Trigger Logger: Fast on-device logging to Why Log following crisis resolution.
+• Streamlined Main Screen: Modern top action bar, single-row QuickSpeak capsule dock, and drag-and-drop card reordering in Edit Mode.
+• Compact Card Density: Opt-in 1.25:1 card density option in Settings.
+• 3-Tab Categorized Settings: Reorganized settings into Voice, Appearance, and Data with in-context question tree editing.
+• Sensory Theme Parity: All modals dynamically adapt to your selected sensory palette.
 ```
 
 ### URLs
