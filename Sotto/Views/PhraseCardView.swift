@@ -66,24 +66,37 @@ public struct PhraseCardView: View {
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabelText)
         .accessibilityHint(accessibilityHintText)
-        .accessibilityAction(named: "Speak Aloud") {
+        .accessibilityAction(named: isEditMode ? "Edit Card" : "Speak Aloud") {
             onTap()
         }
         .accessibilityAction(named: "Show Fullscreen") {
-            onLongPress()
+            if !isEditMode {
+                onLongPress()
+            }
         }
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.5)
-                .onEnded { _ in
-                    if !isEditMode {
-                        #if canImport(UIKit)
-                        let feedback = UIImpactFeedbackGenerator(style: .medium)
-                        feedback.impactOccurred()
-                        #endif
-                        onLongPress()
-                    }
-                }
-        )
+        .modifier(CardLongPressModifier(isEditMode: isEditMode, onLongPress: onLongPress))
+    }
+    
+    private struct CardLongPressModifier: ViewModifier {
+        let isEditMode: Bool
+        let onLongPress: () -> Void
+        
+        func body(content: Content) -> some View {
+            if isEditMode {
+                content
+            } else {
+                content.simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.5)
+                        .onEnded { _ in
+                            #if canImport(UIKit)
+                            let feedback = UIImpactFeedbackGenerator(style: .medium)
+                            feedback.impactOccurred()
+                            #endif
+                            onLongPress()
+                        }
+                )
+            }
+        }
     }
     
     @ViewBuilder
@@ -133,8 +146,9 @@ public struct PhraseCardView: View {
         )
         .overlay(alignment: .topTrailing) {
             if isEditMode {
-                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.6))
-                    .padding(10)
+                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.8))
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
                     .accessibilityLabel("Drag to reorder")
             }
         }
@@ -177,8 +191,9 @@ public struct PhraseCardView: View {
         )
         .overlay(alignment: .topTrailing) {
             if isEditMode {
-                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.6))
-                    .padding(8)
+                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.8))
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
                     .accessibilityLabel("Drag to reorder")
             }
         }

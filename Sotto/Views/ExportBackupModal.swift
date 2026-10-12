@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct ExportBackupModal: View {
+    @Environment(\.sottoPalette) private var palette
     public let phraseCount: Int
     public let areaCount: Int
     public let logCount: Int
@@ -35,13 +36,13 @@ public struct ExportBackupModal: View {
     public var body: some View {
         NavigationView {
             ZStack {
-                SottoTheme.surface
+                palette.surface
                     .ignoresSafeArea()
                 
                 VStack(alignment: .leading, spacing: 18) {
                     Text("Export library phrases, categories, question trees, or private logs as a backup file.")
                         .font(.system(size: 14))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                     
                     VStack(spacing: 10) {
                         // Option 1: Phrases & Categories
@@ -78,18 +79,18 @@ public struct ExportBackupModal: View {
                             onShareQR(exportPhrases, exportTree, exportLog)
                         }) {
                             HStack(spacing: 8) {
-                                SottoIconView(.qrCodeScanner, size: 18, tint: SottoTheme.primary)
+                                SottoIconView(.qrCodeScanner, size: 18, tint: palette.accent)
                                 Text("Share via QR Code Deck")
                                     .font(.system(size: 15, weight: .medium))
                             }
-                            .foregroundColor(SottoTheme.primary)
+                            .foregroundColor(palette.accent)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 48)
-                            .background(SottoTheme.surfaceVariant.opacity(0.4))
+                            .background(palette.surfaceVariant.opacity(0.5))
                             .cornerRadius(12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .stroke(SottoTheme.primary.opacity(0.35), lineWidth: 1)
+                                    .stroke(palette.accent.opacity(0.35), lineWidth: 1)
                             )
                         }
                         .disabled(!hasSelection)
@@ -110,7 +111,7 @@ public struct ExportBackupModal: View {
                         }
                         .frame(maxWidth: .infinity)
                         .frame(height: 52)
-                        .background(hasSelection ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.3))
+                        .background(hasSelection ? palette.accent : palette.textSecondary.opacity(0.3))
                         .cornerRadius(14)
                     }
                     .disabled(!hasSelection)
@@ -144,43 +145,43 @@ public struct ExportBackupModal: View {
                 HStack(spacing: 12) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(checked ? SottoTheme.primary.opacity(0.15) : SottoTheme.surfaceVariant.opacity(0.6))
+                            .fill(checked ? palette.accent.opacity(0.15) : palette.surfaceVariant)
                             .frame(width: 36, height: 36)
-                        SottoIconView(icon, size: 18, tint: checked ? SottoTheme.primary : SottoTheme.textSecondary)
+                        SottoIconView(icon, size: 18, tint: checked ? palette.accent : palette.textSecondary)
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(SottoTheme.textPrimary)
+                            .foregroundColor(palette.textPrimary)
                         Text(subtitle)
                             .font(.system(size: 13))
-                            .foregroundColor(SottoTheme.textSecondary)
+                            .foregroundColor(palette.textSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: checked ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 20))
-                        .foregroundColor(checked ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.5))
+                        .foregroundColor(checked ? palette.accent : palette.textSecondary.opacity(0.5))
                 }
                 
                 if let warn = warning {
                     HStack(spacing: 6) {
-                        SottoIconView(.warning, size: 13, tint: SottoTheme.destructiveRed)
+                        SottoIconView(.warning, size: 13, tint: SottoTheme.danger)
                         Text(warn)
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(SottoTheme.destructiveRed)
+                            .foregroundColor(SottoTheme.danger)
                     }
                     .padding(.leading, 48)
                 }
             }
             .padding(12)
-            .background(checked ? SottoTheme.primary.opacity(0.08) : SottoTheme.surfaceVariant.opacity(0.3))
+            .background(checked ? palette.accent.opacity(0.08) : palette.surfaceVariant.opacity(0.5))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(checked ? SottoTheme.primary : Color.white.opacity(0.08), lineWidth: checked ? 1.5 : 1)
+                    .stroke(checked ? palette.accent : palette.outlineVariant.opacity(0.35), lineWidth: checked ? 1.5 : 1)
             )
             .contentShape(Rectangle())
         }

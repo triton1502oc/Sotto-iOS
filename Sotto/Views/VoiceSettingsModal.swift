@@ -12,6 +12,7 @@ public struct VoiceSettingsModal: View {
     public let onDismiss: () -> Void
     
     @AppStorage("settings_last_tab") private var selectedTabIndex: Int = 0
+    public var whyFinderRepository: WhyFinderRepositoryProtocol = UserDefaultsWhyFinderRepository.shared
     @State private var speed: Float
     @State private var pitch: Float
     @State private var attentionChime: Bool
@@ -25,11 +26,14 @@ public struct VoiceSettingsModal: View {
     @State private var showSafetyCards: Bool
     @State private var cardLayout: String
     @State private var showSharedDataSheet: Bool = false
+    @State private var showWhyTreeEditorSheet: Bool = false
+    @State private var showWhyLogSheet: Bool = false
     @State private var availableLanguages: [(code: String, name: String)] = []
     @State private var availableVoices: [AVSpeechSynthesisVoice] = []
     
     public init(
         settings: Binding<VoiceSettings>,
+        whyFinderRepository: WhyFinderRepositoryProtocol = UserDefaultsWhyFinderRepository.shared,
         onTestVoice: @escaping (VoiceSettings) -> Void,
         onOpenWhyLog: (() -> Void)? = nil,
         onOpenWhyTreeEditor: (() -> Void)? = nil,
@@ -39,6 +43,7 @@ public struct VoiceSettingsModal: View {
         onDismiss: @escaping () -> Void
     ) {
         self._settings = settings
+        self.whyFinderRepository = whyFinderRepository
         self.onTestVoice = onTestVoice
         self.onOpenWhyLog = onOpenWhyLog
         self.onOpenWhyTreeEditor = onOpenWhyTreeEditor
@@ -172,6 +177,20 @@ public struct VoiceSettingsModal: View {
                     }
                 }
                 .navigationViewStyle(.stack)
+            }
+            .sheet(isPresented: $showWhyTreeEditorSheet) {
+                WhyTreeEditorModal(
+                    repository: whyFinderRepository,
+                    onDismiss: { showWhyTreeEditorSheet = false }
+                )
+                .environment(\.sottoPalette, currentThemePalette)
+            }
+            .sheet(isPresented: $showWhyLogSheet) {
+                WhyLogModal(
+                    repository: whyFinderRepository,
+                    onDismiss: { showWhyLogSheet = false }
+                )
+                .environment(\.sottoPalette, currentThemePalette)
             }
         }
         .navigationViewStyle(.stack)
@@ -731,8 +750,7 @@ public struct VoiceSettingsModal: View {
                 ) {
                     UsabilityTracker.shared.startIntent("settings_tool_open")
                     UsabilityTracker.shared.endIntent("settings_tool_open", outcome: "why_log", voiceSettings: settings)
-                    onDismiss()
-                    onOpenWhyLog?()
+                    showWhyLogSheet = true
                 }
                 
                 toolTile(
@@ -742,8 +760,7 @@ public struct VoiceSettingsModal: View {
                 ) {
                     UsabilityTracker.shared.startIntent("settings_tool_open")
                     UsabilityTracker.shared.endIntent("settings_tool_open", outcome: "tree_editor", voiceSettings: settings)
-                    onDismiss()
-                    onOpenWhyTreeEditor?()
+                    showWhyTreeEditorSheet = true
                 }
             }
             

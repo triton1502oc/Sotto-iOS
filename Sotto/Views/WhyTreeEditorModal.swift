@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct WhyTreeEditorModal: View {
+    @Environment(\.sottoPalette) private var palette
     public let repository: WhyFinderRepositoryProtocol
     public let onDismiss: () -> Void
     
@@ -37,7 +38,7 @@ public struct WhyTreeEditorModal: View {
     public var body: some View {
         NavigationView {
             ZStack {
-                SottoTheme.surface
+                palette.surface
                     .ignoresSafeArea()
                 
                 VStack(spacing: 12) {
@@ -52,7 +53,7 @@ public struct WhyTreeEditorModal: View {
                         HStack {
                             Text("Questions (\(area.questions.count))")
                                 .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(SottoTheme.textPrimary)
+                                .foregroundColor(palette.textPrimary)
                             
                             Spacer()
                             
@@ -62,14 +63,14 @@ public struct WhyTreeEditorModal: View {
                                 showAddQuestion = true
                             }) {
                                 HStack(spacing: 6) {
-                                    SottoIconView(.add, size: 14, tint: SottoTheme.primary)
+                                    SottoIconView(.add, size: 14, tint: palette.accent)
                                     Text("Add Question")
                                         .font(.system(size: 13, weight: .medium))
                                 }
-                                .foregroundColor(SottoTheme.primary)
+                                .foregroundColor(palette.accent)
                                 .padding(.horizontal, 12)
                                 .frame(minHeight: 44)
-                                .background(SottoTheme.surfaceVariant)
+                                .background(palette.surfaceVariant)
                                 .cornerRadius(12)
                                 .contentShape(Rectangle())
                             }
@@ -106,7 +107,7 @@ public struct WhyTreeEditorModal: View {
                     } label: {
                         Image(systemName: "ellipsis.circle")
                             .font(.system(size: 17))
-                            .foregroundColor(SottoTheme.textSecondary)
+                            .foregroundColor(palette.textSecondary)
                             .frame(minWidth: 44, minHeight: 44)
                             .contentShape(Rectangle())
                     }
@@ -127,19 +128,19 @@ public struct WhyTreeEditorModal: View {
             .sheet(item: $editingAreaQuestion) { area in
                 NavigationView {
                     ZStack {
-                        SottoTheme.surface.ignoresSafeArea()
+                        palette.surface.ignoresSafeArea()
                         
                         VStack(alignment: .leading, spacing: 16) {
                             Text("Edit Opening Question")
                                 .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(SottoTheme.textSecondary)
+                                .foregroundColor(palette.textSecondary)
                             
                             HStack(spacing: 8) {
                                 TextField("Enter question...", text: $areaQuestionText)
                                     .font(.system(size: 16))
-                                    .foregroundColor(SottoTheme.textPrimary)
+                                    .foregroundColor(palette.textPrimary)
                                     .padding(12)
-                                    .background(SottoTheme.background)
+                                    .background(palette.background)
                                     .cornerRadius(10)
                                     .onSubmit {
                                         if speechService.isRecording { speechService.stopRecording() }
@@ -151,10 +152,10 @@ public struct WhyTreeEditorModal: View {
                                     SottoIconView(
                                         .mic,
                                         size: 18,
-                                        tint: speechService.isRecording ? SottoTheme.destructiveRed : SottoTheme.primary
+                                        tint: speechService.isRecording ? SottoTheme.danger : palette.accent
                                     )
                                     .frame(width: 44, height: 44)
-                                    .background(SottoTheme.background)
+                                    .background(palette.background)
                                     .cornerRadius(10)
                                 }
                             }
@@ -271,14 +272,14 @@ public struct WhyTreeEditorModal: View {
                     Button(action: { selectedAreaId = area.id }) {
                         Text(LocaleHelper.getAreaDisplayName(area.id))
                             .font(.system(size: 14, weight: isSelected ? .bold : .regular))
-                            .foregroundColor(isSelected ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                            .foregroundColor(isSelected ? palette.textPrimary : palette.textSecondary)
                             .padding(.horizontal, 14)
                             .frame(minHeight: 44)
-                            .background(isSelected ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                            .background(isSelected ? palette.surfaceVariant : palette.surface)
                             .cornerRadius(18)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 18)
-                                    .stroke(isSelected ? SottoTheme.primary.opacity(0.4) : Color.white.opacity(0.1), lineWidth: 1)
+                                    .stroke(isSelected ? palette.accent.opacity(0.6) : palette.outlineVariant, lineWidth: 1)
                             )
                             .contentShape(Rectangle())
                     }
@@ -293,7 +294,7 @@ public struct WhyTreeEditorModal: View {
             HStack {
                 Text("AREA OPENING QUESTION")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(SottoTheme.primary)
+                    .foregroundColor(palette.accent)
                 
                 Spacer()
                 
@@ -302,10 +303,10 @@ public struct WhyTreeEditorModal: View {
                     editingAreaQuestion = area
                 }) {
                     HStack(spacing: 4) {
-                        SottoIconView(.edit, size: 13, tint: SottoTheme.primary)
+                        SottoIconView(.edit, size: 13, tint: palette.accent)
                         Text("Edit")
                             .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(SottoTheme.primary)
+                            .foregroundColor(palette.accent)
                     }
                     .frame(minHeight: 44)
                     .contentShape(Rectangle())
@@ -314,14 +315,14 @@ public struct WhyTreeEditorModal: View {
             
             Text(area.question)
                 .font(.system(size: 15, weight: .medium))
-                .foregroundColor(SottoTheme.textPrimary)
+                .foregroundColor(palette.textPrimary)
         }
         .padding(14)
-        .background(SottoTheme.surfaceVariant.opacity(0.45))
+        .background(palette.surfaceVariant.opacity(0.5))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .stroke(palette.outlineVariant, lineWidth: 1)
         )
         .padding(.horizontal, 16)
     }
@@ -336,7 +337,7 @@ public struct WhyTreeEditorModal: View {
                     SottoIconView(
                         .arrowUp,
                         size: 13,
-                        tint: qIndex > 0 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25)
+                        tint: qIndex > 0 ? palette.accent : palette.textSecondary.opacity(0.25)
                     )
                     .frame(width: 36, height: 22)
                     .contentShape(Rectangle())
@@ -349,7 +350,7 @@ public struct WhyTreeEditorModal: View {
                     SottoIconView(
                         .arrowDown,
                         size: 13,
-                        tint: qIndex < currentArea!.questions.count - 1 ? SottoTheme.primary : SottoTheme.textSecondary.opacity(0.25)
+                        tint: qIndex < currentArea!.questions.count - 1 ? palette.accent : palette.textSecondary.opacity(0.25)
                     )
                     .frame(width: 36, height: 22)
                     .contentShape(Rectangle())
@@ -362,14 +363,14 @@ public struct WhyTreeEditorModal: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(question.text)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(SottoTheme.textPrimary)
+                    .foregroundColor(palette.textPrimary)
                 
                 if question.type == .bodyPart {
                     HStack(spacing: 4) {
-                        SottoIconView(.target, size: 11, tint: SottoTheme.primary)
+                        SottoIconView(.target, size: 11, tint: palette.accent)
                         Text("Body Part Grid")
                             .font(.system(size: 11, weight: .medium))
-                            .foregroundColor(SottoTheme.primary)
+                            .foregroundColor(palette.accent)
                     }
                 } else if question.type == .intensity {
                     HStack(spacing: 4) {
@@ -387,7 +388,7 @@ public struct WhyTreeEditorModal: View {
             Button(action: {
                 questionToEdit = (qIndex, question)
             }) {
-                SottoIconView(.edit, size: 15, tint: SottoTheme.textSecondary)
+                SottoIconView(.edit, size: 15, tint: palette.textSecondary)
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
@@ -397,7 +398,7 @@ public struct WhyTreeEditorModal: View {
             Button(action: {
                 deleteQuestion(areaIndex: areaIndex, qIndex: qIndex)
             }) {
-                SottoIconView(.delete, size: 15, tint: SottoTheme.destructiveRed.opacity(0.75))
+                SottoIconView(.delete, size: 15, tint: SottoTheme.danger.opacity(0.75))
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
@@ -405,11 +406,11 @@ public struct WhyTreeEditorModal: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(SottoTheme.surface)
+        .background(palette.surface)
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                .stroke(palette.outlineVariant, lineWidth: 1)
         )
     }
     
@@ -422,20 +423,20 @@ public struct WhyTreeEditorModal: View {
     ) -> some View {
         NavigationView {
             ZStack {
-                SottoTheme.surface
+                palette.surface
                     .ignoresSafeArea()
                 
                 VStack(alignment: .leading, spacing: 18) {
                     Text("Question Text")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                     
                     HStack(spacing: 8) {
                         TextField("Enter question...", text: textBinding)
                             .font(.system(size: 16))
-                            .foregroundColor(SottoTheme.textPrimary)
+                            .foregroundColor(palette.textPrimary)
                             .padding(12)
-                            .background(SottoTheme.background)
+                            .background(palette.background)
                             .cornerRadius(10)
                             .onSubmit {
                                 if speechService.isRecording {
@@ -449,17 +450,17 @@ public struct WhyTreeEditorModal: View {
                             SottoIconView(
                                 .mic,
                                 size: 18,
-                                tint: speechService.isRecording ? SottoTheme.destructiveRed : SottoTheme.primary
+                                tint: speechService.isRecording ? SottoTheme.danger : palette.accent
                             )
                             .frame(width: 44, height: 44)
-                            .background(SottoTheme.background)
+                            .background(palette.background)
                             .cornerRadius(10)
                         }
                     }
                     
                     Text("Response Type")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                         .padding(.top, 8)
                     
                     VStack(spacing: 8) {
@@ -476,10 +477,10 @@ public struct WhyTreeEditorModal: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(name)
                                             .font(.system(size: 15, weight: isSelected ? .bold : .medium))
-                                            .foregroundColor(SottoTheme.textPrimary)
+                                            .foregroundColor(palette.textPrimary)
                                         Text(desc)
                                             .font(.system(size: 12))
-                                            .foregroundColor(SottoTheme.textSecondary)
+                                            .foregroundColor(palette.textSecondary)
                                     }
                                     
                                     Spacer()
@@ -487,15 +488,15 @@ public struct WhyTreeEditorModal: View {
                                     if isSelected {
                                         Image(systemName: "checkmark.circle.fill")
                                             .font(.system(size: 18))
-                                            .foregroundColor(SottoTheme.primary)
+                                            .foregroundColor(palette.accent)
                                     }
                                 }
                                 .padding(12)
-                                .background(isSelected ? SottoTheme.primary.opacity(0.12) : SottoTheme.background)
+                                .background(isSelected ? palette.accent.opacity(0.15) : palette.background)
                                 .cornerRadius(10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(isSelected ? SottoTheme.primary : Color.white.opacity(0.08), lineWidth: 1)
+                                        .stroke(isSelected ? palette.accent : palette.outlineVariant, lineWidth: 1)
                                 )
                             }
                         }

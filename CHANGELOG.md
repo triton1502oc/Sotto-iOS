@@ -19,6 +19,11 @@ All notable changes to the Sotto (iOS) project will be documented in this file. 
 - **Floating Communicator Parity Architecture**: Comprehensive proposal (`docs/FLOATING_COMMUNICATOR_PROPOSAL.md`) specifying Interactive Live Activities & Dynamic Island (`ActivityKit` with `LiveActivityIntent`) as the compliant iOS counterpart to Android PiP ([#28](https://github.com/triton1502oc/Sotto-iOS/issues/28)).
 - **Round-Trip Export/Import Fidelity Unit Tests**: Added automated unit test verifying 100% data fidelity across phrases, categories, Why Tree, and Why Log export/import cycles ([#39](https://github.com/triton1502oc/Sotto-iOS/issues/39), [#40](https://github.com/triton1502oc/Sotto-iOS/issues/40)).
 
+### Fixed
+- **Edit Mode Drag-and-Drop Phrase Reordering**: Fixed non-interactive drag handle in Edit Mode by integrating native `.draggable` and `.dropDestination` gesture modifiers with animated reordering and haptic feedback (`MainView.swift`, `PhraseCardView.swift`).
+- **Dynamic Sensory Palette Parity Across Modals**: Fixed hardcoded dark styling in `WhyTreeEditorModal`, `WhyLogModal`, `ExportBackupModal`, and `ImportBackupModal` to dynamically inherit `@Environment(\.sottoPalette)`, preserving sensory themes (Soft Parchment, Sage, OLED Black).
+- **In-Context Settings Navigation for Sub-Modals**: Resolved premature dismissal of `VoiceSettingsModal` when opening Why Tree Editor or Why Log by presenting them as in-context child sheets returning directly to Settings upon completion.
+
 ## [v1.7.1] - 2026-10-12
 
 ### Added

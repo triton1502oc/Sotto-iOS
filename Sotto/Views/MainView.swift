@@ -196,6 +196,7 @@ public struct MainView: View {
                     get: { viewModel.voiceSettings },
                     set: { viewModel.updateVoiceSettings($0) }
                 ),
+                whyFinderRepository: viewModel.whyFinderRepository,
                 onTestVoice: { testSettings in
                     viewModel.testVoice(with: testSettings)
                 },
@@ -234,6 +235,7 @@ public struct MainView: View {
                     viewModel.showWhyTreeEditorDialog = false
                 }
             )
+            .environment(\.sottoPalette, currentPalette)
         }
         .sheet(isPresented: $viewModel.showWhyLogDialog) {
             WhyLogModal(
@@ -242,6 +244,7 @@ public struct MainView: View {
                     viewModel.showWhyLogDialog = false
                 }
             )
+            .environment(\.sottoPalette, currentPalette)
         }
         .sheet(isPresented: $viewModel.showExportBackupDialog) {
             ExportBackupModal(
@@ -835,45 +838,24 @@ public struct MainView: View {
                 ForEach(0..<chunkedRows.count, id: \.self) { rowIndex in
                     let row = chunkedRows[rowIndex]
                     if row.isEmergency, let phrase = row.items.first {
-                        PhraseCardView(
+                        ReorderablePhraseCard(
+                            viewModel: viewModel,
                             phrase: phrase,
-                            isEditMode: viewModel.isEditMode,
-                            showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
-                            appLanguage: viewModel.voiceSettings.appLanguage,
-                            cardLayout: viewModel.voiceSettings.cardLayout,
-                            onTap: {
-                                if viewModel.isEditMode {
-                                    viewModel.phraseToEdit = phrase
-                                } else {
-                                    viewModel.speak(phrase: phrase)
-                                }
-                            },
-                            onLongPress: {
-                                viewModel.activeFullscreenPhrase = phrase
-                            }
+                            isEmergency: true,
+                            currentPalette: currentPalette,
+                            demoTargetId: "emergencyCard"
                         )
-                        .demoTarget("emergencyCard")
                     } else {
                         HStack(spacing: 16) {
                             ForEach(Array(row.items.enumerated()), id: \.element.id) { colIndex, phrase in
-                                PhraseCardView(
+                                let targetId = phrase.spokenText != nil ? "dualLanguageCard" : (colIndex == 0 && rowIndex <= 1 ? "firstRegularCard" : (colIndex == 1 && rowIndex <= 1 ? "secondRegularCard" : "regularCard_\(phrase.id)"))
+                                ReorderablePhraseCard(
+                                    viewModel: viewModel,
                                     phrase: phrase,
-                                    isEditMode: viewModel.isEditMode,
-                                    showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
-                                    appLanguage: viewModel.voiceSettings.appLanguage,
-                                    cardLayout: viewModel.voiceSettings.cardLayout,
-                                    onTap: {
-                                        if viewModel.isEditMode {
-                                            viewModel.phraseToEdit = phrase
-                                        } else {
-                                            viewModel.speak(phrase: phrase)
-                                        }
-                                    },
-                                    onLongPress: {
-                                        viewModel.activeFullscreenPhrase = phrase
-                                    }
+                                    isEmergency: false,
+                                    currentPalette: currentPalette,
+                                    demoTargetId: targetId
                                 )
-                                .demoTarget(phrase.spokenText != nil ? "dualLanguageCard" : (colIndex == 0 && rowIndex <= 1 ? "firstRegularCard" : (colIndex == 1 && rowIndex <= 1 ? "secondRegularCard" : "regularCard_\(phrase.id)")))
                             }
                             // If row has fewer items than columnsCount, pad the other cells
                             if row.items.count < columnsCount {
@@ -923,6 +905,89 @@ public struct MainView: View {
         }
         
         return rows
+    }
+}
+
+// MARK: - Reorderable Phrase Card Component
+
+private struct ReorderablePhraseCard: View {
+    @ObservedObject var viewModel: MainViewModel
+    let phrase: Phrase
+    let isEmergency: Bool
+    let currentPalette: SottoPalette
+    var demoTargetId: String? = nil
+    
+    @State private var isTargeted: Bool = false
+    
+    var body: some View {
+        let card = PhraseCardView(
+            phrase: phrase,
+            isEditMode: viewModel.isEditMode,
+            showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
+            appLanguage: viewModel.voiceSettings.appLanguage,
+            cardLayout: viewModel.voiceSettings.cardLayout,
+            onTap: {
+                if viewModel.isEditMode {
+                    viewModel.phraseToEdit = phrase
+                } else {
+                    viewModel.speak(phrase: phrase)
+                }
+            },
+            onLongPress: {
+                viewModel.activeFullscreenPhrase = phrase
+            }
+        )
+        .scaleEffect(isTargeted ? 1.03 : 1.0)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(isTargeted ? currentPalette.accent : Color.clear, lineWidth: 2)
+        )
+        .animation(.easeInOut(duration: 0.18), value: isTargeted)
+        .modifier(ReorderableCardModifier(
+            phrase: phrase,
+            viewModel: viewModel,
+            isTargeted: $isTargeted
+        ))
+        
+        if let target = demoTargetId {
+            card.demoTarget(target)
+        } else {
+            card
+        }
+    }
+}
+
+private struct ReorderableCardModifier: ViewModifier {
+    let phrase: Phrase
+    @ObservedObject var viewModel: MainViewModel
+    @Binding var isTargeted: Bool
+    
+    func body(content: Content) -> some View {
+        if viewModel.isEditMode {
+            content
+                .draggable(phrase.id.uuidString)
+                .dropDestination(for: String.self) { items, _ in
+                    isTargeted = false
+                    guard let draggedIdString = items.first,
+                          let draggedId = UUID(uuidString: draggedIdString),
+                          let fromPhrase = viewModel.phrases.first(where: { $0.id == draggedId }),
+                          fromPhrase.id != phrase.id else {
+                        return false
+                    }
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        viewModel.movePhrase(fromPhrase: fromPhrase, toPhrase: phrase)
+                    }
+                    #if canImport(UIKit)
+                    let feedback = UIImpactFeedbackGenerator(style: .medium)
+                    feedback.impactOccurred()
+                    #endif
+                    return true
+                } isTargeted: { targeted in
+                    isTargeted = targeted
+                }
+        } else {
+            content
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct ImportBackupModal: View {
+    @Environment(\.sottoPalette) private var palette
     public let backupData: BackupData
     public let onMerge: () -> Void
     public let onReplace: () -> Void
@@ -29,7 +30,7 @@ public struct ImportBackupModal: View {
     public var body: some View {
         NavigationView {
             ZStack {
-                SottoTheme.surface
+                palette.surface
                     .ignoresSafeArea()
                 
                 VStack(alignment: .leading, spacing: 18) {
@@ -73,18 +74,18 @@ public struct ImportBackupModal: View {
         VStack(alignment: .leading, spacing: 16) {
             Text("This file contains a Question Tree shared by a caregiver or therapist.")
                 .font(.system(size: 15))
-                .foregroundColor(SottoTheme.textPrimary)
+                .foregroundColor(palette.textPrimary)
             
             if let areas = backupData.whyTree?.areas {
                 HStack(spacing: 8) {
-                    SottoIconView(.branch, size: 16, tint: SottoTheme.primary)
+                    SottoIconView(.branch, size: 16, tint: palette.accent)
                     Text("Includes \(areas.count) question areas")
                         .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(SottoTheme.primary)
+                        .foregroundColor(palette.accent)
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(SottoTheme.primary.opacity(0.1))
+                .background(palette.accent.opacity(0.1))
                 .cornerRadius(12)
             }
             
@@ -100,7 +101,7 @@ public struct ImportBackupModal: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 50)
-                .background(SottoTheme.primary)
+                .background(palette.accent)
                 .cornerRadius(12)
             }
             .padding(.top, 12)
@@ -114,21 +115,21 @@ public struct ImportBackupModal: View {
             VStack(alignment: .leading, spacing: 8) {
                 Text("Backup Content Summary")
                     .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(SottoTheme.textPrimary)
+                    .foregroundColor(palette.textPrimary)
                 
                 HStack(spacing: 8) {
-                    SottoIconView(.cards, size: 15, tint: SottoTheme.primary)
+                    SottoIconView(.cards, size: 15, tint: palette.accent)
                     Text("\(backupData.phrases.count) phrases across \(backupData.categories.count) categories")
                         .font(.system(size: 14))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                 }
                 
                 if let tree = backupData.whyTree {
                     HStack(spacing: 8) {
-                        SottoIconView(.branch, size: 15, tint: SottoTheme.primary)
+                        SottoIconView(.branch, size: 15, tint: palette.accent)
                         Text("Why Finder Question Tree (\(tree.areas.count) areas)")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(SottoTheme.primary)
+                            .foregroundColor(palette.accent)
                     }
                 }
                 
@@ -143,12 +144,12 @@ public struct ImportBackupModal: View {
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(SottoTheme.surfaceVariant.opacity(0.5))
+            .background(palette.surfaceVariant.opacity(0.5))
             .cornerRadius(12)
             
             Text("Choose how you would like to import this backup:")
                 .font(.system(size: 14))
-                .foregroundColor(SottoTheme.textSecondary)
+                .foregroundColor(palette.textSecondary)
                 .padding(.top, 4)
             
             // Mode Option 1: Merge
@@ -184,7 +185,7 @@ public struct ImportBackupModal: View {
                 }
                 .frame(maxWidth: .infinity)
                 .frame(height: 52)
-                .background(selectedMode == .replace ? SottoTheme.destructiveRed : SottoTheme.primary)
+                .background(selectedMode == .replace ? SottoTheme.danger : palette.accent)
                 .cornerRadius(14)
             }
             .padding(.top, 8)
@@ -206,10 +207,10 @@ public struct ImportBackupModal: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(title)
                         .font(.system(size: 15, weight: .bold))
-                        .foregroundColor(isSelected && isDestructive ? SottoTheme.destructiveRed : SottoTheme.textPrimary)
+                        .foregroundColor(isSelected && isDestructive ? SottoTheme.danger : palette.textPrimary)
                     Text(description)
                         .font(.system(size: 12))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                 }
                 
                 Spacer()
@@ -218,23 +219,23 @@ public struct ImportBackupModal: View {
                     .font(.system(size: 18))
                     .foregroundColor(
                         isSelected
-                            ? (isDestructive ? SottoTheme.destructiveRed : SottoTheme.primary)
-                            : SottoTheme.textSecondary.opacity(0.4)
+                            ? (isDestructive ? SottoTheme.danger : palette.accent)
+                            : palette.textSecondary.opacity(0.4)
                     )
             }
             .padding(12)
             .background(
                 isSelected
-                    ? (isDestructive ? SottoTheme.destructiveRed.opacity(0.12) : SottoTheme.primary.opacity(0.08))
-                    : SottoTheme.surfaceVariant.opacity(0.3)
+                    ? (isDestructive ? SottoTheme.danger.opacity(0.12) : palette.accent.opacity(0.08))
+                    : palette.surfaceVariant.opacity(0.5)
             )
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(
                         isSelected
-                            ? (isDestructive ? SottoTheme.destructiveRed : SottoTheme.primary)
-                            : Color.white.opacity(0.08),
+                            ? (isDestructive ? SottoTheme.danger : palette.accent)
+                            : palette.outlineVariant.opacity(0.35),
                         lineWidth: isSelected ? 1.5 : 1
                     )
             )

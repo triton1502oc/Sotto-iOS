@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct WhyLogModal: View {
+    @Environment(\.sottoPalette) private var palette
     public let repository: WhyFinderRepositoryProtocol
     public let onDismiss: () -> Void
     
@@ -48,7 +49,7 @@ public struct WhyLogModal: View {
     public var body: some View {
         NavigationView {
             ZStack {
-                SottoTheme.surface
+                palette.surface
                     .ignoresSafeArea()
                 
                 VStack(spacing: 12) {
@@ -86,7 +87,7 @@ public struct WhyLogModal: View {
                         }) {
                             Text("Clear All")
                                 .font(.system(size: 14))
-                                .foregroundColor(SottoTheme.destructiveRed)
+                                .foregroundColor(SottoTheme.danger)
                                 .frame(minHeight: 44)
                         }
                     }
@@ -138,16 +139,16 @@ public struct WhyLogModal: View {
             Spacer()
             ZStack {
                 Circle()
-                    .fill(SottoTheme.primary.opacity(0.12))
+                    .fill(palette.accent.opacity(0.12))
                     .frame(width: 64, height: 64)
-                SottoIconView(.docTextMagnifyingglass, size: 32, tint: SottoTheme.primary)
+                SottoIconView(.docTextMagnifyingglass, size: 32, tint: palette.accent)
             }
             Text("No sessions recorded yet")
                 .font(.system(size: 17, weight: .medium))
-                .foregroundColor(SottoTheme.textSecondary)
+                .foregroundColor(palette.textSecondary)
             Text("Completed Why Finder sessions will appear here privately.")
                 .font(.system(size: 13))
-                .foregroundColor(SottoTheme.textSecondary.opacity(0.7))
+                .foregroundColor(palette.textSecondary.opacity(0.7))
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
             Spacer()
@@ -195,40 +196,40 @@ public struct WhyLogModal: View {
         
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                SottoIconView(.analytics, size: 16, tint: SottoTheme.primary)
+                SottoIconView(.analytics, size: 16, tint: palette.accent)
                 Text("30-Day Patterns")
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(SottoTheme.textPrimary)
+                    .foregroundColor(palette.textPrimary)
                 Spacer()
                 Text("\(foundCount) / \(totalCount) resolved")
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(SottoTheme.primary)
+                    .foregroundColor(palette.accent)
             }
             
             if let cause = topCause {
                 Text("Top cause: \(cause.key) • \(cause.value) times")
                     .font(.system(size: 13))
-                    .foregroundColor(SottoTheme.textSecondary)
+                    .foregroundColor(palette.textSecondary)
             }
             
             if let area = topArea {
                 Text("Frequent category: \(LocaleHelper.getAreaDisplayName(area.key))")
                     .font(.system(size: 13))
-                    .foregroundColor(SottoTheme.textSecondary)
+                    .foregroundColor(palette.textSecondary)
             }
             
             if !timeSummary.isEmpty {
                 Text("Most frequent times: \(timeSummary)")
                     .font(.system(size: 13))
-                    .foregroundColor(SottoTheme.textSecondary)
+                    .foregroundColor(palette.textSecondary)
             }
         }
         .padding(14)
-        .background(SottoTheme.primary.opacity(0.12))
+        .background(palette.accent.opacity(0.12))
         .cornerRadius(14)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(SottoTheme.primary.opacity(0.25), lineWidth: 1)
+                .stroke(palette.accent.opacity(0.25), lineWidth: 1)
         )
     }
     
@@ -276,12 +277,12 @@ public struct WhyLogModal: View {
                 
                 Text(dateStr)
                     .font(.system(size: 12))
-                    .foregroundColor(SottoTheme.textSecondary.opacity(0.7))
+                    .foregroundColor(palette.textSecondary.opacity(0.7))
                 
                 Button(action: {
                     entryToDelete = entry
                 }) {
-                    SottoIconView(.delete, size: 15, tint: SottoTheme.destructiveRed.opacity(0.75))
+                    SottoIconView(.delete, size: 15, tint: SottoTheme.danger.opacity(0.75))
                         .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                 }
@@ -292,14 +293,14 @@ public struct WhyLogModal: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(cause)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(SottoTheme.textPrimary)
+                        .foregroundColor(palette.textPrimary)
                     
                     if let part = entry.bodyPart, !part.isEmpty {
                         let partLabel = LocaleHelper.getBodyRegionLabel(part)
                         let intensityStr = entry.intensity != nil ? " • Intensity: \(entry.intensity!)/5" : ""
                         Text("\(partLabel)\(intensityStr)")
                             .font(.system(size: 13))
-                            .foregroundColor(SottoTheme.primary)
+                            .foregroundColor(palette.accent)
                     }
                 }
             }
@@ -308,34 +309,34 @@ public struct WhyLogModal: View {
                 if let areaId = entry.areaId {
                     Text(LocaleHelper.getAreaDisplayName(areaId))
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(SottoTheme.surfaceVariant)
+                        .background(palette.surfaceVariant)
                         .cornerRadius(6)
                 }
                 
                 Text("\(entry.steps.count) steps")
                     .font(.system(size: 12))
-                    .foregroundColor(SottoTheme.textSecondary.opacity(0.7))
+                    .foregroundColor(palette.textSecondary.opacity(0.7))
             }
             
             if let note = entry.privateNote, !note.isEmpty {
                 HStack(spacing: 6) {
-                    SottoIconView(.noteAlt, size: 13, tint: SottoTheme.textSecondary)
+                    SottoIconView(.noteAlt, size: 13, tint: palette.textSecondary)
                     Text(note)
                         .font(.system(size: 13, weight: .regular))
-                        .foregroundColor(SottoTheme.textSecondary)
+                        .foregroundColor(palette.textSecondary)
                 }
                 .padding(.top, 2)
             }
         }
         .padding(14)
-        .background(SottoTheme.surface)
+        .background(palette.surface)
         .cornerRadius(14)
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                .stroke(palette.outlineVariant, lineWidth: 1)
         )
     }
 }
