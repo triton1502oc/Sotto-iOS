@@ -51,6 +51,7 @@ public final class UserDefaultsVoiceSettingsRepository: VoiceSettingsRepositoryP
         do {
             let data = try JSONEncoder().encode(settings)
             userDefaults.set(data, forKey: keyVoiceSettings)
+            userDefaults.set(settings.appTheme, forKey: "sotto_app_theme")
         } catch {
             // Ignore encoding errors
         }

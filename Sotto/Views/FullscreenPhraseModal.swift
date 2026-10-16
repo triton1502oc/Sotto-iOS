@@ -6,6 +6,7 @@ public struct FullscreenPhraseModal: View {
     public let voiceSettings: VoiceSettings
     public let onSpeak: (Phrase) -> Void
     public let onSpeakSecondary: ((Phrase) -> Void)?
+    public let onOpenPartnerMode: (() -> Void)?
     public let onDismiss: () -> Void
     
     public init(
@@ -13,12 +14,14 @@ public struct FullscreenPhraseModal: View {
         voiceSettings: VoiceSettings = VoiceSettings(),
         onSpeak: @escaping (Phrase) -> Void,
         onSpeakSecondary: ((Phrase) -> Void)? = nil,
+        onOpenPartnerMode: (() -> Void)? = nil,
         onDismiss: @escaping () -> Void
     ) {
         self.phrase = phrase
         self.voiceSettings = voiceSettings
         self.onSpeak = onSpeak
         self.onSpeakSecondary = onSpeakSecondary
+        self.onOpenPartnerMode = onOpenPartnerMode
         self.onDismiss = onDismiss
     }
     
@@ -57,7 +60,7 @@ public struct FullscreenPhraseModal: View {
     
     public var body: some View {
         ZStack {
-            (isEmergency ? Color(hex: 0x1E1710) : palette.background)
+            (isEmergency ? SottoTheme.emergencyBackground : palette.background)
                 .ignoresSafeArea()
             
             VStack(spacing: 20) {
@@ -120,62 +123,84 @@ public struct FullscreenPhraseModal: View {
                 Spacer()
                 
                 // Action Buttons
-                if hasSpokenText {
-                    HStack(spacing: 12) {
+                VStack(spacing: 12) {
+                    if isEmergency, let openPartner = onOpenPartnerMode {
+                        Button(action: {
+                            onDismiss()
+                            openPartner()
+                        }) {
+                            HStack(spacing: 10) {
+                                Image(systemName: "person.2.fill")
+                                    .font(.system(size: 18, weight: .bold))
+                                Text(voiceSettings.appLanguage == "id" ? "Buka Mode Mitra (Tanya Jawab)" : "Communicate with Partner")
+                                    .font(.system(size: 17, weight: .bold))
+                            }
+                            .foregroundColor(Color(hex: 0x1E1710))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(SottoTheme.emergencyAccent)
+                            .cornerRadius(14)
+                        }
+                        .demoTarget("fullscreen_partnerModeCTA")
+                        .accessibilityLabel(voiceSettings.appLanguage == "id" ? "Buka Mode Mitra" : "Communicate with Partner")
+                        .accessibilityHint(voiceSettings.appLanguage == "id" ? "Buka Tanya Jawab Ya atau Tidak untuk berkomunikasi" : "Opens direct Yes/No check-in to communicate")
+                    }
+
+                    if hasSpokenText {
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                onSpeak(phrase)
+                            }) {
+                                Text("Speak (\(primaryLangLabel))")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .lineLimit(1)
+                                    .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : palette.background)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                                    .background(isEmergency ? SottoTheme.emergencyBorder : palette.accent)
+                                    .cornerRadius(16)
+                            }
+                            .demoTarget("fullscreen_speakPrimary")
+                            
+                            Button(action: {
+                                onSpeakSecondary?(phrase)
+                            }) {
+                                Text("Speak (\(secondaryLangLabel))")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .lineLimit(1)
+                                    .foregroundColor(palette.textPrimary)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 56)
+                                    .background(palette.surfaceVariant)
+                                    .cornerRadius(16)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 16)
+                                            .stroke(palette.outlineVariant, lineWidth: 1)
+                                    )
+                            }
+                            .demoTarget("fullscreen_speakSecondary")
+                        }
+                    } else {
                         Button(action: {
                             onSpeak(phrase)
                         }) {
-                            Text("Speak (\(primaryLangLabel))")
-                                .font(.system(size: 15, weight: .bold))
-                                .lineLimit(1)
-                                .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : palette.background)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(isEmergency ? SottoTheme.emergencyBorder : palette.accent)
-                                .cornerRadius(16)
+                            HStack(spacing: 12) {
+                                Image(systemName: "speaker.wave.3.fill")
+                                    .font(.system(size: 22, weight: .bold))
+                                Text("Speak Aloud")
+                                    .font(.system(size: 22, weight: .bold))
+                            }
+                            .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : palette.background)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 64)
+                            .background(isEmergency ? SottoTheme.emergencyBorder : palette.accent)
+                            .cornerRadius(16)
                         }
-                        .demoTarget("fullscreen_speakPrimary")
-                        
-                        Button(action: {
-                            onSpeakSecondary?(phrase)
-                        }) {
-                            Text("Speak (\(secondaryLangLabel))")
-                                .font(.system(size: 15, weight: .bold))
-                                .lineLimit(1)
-                                .foregroundColor(palette.textPrimary)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 56)
-                                .background(palette.surfaceVariant)
-                                .cornerRadius(16)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .stroke(palette.outlineVariant, lineWidth: 1)
-                                )
-                        }
-                        .demoTarget("fullscreen_speakSecondary")
+                        .demoTarget("fullscreen_speakButton")
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
-                } else {
-                    Button(action: {
-                        onSpeak(phrase)
-                    }) {
-                        HStack(spacing: 12) {
-                            Image(systemName: "speaker.wave.3.fill")
-                                .font(.system(size: 22, weight: .bold))
-                            Text("Speak Aloud")
-                                .font(.system(size: 22, weight: .bold))
-                        }
-                        .foregroundColor(isEmergency ? Color(hex: 0x1E1710) : palette.background)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 64)
-                        .background(isEmergency ? SottoTheme.emergencyBorder : palette.accent)
-                        .cornerRadius(16)
-                    }
-                    .demoTarget("fullscreen_speakButton")
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
                 }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 20)
             }
         }
         .overlay(

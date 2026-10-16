@@ -94,3 +94,24 @@ public struct SottoShortcuts: AppShortcutsProvider {
         )
     }
 }
+
+#if canImport(WidgetKit)
+import WidgetKit
+
+@available(iOS 18.0, *)
+public struct SottoPartnerControlWidget: ControlWidget {
+    public static let kind: String = "com.sotto.partnerControl"
+    
+    public init() {}
+    
+    public var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: Self.kind) {
+            ControlWidgetButton(action: OpenEmergencyPartnerIntent()) {
+                Label("Sotto Partner", systemImage: "person.2.fill")
+            }
+        }
+        .displayName("Sotto Partner")
+    }
+}
+#endif
+

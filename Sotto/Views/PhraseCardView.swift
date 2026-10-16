@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct PhraseCardView: View {
     @Environment(\.sottoPalette) private var palette
+    @Environment(\.sizeCategory) private var sizeCategory
     public let phrase: Phrase
     public let isEditMode: Bool
     public let showAlternateSpeech: Bool
@@ -63,9 +64,11 @@ public struct PhraseCardView: View {
             }
         }
         .buttonStyle(SottoCardButtonStyle())
+        .hoverEffect(.highlight)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabelText)
         .accessibilityHint(accessibilityHintText)
+        .accessibilityAddTraits(.isButton)
         .accessibilityAction(named: isEditMode ? "Edit Card" : "Speak Aloud") {
             onTap()
         }
@@ -162,8 +165,8 @@ public struct PhraseCardView: View {
                 .font(.body.weight(.medium))
                 .foregroundColor(palette.textPrimary)
                 .multilineTextAlignment(.center)
-                .lineLimit(hasSpokenText ? 2 : (isCompact ? 3 : 4))
-                .minimumScaleFactor(0.75)
+                .lineLimit(sizeCategory.isAccessibilityCategory ? nil : (hasSpokenText ? 2 : (isCompact ? 3 : 4)))
+                .minimumScaleFactor(sizeCategory.isAccessibilityCategory ? 0.6 : 0.75)
                 .padding(.horizontal, 12)
                 .padding(.top, 6)
             
@@ -174,7 +177,7 @@ public struct PhraseCardView: View {
                     Text(spoken)
                         .font(.caption)
                         .foregroundColor(palette.textSecondary.opacity(0.85))
-                        .lineLimit(1)
+                        .lineLimit(sizeCategory.isAccessibilityCategory ? 2 : 1)
                         .truncationMode(.tail)
                 }
                 .padding(.horizontal, 8)
@@ -182,7 +185,7 @@ public struct PhraseCardView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity)
-        .aspectRatio(isCompact ? 1.25 : 1.0, contentMode: .fit)
+        .modifier(CardAspectRatioModifier(isAccessibility: sizeCategory.isAccessibilityCategory, isCompact: isCompact))
         .background(isEditMode ? palette.surfaceVariant : palette.surface)
         .cornerRadius(16)
         .overlay(
@@ -195,6 +198,22 @@ public struct PhraseCardView: View {
                     .frame(width: 40, height: 40)
                     .contentShape(Rectangle())
                     .accessibilityLabel("Drag to reorder")
+            }
+        }
+    }
+    
+    private struct CardAspectRatioModifier: ViewModifier {
+        let isAccessibility: Bool
+        let isCompact: Bool
+        
+        func body(content: Content) -> some View {
+            if isAccessibility {
+                content
+                    .frame(minHeight: isCompact ? 110 : 130)
+                    .padding(.vertical, 8)
+            } else {
+                content
+                    .aspectRatio(isCompact ? 1.25 : 1.0, contentMode: .fit)
             }
         }
     }

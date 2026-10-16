@@ -13,6 +13,7 @@ public struct VoiceSettings: Codable, Equatable {
     public var appTheme: String
     public var showSafetyCards: Bool
     public var cardLayout: String
+    public var respectSilentSwitchForChime: Bool
     
     public static let roleUnset = "unset"
     public static let roleCaregiver = "caregiver"
@@ -40,7 +41,8 @@ public struct VoiceSettings: Codable, Equatable {
         userRole: String = "unset",
         appTheme: String = VoiceSettings.themeCharcoal,
         showSafetyCards: Bool = true,
-        cardLayout: String = VoiceSettings.cardLayoutSquare
+        cardLayout: String = VoiceSettings.cardLayoutSquare,
+        respectSilentSwitchForChime: Bool = false
     ) {
         self.speechRate = speechRate
         self.speechPitch = speechPitch
@@ -54,6 +56,7 @@ public struct VoiceSettings: Codable, Equatable {
         self.appTheme = appTheme
         self.showSafetyCards = showSafetyCards
         self.cardLayout = cardLayout
+        self.respectSilentSwitchForChime = respectSilentSwitchForChime
     }
     
     public init(
@@ -77,12 +80,13 @@ public struct VoiceSettings: Codable, Equatable {
             userRole: "unset",
             appTheme: VoiceSettings.themeCharcoal,
             showSafetyCards: true,
-            cardLayout: VoiceSettings.cardLayoutSquare
+            cardLayout: VoiceSettings.cardLayoutSquare,
+            respectSilentSwitchForChime: false
         )
     }
     
     enum CodingKeys: String, CodingKey {
-        case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage, shareUsabilityMetrics, userRole, appTheme, showSafetyCards, cardLayout
+        case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage, shareUsabilityMetrics, userRole, appTheme, showSafetyCards, cardLayout, respectSilentSwitchForChime
     }
     
     public init(from decoder: Decoder) throws {
@@ -99,5 +103,6 @@ public struct VoiceSettings: Codable, Equatable {
         self.appTheme = try container.decodeIfPresent(String.self, forKey: .appTheme) ?? VoiceSettings.themeCharcoal
         self.showSafetyCards = try container.decodeIfPresent(Bool.self, forKey: .showSafetyCards) ?? true
         self.cardLayout = try container.decodeIfPresent(String.self, forKey: .cardLayout) ?? VoiceSettings.cardLayoutSquare
+        self.respectSilentSwitchForChime = try container.decodeIfPresent(Bool.self, forKey: .respectSilentSwitchForChime) ?? false
     }
 }

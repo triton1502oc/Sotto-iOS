@@ -8,6 +8,7 @@ public struct QRScannerModal: View {
     @State private var manualInput: String = ""
     @State private var hasCameraPermission: Bool = true
     @State private var cameraUnavailable: Bool = false
+    @State private var detectedClipboardDeck: String? = nil
     
     public init(
         onScan: @escaping (String) -> Void,
@@ -24,6 +25,30 @@ public struct QRScannerModal: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 20) {
+                    if let clipDeck = detectedClipboardDeck {
+                        Button(action: {
+                            onScan(clipDeck)
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "doc.on.clipboard.fill")
+                                    .foregroundColor(SottoTheme.successText)
+                                Text("Import Deck from Clipboard")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(SottoTheme.successText)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(SottoTheme.successText)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(SottoTheme.successContainer)
+                            .cornerRadius(12)
+                            .padding(.horizontal, 20)
+                            .padding(.top, 12)
+                        }
+                    }
+                    
                     if cameraUnavailable || !hasCameraPermission {
                         // Fallback: Manual / Paste Input
                         VStack(spacing: 16) {
@@ -149,6 +174,10 @@ public struct QRScannerModal: View {
         .navigationViewStyle(.stack)
         .onAppear {
             checkCameraAvailability()
+            if let clip = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),
+               clip.hasPrefix("SOTTO:v1:") {
+                detectedClipboardDeck = clip
+            }
         }
     }
     

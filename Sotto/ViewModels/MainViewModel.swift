@@ -413,24 +413,12 @@ public final class MainViewModel: ObservableObject {
                 )
             }
         } else {
-            // Single-language mode
-            if let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines),
-               !spoken.isEmpty && spoken != LocaleHelper.langAuto {
-                let spokenLang = (phrase.spokenLanguage?.isEmpty == false && phrase.spokenLanguage != LocaleHelper.langAuto)
-                    ? phrase.spokenLanguage!
-                    : phrase.language
-                speechService.speak(
-                    text: spoken,
-                    language: spokenLang,
-                    settings: voiceSettings
-                )
-            } else {
-                speechService.speak(
-                    text: phrase.text,
-                    language: phrase.language,
-                    settings: voiceSettings
-                )
-            }
+            // Single-language mode: always speak primary card text with card language (1:1 Android parity)
+            speechService.speak(
+                text: phrase.text,
+                language: phrase.language,
+                settings: voiceSettings
+            )
         }
     }
     

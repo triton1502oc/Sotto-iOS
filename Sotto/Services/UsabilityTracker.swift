@@ -322,14 +322,12 @@ public final class UsabilityTracker {
             } else {
                 safeArea = "none"
             }
-            let safePart = bodyPart ?? "none"
-            let safeIntensity = intensity?.description ?? "none"
 
             let event = UsabilityEvent(
                 intent: "WhyFinder",
                 durationMs: Int(durationMs),
                 outcome: outcome,
-                contextTag: "area_\(safeArea)_d\(depth)_ns\(notSureCount)_bp_\(safePart)_int_\(safeIntensity)"
+                contextTag: "area_\(safeArea)_depth_\(depth)_ns_\(notSureCount)_outcome_\(outcome)"
             )
             self.appendAndSync(event, voiceSettings: settings)
         }
@@ -447,16 +445,34 @@ public final class UsabilityTracker {
 
     public func generatePreviewPayload(installId: String, role: String, uiLang: String, voiceSettings: VoiceSettings? = nil) -> String {
         let events = getPendingEvents(voiceSettings: voiceSettings)
+        let previewEvents: [UsabilityEvent] = !events.isEmpty ? events : [
+            UsabilityEvent(
+                intent: "SpeakCard",
+                durationMs: 120,
+                outcome: "completed",
+                frictionTag: "none",
+                contextTag: "cat_needs"
+            ),
+            UsabilityEvent(
+                intent: "WhyFinder",
+                durationMs: 15000,
+                outcome: "found",
+                frictionTag: "none",
+                contextTag: "area_senses_depth_2_ns_0_outcome_found"
+            )
+        ]
+        let effectiveInstallId = (!installId.isEmpty && installId != "not_assigned") ? installId : "[Sample UUID generated on opt-in]"
         let payload: [String: Any] = [
             "schema": 3,
-            "installId": installId,
+            "installId": effectiveInstallId,
             "role": role,
             "uiLang": uiLang,
             "appVersion": Self.currentAppVersion,
             "platform": "iOS",
             "sessionId": sessionId,
             "eventsCount": events.count,
-            "events": events.map { $0.toJsonArray() }
+            "isSamplePreview": events.isEmpty,
+            "events": previewEvents.map { $0.toJsonArray() }
         ]
         guard let data = try? JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys]),
               let str = String(data: data, encoding: .utf8) else {

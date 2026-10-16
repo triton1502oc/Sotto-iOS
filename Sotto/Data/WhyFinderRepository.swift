@@ -245,7 +245,11 @@ public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol 
     
     public func addLog(_ entry: WhyLogEntry) {
         var current = getLogs()
-        current.insert(entry, at: 0)
+        if let existingIndex = current.firstIndex(where: { $0.id == entry.id }) {
+            current[existingIndex] = entry
+        } else {
+            current.insert(entry, at: 0)
+        }
         if current.count > Self.maxLogEntries {
             current = Array(current.prefix(Self.maxLogEntries))
         }

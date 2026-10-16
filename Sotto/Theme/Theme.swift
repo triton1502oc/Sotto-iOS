@@ -61,6 +61,8 @@ public enum SottoTheme {
     public static let destructiveRed = Color(hex: 0xEF5350)
     public static let crisisStopContainer = Color(hex: 0x7F1D1D)
     public static let crisisStopText = Color(hex: 0xFFEBEE)
+    public static let crisisNoContainer = Color(hex: 0x5A3030)
+    public static let crisisNoText = Color(hex: 0xFBEBE8)
     public static let recordingPulseRed = Color(hex: 0xC62828)
     public static let recordingDotRed = Color(hex: 0xE53935)
     

@@ -25,6 +25,7 @@ public struct VoiceSettingsModal: View {
     @State private var appTheme: String
     @State private var showSafetyCards: Bool
     @State private var cardLayout: String
+    @State private var respectSilentSwitchForChime: Bool
     @State private var showSharedDataSheet: Bool = false
     @State private var showWhyTreeEditorSheet: Bool = false
     @State private var showWhyLogSheet: Bool = false
@@ -64,6 +65,7 @@ public struct VoiceSettingsModal: View {
         _appTheme = State(initialValue: settings.wrappedValue.appTheme)
         _showSafetyCards = State(initialValue: settings.wrappedValue.showSafetyCards)
         _cardLayout = State(initialValue: settings.wrappedValue.cardLayout)
+        _respectSilentSwitchForChime = State(initialValue: settings.wrappedValue.respectSilentSwitchForChime)
     }
     
     private var speedLabel: String {
@@ -472,21 +474,42 @@ public struct VoiceSettingsModal: View {
                     attentionChime = newValue
                     applyChanges()
                     if newValue {
-                        ChimePlayer.shared.play()
+                        ChimePlayer.shared.play(respectSilentSwitch: respectSilentSwitchForChime)
                     }
                 }
             )) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Attention chime before speaking")
+                    Text(isIndonesian ? "Bunyikan nada perhatian sebelum bicara" : "Attention chime before speaking")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(currentThemePalette.textPrimary)
-                    Text("Plays a brief chime to alert listeners before speaking")
+                    Text(isIndonesian ? "Membunyikan nada singkat untuk menarik perhatian pendengar sebelum bicara" : "Plays a brief chime to alert listeners before speaking")
                         .font(.system(size: 13))
                         .foregroundColor(currentThemePalette.textSecondary)
                 }
             }
             .tint(currentThemePalette.accent)
             .demoTarget("voice_chimeToggle")
+            
+            if attentionChime {
+                Toggle(isOn: Binding(
+                    get: { respectSilentSwitchForChime },
+                    set: { newValue in
+                        respectSilentSwitchForChime = newValue
+                        applyChanges()
+                    }
+                )) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(isIndonesian ? "Patuhi tombol hening" : "Respect silent switch")
+                            .font(.system(size: 14))
+                            .foregroundColor(currentThemePalette.textPrimary)
+                        Text(isIndonesian ? "Nada dibungkam saat perangkat dalam mode hening atau Jangan Ganggu" : "Mutes the chime when device is set to silent or Do Not Disturb")
+                            .font(.system(size: 12))
+                            .foregroundColor(currentThemePalette.textSecondary.opacity(0.8))
+                    }
+                }
+                .padding(.leading, 16)
+                .tint(currentThemePalette.accent)
+            }
             
             // Dual-Language Speech Toggle
             Toggle(isOn: Binding(
@@ -561,7 +584,8 @@ public struct VoiceSettingsModal: View {
                     userRole: userRole,
                     appTheme: appTheme,
                     showSafetyCards: showSafetyCards,
-                    cardLayout: cardLayout
+                    cardLayout: cardLayout,
+                    respectSilentSwitchForChime: respectSilentSwitchForChime
                 )
                 onTestVoice(current)
             }) {
@@ -818,10 +842,10 @@ public struct VoiceSettingsModal: View {
             
             Toggle(isOn: $shareUsabilityMetrics) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Help improve Sotto")
+                    Text(isIndonesian ? "Bantu menyempurnakan Sotto" : "Help improve Sotto")
                         .font(.system(size: 15))
                         .foregroundColor(currentThemePalette.textPrimary)
-                    Text("Shares anonymous interaction timings to identify usability difficulties. Strictly zero text, phrases, or speech is shared.")
+                    Text(isIndonesian ? "Bagikan waktu interaksi anonim untuk perbaikan aplikasi. Tidak pernah mengumpulkan teks, suara, atau informasi kesehatan/tubuh." : "Shares anonymous interaction timings to identify usability difficulties. Never collects text, speech, or health/body information.")
                         .font(.system(size: 12))
                         .foregroundColor(currentThemePalette.textSecondary.opacity(0.7))
                 }
@@ -831,17 +855,29 @@ public struct VoiceSettingsModal: View {
                 applyChanges()
             }
             
+            Button(action: {
+                showSharedDataSheet = true
+            }) {
+                HStack(spacing: 6) {
+                    SottoIconView(.search, size: 12, tint: currentThemePalette.accent)
+                    Text(isIndonesian ? "Lihat contoh data yang dibagikan" : "View sample shared data")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(currentThemePalette.accent)
+            }
+            .padding(.top, 2)
+            
             if shareUsabilityMetrics {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("User role")
+                    Text(isIndonesian ? "Peran pengguna" : "User role")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(currentThemePalette.textSecondary)
                     
                     HStack(spacing: 8) {
                         let roles = [
-                            (key: VoiceSettings.roleCaregiver, label: "Caregiver"),
-                            (key: VoiceSettings.roleSelf, label: "Self"),
-                            (key: VoiceSettings.roleProfessional, label: "Professional")
+                            (key: VoiceSettings.roleCaregiver, label: isIndonesian ? "Pendamping" : "Caregiver"),
+                            (key: VoiceSettings.roleSelf, label: isIndonesian ? "Diri Sendiri" : "Self"),
+                            (key: VoiceSettings.roleProfessional, label: isIndonesian ? "Profesional" : "Professional")
                         ]
                         ForEach(roles, id: \.key) { r in
                             let isSelected = userRole == r.key
@@ -860,18 +896,6 @@ public struct VoiceSettingsModal: View {
                             }
                         }
                     }
-                    
-                    Button(action: {
-                        showSharedDataSheet = true
-                    }) {
-                        HStack(spacing: 6) {
-                            SottoIconView(.search, size: 12, tint: currentThemePalette.accent)
-                            Text("View Shared Data Preview")
-                                .font(.system(size: 12, weight: .medium))
-                        }
-                        .foregroundColor(currentThemePalette.accent)
-                    }
-                    .padding(.top, 4)
                 }
                 .padding(.top, 4)
             }
@@ -912,7 +936,8 @@ public struct VoiceSettingsModal: View {
             userRole: userRole,
             appTheme: appTheme,
             showSafetyCards: showSafetyCards,
-            cardLayout: cardLayout
+            cardLayout: cardLayout,
+            respectSilentSwitchForChime: respectSilentSwitchForChime
         )
         settings = updated
     }

@@ -14,6 +14,8 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
     
     @Published public private(set) var isSpeaking = false
     @Published public private(set) var isReady = true
+    public private(set) var lastSpokenText: String?
+    public private(set) var lastSpokenLocale: Locale?
     
     private override init() {
         super.init()
@@ -34,6 +36,9 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
             appLanguage: settings.appLanguage
         )
         
+        self.lastSpokenText = text
+        self.lastSpokenLocale = targetLocale
+        
         let performSpeak = { [weak self] in
             guard let self = self else { return }
             
@@ -46,7 +51,8 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
                 // Ignore audio session errors
             }
             
-            let speechText = LocaleHelper.formatDigitsForSpeech(text)
+            let cleaned = LocaleHelper.cleanPlaceholdersForSpeech(text)
+            let speechText = LocaleHelper.formatDigitsForSpeech(cleaned, language: targetLocale.languageCode)
             let utterance = AVSpeechUtterance(string: speechText)
             
             // Rate mapping: Android 1.0 -> iOS AVSpeechUtteranceDefaultSpeechRate (0.5)
@@ -70,7 +76,7 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
         }
         
         if settings.playAttentionChime {
-            ChimePlayer.shared.play()
+            ChimePlayer.shared.play(respectSilentSwitch: settings.respectSilentSwitchForChime)
             // 280ms delay matches Android attention chime spacing
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
                 performSpeak()

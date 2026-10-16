@@ -119,11 +119,51 @@ When completing the **App Privacy** section in App Store Connect:
 
 ---
 
-## 4. App Review Notes
+## 4. App Review Notes (Guideline 2.1 Response & App Review Information)
 
-When submitting for App Review, provide this note for the reviewer:
+When submitting for App Review or responding to Guideline 2.1 inquiries, provide this information in the **Notes** field and **Resolution Center**:
+
 ```text
-Sotto is assistive communication AAC for autistic teens/adults and families. Text-to-speech cards and direct Yes/No buttons for situational communication. NOT a medical device, no diagnosis/treatment. No accounts, no data core. Optional opt-in anonymous timing only (zero text/speech). GPL-3.0 with App Store exception in LICENSE. Safety card contact is user-entered.
+Guideline 2.1 - App Information & Completeness:
+
+1. App Functionality & Screen Recording:
+A screen recording captured on a physical iPad running the latest iPadOS is provided/attached demonstrating the complete launch and typical user flow (Sotto is a Universal app supporting both iPad and iPhone):
+- Launch from Home Screen directly into AAC Speech Board.
+- Tapping phrase cards and QuickSpeak text bar with native AVSpeechSynthesizer text-to-speech.
+- Opening Two-Way Caregiver Partner Mode with 180° tabletop rotation dock (Yes, No, Not sure, Stop).
+- Navigating the Why Finder guided root-cause crisis tree and local Why Log.
+- Accessing the Bystander Safety Card (emergency communication).
+- Accessing Settings (sensory themes and voice options).
+Note on specific flows:
+- Accounts / Login / Account Deletion: Not applicable. Sotto requires no accounts, registration, or logins. All user data is stored strictly on-device.
+- User-Generated Content (UGC) & Reporting: Not applicable. Sotto is a single-user assistive speech tool with no public feeds, multi-user interaction, or social sharing. Custom phrase cards are stored strictly locally for personal use.
+- Paid Content: Not applicable. Sotto is 100% free with zero in-app purchases, subscriptions, or paywalls.
+
+2. Purpose & Target Audience:
+Sotto is an assistive augmentative and alternative communication (AAC) application designed for autistic teens and adults, situational non-speaking individuals, and family caregivers navigating acute sensory meltdowns or verbal shutdowns. Traditional AAC tools rely on multi-tier pediatric menus that cause cognitive overload during crisis. Sotto provides a dignified, low-stimulus speech board for daily communication and a 2-way binary response HUD (Yes/No/Wait) so caregivers can de-escalate crises without verbal pressure.
+
+3. Setup & Access Instructions:
+No setup, onboarding, login credentials, or sample files are required. The app opens immediately in a ready-to-use functional state:
+- Tap any card to speak via iOS native text-to-speech.
+- Tap '🤝' in top bar to open Two-Way Partner Mode with 180° rotation dock.
+- Tap 'Why Finder' tab inside Partner Mode for guided root-cause triage.
+- Tap '🛡️' in top bar for the Emergency Bystander Card.
+- Tap '⚙️' for sensory themes and speech settings.
+
+4. External Services & Platforms:
+Zero external services, third-party APIs, cloud backends, payment processors, or AI services are used. Sotto operates 100% offline using only native Apple frameworks:
+- AVFoundation (AVSpeechSynthesizer) for on-device Text-to-Speech.
+- Speech framework for optional on-device speech-to-text dictation.
+- CoreHaptics / UIKit for tactile sensory feedback.
+- CoreImage for offline QR code deck sharing.
+- UserDefaults for local on-device phrase storage.
+
+5. Regional Differences:
+Sotto functions consistently and identically across all regions worldwide. The app includes built-in English and Indonesian localizations and supports all iOS system voices with zero regional or geofenced variations.
+
+6. Regulated Industry & Third-Party Materials:
+- Assistive Tool (Not a Medical Device): Sotto does not operate in a regulated healthcare or financial industry. It is an assistive communication utility and does not provide medical diagnosis, treatment, or clinical monitoring.
+- No Protected Third-Party Material: The app contains no copyrighted third-party material or proprietary assets. Icons use Apple SF Symbols, and source code is original (GPL-3.0 with App Store exception).
 ```
 
 ---

@@ -94,6 +94,8 @@ public struct QuickSpeakBarView: View {
                             .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Clear text")
+                    .keyboardShortcut(.cancelAction)
+                    .hoverEffect(.highlight)
                     
                     if let onSaveAsCard = onSaveAsCard {
                         Button(action: {
@@ -145,6 +147,8 @@ public struct QuickSpeakBarView: View {
                 .contentShape(Circle())
             }
             .disabled(!isNotEmpty)
+            .keyboardShortcut(.return, modifiers: [.command])
+            .hoverEffect(.highlight)
             .accessibilityLabel("Speak aloud")
             .accessibilityHint("Speaks the entered text using text to speech")
             .demoTarget("quickSpeak_speakButton")

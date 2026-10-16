@@ -22,6 +22,7 @@ public struct MainView: View {
     @State private var showShareSheet: Bool = false
     @State private var activeQRShareItem: QRShareItem? = nil
     @State private var showQRScanner: Bool = false
+    @Namespace private var accessibilityNamespace
     
     public init(viewModel: MainViewModel = MainViewModel()) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -29,6 +30,10 @@ public struct MainView: View {
     
     private var currentPalette: SottoPalette {
         SottoPalettes.palette(for: viewModel.voiceSettings.appTheme)
+    }
+    
+    private var isIndonesian: Bool {
+        viewModel.voiceSettings.appLanguage == "id"
     }
     
     public var body: some View {
@@ -146,6 +151,11 @@ public struct MainView: View {
                             : targetLang
                         viewModel.speakText(spoken, language: spokenLang)
                     }
+                },
+                onOpenPartnerMode: {
+                    UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
+                    viewModel.activeFullscreenPhrase = nil
+                    viewModel.showTwoWayDialog = true
                 },
                 onDismiss: {
                     viewModel.activeFullscreenPhrase = nil
@@ -280,13 +290,13 @@ public struct MainView: View {
             if let backupData = viewModel.backupDataToImport {
                 ImportBackupModal(
                     backupData: backupData,
-                    onMerge: {
-                        _ = viewModel.importBackup(backupData: backupData, replace: false)
+                    onMerge: { selectedData in
+                        _ = viewModel.importBackup(backupData: selectedData, replace: false)
                         viewModel.backupDataToImport = nil
                         viewModel.showImportBackupDialog = false
                     },
-                    onReplace: {
-                        _ = viewModel.importBackup(backupData: backupData, replace: true)
+                    onReplace: { selectedData in
+                        _ = viewModel.importBackup(backupData: selectedData, replace: true)
                         viewModel.backupDataToImport = nil
                         viewModel.showImportBackupDialog = false
                     },
@@ -433,6 +443,7 @@ public struct MainView: View {
         EmergencyLaunchManager.shared.pendingAction = nil
         switch action {
         case .partner:
+            UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
             viewModel.showTwoWayDialog = true
             UsabilityTracker.shared.recordEmergencyShortcutLaunched(target: "partner_mode", voiceSettings: viewModel.voiceSettings)
         case .safetyCard:
@@ -559,23 +570,30 @@ public struct MainView: View {
                 .padding(.trailing, 4)
             }
             
-            // Partner Mode
+            // Partner Mode (Hero entry pill matching Android commit 5c877ff / #69)
             Button(action: {
+                UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
                 viewModel.showTwoWayDialog = true
             }) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(currentPalette.surfaceVariant)
-                        .frame(width: 44, height: 44)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
-                        )
-                    SottoIconView(.partnerMode, size: 20, tint: currentPalette.accent)
+                HStack(spacing: 6) {
+                    SottoIconView(.partnerMode, size: 18, tint: currentPalette.accent)
+                    Text(isIndonesian ? "Mitra" : "Partner")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(currentPalette.accent)
                 }
+                .padding(.horizontal, 10)
+                .frame(height: 44)
+                .background(currentPalette.surfaceVariant)
+                .cornerRadius(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(currentPalette.outlineVariant, lineWidth: 1)
+                )
                 .contentShape(Rectangle())
             }
-            .accessibilityLabel("Open Partner mode for communication partner")
+            .hoverEffect(.highlight)
+            .accessibilityLabel(isIndonesian ? "Buka Mode Mitra untuk berkomunikasi langsung" : "Open Partner mode for communication partner")
+            .accessibilityAddTraits(.isButton)
             .demoTarget("topBar_listenModeButton")
             
             // Settings Gear Icon (Always accessible)
@@ -827,8 +845,22 @@ public struct MainView: View {
     
     // MARK: - Phrases Grid Content
     
+    private func calculateColumnCount(width: CGFloat) -> Int {
+        if width >= 1200 {
+            return 6
+        } else if width >= 950 {
+            return 5
+        } else if width >= 650 {
+            return 4
+        } else if width >= 380 {
+            return 3
+        } else {
+            return 2
+        }
+    }
+    
     private func phrasesContent(width: CGFloat) -> some View {
-        let columnsCount = width >= 900 ? 4 : (width >= 600 ? 3 : 2)
+        let columnsCount = calculateColumnCount(width: width)
         let items = viewModel.filteredPhrases
         let chunkedRows = chunkPhrases(items, columnsCount: columnsCount)
         
@@ -871,6 +903,16 @@ public struct MainView: View {
             .padding(.horizontal, 16)
             .padding(.top, 8)
             .padding(.bottom, 24)
+        }
+        .accessibilityRotor("Categories") {
+            ForEach(viewModel.categories, id: \.self) { cat in
+                AccessibilityRotorEntry(Text(cat), id: cat, in: accessibilityNamespace)
+            }
+        }
+        .accessibilityRotor("Safety Cards") {
+            ForEach(viewModel.phrases.filter { $0.isEmergency }, id: \.id) { phrase in
+                AccessibilityRotorEntry(Text(phrase.text), id: phrase.id, in: accessibilityNamespace)
+            }
         }
     }
     

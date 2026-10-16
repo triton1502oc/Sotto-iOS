@@ -1278,7 +1278,160 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(importedLog.intensity, 4)
         XCTAssertEqual(importedLog.note, "Calmed down with ear defenders")
     }
+    
+    // MARK: - Audit & Parity Ticket Tests
+    
+    func testBackupDeduplicationCaseInsensitive() {
+        let existing = [
+            Phrase(text: "I Need Water", category: .needs)
+        ]
+        let backup = BackupData(
+            version: 2,
+            exportedAt: 100,
+            categories: ["Needs", "General"],
+            phrases: [
+                Phrase(text: "i need water", category: .needs),
+                Phrase(text: "New unique phrase", category: .general)
+            ],
+            whyTree: nil,
+            whyLog: nil
+        )
+        
+        let result = PhraseBackupHelper.mergeData(
+            currentPhrases: existing,
+            currentCategories: ["Needs", "General"],
+            backup: backup
+        )
+        
+        // "i need water" should be deduplicated (case-insensitively), only "New unique phrase" added
+        XCTAssertEqual(result.0.count, 2)
+        XCTAssertEqual(result.0[0].text, "I Need Water")
+        XCTAssertEqual(result.0[1].text, "New unique phrase")
+    }
+    
+    func testWhyFinderSessionRestartGeneratesFreshUUID() {
+        let tree = UserDefaultsWhyFinderRepository.defaultTree(forLanguage: "en")
+        let session = WhyFinderSession(tree: tree)
+        
+        let firstSessionId = session.sessionId
+        let firstStartedAt = session.startedAt
+        
+        // Ensure some time passes or restart creates a different ID
+        session.restart()
+        
+        let secondSessionId = session.sessionId
+        let secondStartedAt = session.startedAt
+        
+        XCTAssertNotEqual(firstSessionId, secondSessionId, "Restarting Why Finder session must generate a fresh UUID")
+        XCTAssertGreaterThanOrEqual(secondStartedAt, firstStartedAt)
+    }
+    
+    func testWhyFinderRepositoryAddLogUpsert() {
+        let suite = "test_wf_upsert_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let repo = UserDefaultsWhyFinderRepository(userDefaults: defaults)
+        
+        let logId = "shared-session-uuid"
+        let entry1 = WhyLogEntry(
+            id: logId,
+            startedAt: 1000,
+            endedAt: 2000,
+            outcome: .found,
+            areaId: "sensory",
+            causeText: "Initial reason",
+            bodyPart: nil,
+            intensity: nil,
+            note: nil,
+            steps: []
+        )
+        repo.addLog(entry1)
+        XCTAssertEqual(repo.getLogs().count, 1)
+        XCTAssertEqual(repo.getLogs().first?.causeText, "Initial reason")
+        
+        // Update same log ID
+        let entry2 = WhyLogEntry(
+            id: logId,
+            startedAt: 1000,
+            endedAt: 2500,
+            outcome: .found,
+            areaId: "sensory",
+            causeText: "Updated reason",
+            bodyPart: nil,
+            intensity: nil,
+            note: "Added caregiver note",
+            steps: []
+        )
+        repo.addLog(entry2)
+        
+        // Count must remain 1 (upsert based on id)
+        let logs = repo.getLogs()
+        XCTAssertEqual(logs.count, 1)
+        XCTAssertEqual(logs.first?.causeText, "Updated reason")
+        XCTAssertEqual(logs.first?.note, "Added caregiver note")
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
+    
+    func testIndonesianDigitFormattingAndPlaceholderSanitization() {
+        // Digits to Indonesian words
+        let phone = "0812-3456-7890"
+        let spokenPhone = LocaleHelper.formatIndonesianDigits(phone)
+        XCTAssertTrue(spokenPhone.contains("nol delapan satu dua"))
+        XCTAssertTrue(spokenPhone.contains("tiga empat lima enam"))
+        XCTAssertTrue(spokenPhone.contains("tujuh delapan sembilan nol"))
+        
+        // Bracket placeholder removal
+        let template = "Saya tinggal di [Nama Komplek / Area] dan butuh bantuan."
+        let cleaned = LocaleHelper.cleanPlaceholdersForSpeech(template)
+        XCTAssertFalse(cleaned.contains("["))
+        XCTAssertFalse(cleaned.contains("]"))
+        XCTAssertFalse(cleaned.contains("Nama Komplek"))
+        XCTAssertEqual(cleaned, "Saya tinggal di  dan butuh bantuan.")
+    }
+    
+    func testTelemetryContextPurgesHealthMetrics() {
+        // Context string format: area_{safeArea}_depth_{depth}_ns_{notSureCount}_outcome_{outcome}
+        // Must NEVER contain bp_ or int_
+        let contextTag = "area_physical_depth_3_ns_1_outcome_found"
+        XCTAssertFalse(contextTag.contains("bp_"))
+        XCTAssertFalse(contextTag.contains("int_"))
+        XCTAssertFalse(contextTag.contains("head"))
+        XCTAssertFalse(contextTag.contains("stomach"))
+    }
+    
+    func testSingleLanguageModeAlwaysSpeaksPrimaryCardText() {
+        let phrase = Phrase(
+            text: "I need help",
+            spokenText: "Saya butuh bantuan",
+            spokenLanguage: "id",
+            language: "en",
+            category: .needs
+        )
+        
+        let settings = VoiceSettings(
+            appLanguage: "en",
+            showLanguageSwitcher: false,
+            secondaryLanguage: "id"
+        )
+        
+        let phraseRepo = UserDefaultsPhraseRepository(userDefaults: UserDefaults(suiteName: "test_sl_\(UUID().uuidString)")!)
+        let voiceRepo = UserDefaultsVoiceSettingsRepository(userDefaults: UserDefaults(suiteName: "test_sl_v_\(UUID().uuidString)")!)
+        voiceRepo.saveVoiceSettings(settings)
+        
+        let viewModel = MainViewModel(
+            phraseRepository: phraseRepo,
+            voiceSettingsRepository: voiceRepo,
+            speechService: SpeechService.shared
+        )
+        
+        viewModel.speak(phrase: phrase)
+        
+        XCTAssertEqual(SpeechService.shared.lastSpokenText, "I need help", "When showLanguageSwitcher is false, tapping the card must speak phrase.text, never spokenText")
+        XCTAssertEqual(SpeechService.shared.lastSpokenLocale?.language.languageCode?.identifier, "en")
+    }
 }
+
+
 
 
 

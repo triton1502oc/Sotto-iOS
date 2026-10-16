@@ -290,7 +290,97 @@ public enum LocaleHelper {
         }
     }
     
-    public static func formatDigitsForSpeech(_ text: String) -> String {
+    public static func hasUnresolvedPlaceholders(_ text: String) -> Bool {
+        text.contains("[") && text.contains("]")
+    }
+
+    public static func cleanPlaceholdersForSpeech(_ text: String) -> String {
+        guard hasUnresolvedPlaceholders(text) else { return text }
+        let pattern = "\\[.*?\\]"
+        var cleaned = text.replacingOccurrences(of: pattern, with: "", options: .regularExpression)
+        cleaned = cleaned.replacingOccurrences(of: ":", with: "")
+        cleaned = cleaned.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    public static func formatIndonesianDigits(_ matchedStr: String) -> String {
+        let digitWords: [Character: String] = [
+            "0": "nol",
+            "1": "satu",
+            "2": "dua",
+            "3": "tiga",
+            "4": "empat",
+            "5": "lima",
+            "6": "enam",
+            "7": "tujuh",
+            "8": "delapan",
+            "9": "sembilan"
+        ]
+        let trimmed = matchedStr.trimmingCharacters(in: .whitespacesAndNewlines)
+        let startsWithPlus = trimmed.hasPrefix("+")
+        let clean = startsWithPlus ? String(trimmed.dropFirst()).trimmingCharacters(in: .whitespacesAndNewlines) : trimmed
+        
+        var sb = ""
+        if startsWithPlus {
+            sb.append("plus ")
+        }
+        
+        let digitsOnly = clean.filter { $0.isNumber }
+        let is62CountryCode = clean.hasPrefix("62") && digitsOnly.count > 8
+        var chars = Array(clean)
+        var i = 0
+        if is62CountryCode {
+            sb.append("enam dua, ")
+            var digitsSkipped = 0
+            while i < chars.count && digitsSkipped < 2 {
+                if chars[i].isNumber {
+                    digitsSkipped += 1
+                }
+                i += 1
+            }
+            while i < chars.count && (chars[i] == " " || chars[i] == "-" || chars[i] == "/" || chars[i] == ".") {
+                i += 1
+            }
+        }
+        
+        var groupCount = 0
+        while i < chars.count {
+            let char = chars[i]
+            if char.isNumber {
+                let word = digitWords[char] ?? String(char)
+                sb.append("\(word) ")
+                groupCount += 1
+                if groupCount == 4 {
+                    sb.append(", ")
+                    groupCount = 0
+                }
+            } else if char == "-" || char == "/" || char == " " || char == "." || char == "," || char == "(" || char == ")" {
+                if groupCount > 0 {
+                    sb.append(", ")
+                    groupCount = 0
+                }
+            }
+            i += 1
+        }
+        
+        var result = sb.replacingOccurrences(of: "\\s*,\\s*", with: ", ", options: .regularExpression)
+        result = result.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+        result = result.trimmingCharacters(in: .whitespacesAndNewlines)
+        if result.hasSuffix(",") {
+            result.removeLast()
+        }
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    public static func formatDigitsForSpeech(_ text: String, language: String? = nil) -> String {
+        let isIndonesian: Bool
+        if let lang = language {
+            isIndonesian = lang.lowercased().hasPrefix("id") || lang.lowercased().hasPrefix("in")
+        } else {
+            let detected = detectLocale(phrase: text, appLanguage: "system").identifier
+            isIndonesian = detected.lowercased().hasPrefix("id") || detected.lowercased().hasPrefix("in")
+        }
+        
         // Matches sequences of digits (phone numbers) with optional international prefix, dashes, parens, spaces
         let pattern = "(\\+?[0-9][0-9\\s\\-\\(\\)]{3,}[0-9])"
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
@@ -304,16 +394,21 @@ public enum LocaleHelper {
             let digitCount = matchedStr.filter { $0.isNumber }.count
             // Format only if there are at least 5 digits (phone numbers, card numbers)
             if digitCount >= 5 {
-                var formatted = ""
-                for char in matchedStr {
-                    if char.isNumber {
-                        formatted.append("\(char) ")
-                    } else if char == "-" || char == "/" || char == "," {
-                        formatted.append("- ")
+                let formatted: String
+                if isIndonesian {
+                    formatted = formatIndonesianDigits(matchedStr)
+                } else {
+                    var str = ""
+                    for char in matchedStr {
+                        if char.isNumber {
+                            str.append("\(char) ")
+                        } else if char == "-" || char == "/" || char == "," {
+                            str.append("- ")
+                        }
                     }
+                    str = str.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
+                    formatted = str.trimmingCharacters(in: .whitespacesAndNewlines)
                 }
-                formatted = formatted.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                formatted = formatted.trimmingCharacters(in: .whitespacesAndNewlines)
                 if let range = Range(match.range, in: result) {
                     result.replaceSubrange(range, with: formatted)
                 }

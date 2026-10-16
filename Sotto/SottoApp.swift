@@ -12,6 +12,7 @@ public final class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct SottoApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @AppStorage("sotto_app_theme") private var appTheme: String = VoiceSettings.themeCharcoal
     
     init() {
         // Configure default audio session for assistive communication playback
@@ -27,7 +28,7 @@ struct SottoApp: App {
     var body: some Scene {
         WindowGroup {
             MainView()
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(appTheme == VoiceSettings.themeSoftParchment ? .light : .dark)
         }
     }
 }

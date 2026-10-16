@@ -156,15 +156,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 5. **App Review Information**:
    - **Sign-In Required**: Unchecked (No login exists).
    - **Contact Information**: Your name, phone number, and email.
-   - **Notes**:
-     ```text
-     Sotto is an assistive communication (AAC) app for autistic and non-verbal individuals. 
-     - Speech-to-text (Microphone & Speech Recognition) is used solely when the user or communication partner taps the microphone button in the Quick-Speak bar, Partner Mode (Talk tab), or Question Tree Editor to transcribe spoken words into text.
-     - Text-to-speech uses native AVFoundation AVSpeechSynthesizer.
-     - App Intents and Siri Shortcuts (Open Partner Mode, Show Safety Card) provide hands-free and hardware Action Button emergency navigation for users during sensory shutdowns and acute freezes.
-     - No login or account is required. All data is stored locally on the device in UserDefaults.
-     - Optional anonymous interaction telemetry is strictly opt-in, disabled by default, and collects zero personal, phrase, or audio data.
-     ```
+   - **Notes**: Paste the full Guideline 2.1 notes from Section 4 of [APP_STORE_LISTING.md](APP_STORE_LISTING.md) (covering App Functionality & Screen Recording, Purpose & Target Audience, Setup/Access Instructions, External Services, Regional Consistency, and Regulatory/IP Disclaimers).
 6. Click **Save** in the top right.
 7. Click **Add for Review** (or **Submit to App Review**).
 8. Once submitted, status will change to **Waiting for Review**. Apple reviews typically take 24 to 48 hours.

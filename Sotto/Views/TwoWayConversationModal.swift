@@ -39,6 +39,7 @@ public struct TwoWayConversationModal: View {
     @State private var whySessionSaved: Bool = false
     @State private var showPostResolutionPrompt: Bool = false
     @State private var triggerLoggedFeedback: String? = nil
+    @State private var showExitConfirmation: Bool = false
     
     // Why Finder session state
     @StateObject private var whySession: WhyFinderSession
@@ -66,9 +67,17 @@ public struct TwoWayConversationModal: View {
         
         let args = ProcessInfo.processInfo.arguments
         let isId = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
+        
+        let savedTab = UserDefaults.standard.string(forKey: "partner_mode_last_tab")
+        let defaultTab: CaregiverTab = (savedTab == "whyFinder") ? .whyFinder : .freeform
+        var initialTab = defaultTab
         if args.contains("--whyfinder") || args.contains("--screenshot-whyfinder") {
-            _activeTab = State(initialValue: .whyFinder)
+            initialTab = .whyFinder
+        } else if args.contains("--triage") || args.contains("--screenshot-triage") || args.contains("--partner") {
+            initialTab = .freeform
         }
+        _activeTab = State(initialValue: initialTab)
+        
         if args.contains("--partner-flip") {
             _isFlipped = State(initialValue: true)
         }
@@ -179,18 +188,31 @@ public struct TwoWayConversationModal: View {
                 }
             }
         }
-        .onChange(of: activeTab) { _ in
+        .onChange(of: activeTab) { newTab in
             speechRecognizer.stopRecording()
+            UserDefaults.standard.set(newTab == .whyFinder ? "whyFinder" : "freeform", forKey: "partner_mode_last_tab")
         }
         .onChange(of: isFlipped) { _ in
             speechRecognizer.stopRecording()
         }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+        }
         .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
             speechRecognizer.stopRecording()
             AppDelegate.orientationLock = .all
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                 windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
             }
+        }
+        .alert(isIndonesian ? "Keluar Mode Mitra?" : "Exit Partner Mode?", isPresented: $showExitConfirmation) {
+            Button(isIndonesian ? "Lanjutkan" : "Continue", role: .cancel) { }
+            Button(isIndonesian ? "Keluar" : "Exit", role: .destructive) {
+                confirmDismiss()
+            }
+        } message: {
+            Text(isIndonesian ? "Pemeriksaan aktif sedang berlangsung. Ingin keluar? Sesi akan disimpan sebagai berhenti." : "An active check-in is in progress. Do you want to exit? Your session will be saved as stopped.")
         }
     }
     
@@ -229,8 +251,7 @@ public struct TwoWayConversationModal: View {
                         whySessionSaved = false
                     },
                     onFinish: {
-                        speechRecognizer.stopRecording()
-                        onDismiss()
+                        handleDismissRequest()
                     },
                     onReadAloudPrompt: {
                         let text = activeTab == .whyFinder ? whyPromptText : activeFreeformText
@@ -304,6 +325,25 @@ public struct TwoWayConversationModal: View {
                     .padding(.horizontal, 16)
             }
             
+            if isFlipped {
+                CaregiverMirrorHUD(
+                    activeTab: activeTab,
+                    whyState: whySession.currentState,
+                    currentPrompt: activeTab == .whyFinder ? whyPromptText : activeFreeformText,
+                    lastReply: lastReply,
+                    appLanguage: appLanguage,
+                    onRestartWhyTree: {
+                        whySession.restart()
+                        whySessionSaved = false
+                    },
+                    onDone: {
+                        handleDismissRequest()
+                    }
+                )
+                .padding(.horizontal, 16)
+                .transition(.opacity)
+            }
+            
             CaregiverBottomMenu(
                 activeTab: $activeTab,
                 isFlipped: $isFlipped,
@@ -335,12 +375,47 @@ public struct TwoWayConversationModal: View {
                     showKeyboardInput.toggle()
                 },
                 onDismiss: {
-                    speechRecognizer.stopRecording()
-                    onDismiss()
+                    handleDismissRequest()
                 }
             )
         }
         .padding(.top, 8)
+    }
+    
+    private var isSessionActive: Bool {
+        if activeTab == .whyFinder {
+            switch whySession.currentState {
+            case .finished:
+                return false
+            case .askingArea(let index, _):
+                return index > 0 || whySession.canStepBack() || !whySession.steps.isEmpty
+            default:
+                return true
+            }
+        } else {
+            return lastReply != nil || !displayedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+    }
+    
+    private func handleDismissRequest() {
+        if isSessionActive {
+            showExitConfirmation = true
+        } else {
+            confirmDismiss()
+        }
+    }
+    
+    private func confirmDismiss() {
+        speechRecognizer.stopRecording()
+        if activeTab == .whyFinder {
+            if case .finished = whySession.currentState {
+                // already finished and saved
+            } else {
+                whySession.stop()
+                finishAndSaveWhySession()
+            }
+        }
+        onDismiss()
     }
     
     private func handlePartnerResponse(action: String) {
@@ -863,14 +938,14 @@ private struct CaregiverResponseDock: View {
         }
     }
     
-    // Four Card Dock (20pt radius shapes, tonal tactile palettes, haptics)
+    // Unified Tactile Response Dock (20pt radius shapes, tonal tactile palettes, haptics)
     private func fourCardDock(isWhyFinder: Bool) -> some View {
         let strYes = LocaleHelper.getTwoWayResponseLabel(responseKey: "yes", appLanguage: appLanguage)
         let strNo = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
         let strNotSure = LocaleHelper.getTwoWayResponseLabel(responseKey: "not_sure", appLanguage: appLanguage)
         let strStop = LocaleHelper.getTwoWayResponseLabel(responseKey: "stop", appLanguage: appLanguage)
         let strWait = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
-        let strRepeat = LocaleHelper.getTwoWayResponseLabel(responseKey: "repeat", appLanguage: appLanguage)
+        let isId = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
         
         return VStack(spacing: 8) {
             // Row 1: YES & NO (Primary Crisis Buttons >= 80pt frame height with tactile haptics)
@@ -893,6 +968,8 @@ private struct CaregiverResponseDock: View {
                     .shadow(color: Color.black.opacity(0.18), radius: 3, x: 0, y: 2)
                 }
                 .accessibilityLabel(strYes)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isId ? "Ketuk dua kali untuk konfirmasi ya" : "Double tap to confirm yes")
                 
                 Button(action: {
                     let impact = UIImpactFeedbackGenerator(style: .heavy)
@@ -900,96 +977,86 @@ private struct CaregiverResponseDock: View {
                     onNo()
                 }) {
                     HStack(spacing: 8) {
-                        SottoIconView(.close, size: 24, tint: SottoTheme.crisisStopText)
+                        SottoIconView(.close, size: 24, tint: SottoTheme.crisisNoText)
                         Text(strNo)
                             .font(.system(size: 26, weight: .bold))
-                            .foregroundColor(SottoTheme.crisisStopText)
+                            .foregroundColor(SottoTheme.crisisNoText)
                     }
                     .frame(maxWidth: .infinity)
                     .frame(minHeight: 80, maxHeight: 92)
-                    .background(SottoTheme.crisisStopContainer)
+                    .background(SottoTheme.crisisNoContainer)
                     .cornerRadius(20)
                     .shadow(color: Color.black.opacity(0.18), radius: 3, x: 0, y: 2)
                 }
                 .accessibilityLabel(strNo)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isId ? "Ketuk dua kali untuk mengatakan tidak" : "Double tap to say no")
             }
             
-            // Row 2: Secondary choices (54pt height >= 44pt)
-            HStack(spacing: 10) {
-                if isWhyFinder {
-                    Button(action: {
-                        let impact = UIImpactFeedbackGenerator(style: .medium)
-                        impact.impactOccurred()
-                        onNotSure()
-                    }) {
-                        HStack(spacing: 6) {
-                            SottoIconView(.questionmark, size: 18, tint: SottoTheme.warningHighText)
-                            Text(strNotSure)
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(SottoTheme.warningHighText)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(SottoTheme.warningHighContainer)
-                        .cornerRadius(20)
+            // Row 2: Secondary choices (Unified tactile row: Wait, Not Sure, Stop >= 54pt minHeight)
+            HStack(spacing: 8) {
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onWait()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.hourglass, size: 18, tint: SottoTheme.neutralDarkText)
+                        Text(strWait)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(SottoTheme.neutralDarkText)
+                            .lineLimit(1)
                     }
-                    .accessibilityLabel(strNotSure)
-                    
-                    Button(action: {
-                        let impact = UIImpactFeedbackGenerator(style: .medium)
-                        impact.impactOccurred()
-                        onStop()
-                    }) {
-                        HStack(spacing: 6) {
-                            SottoIconView(.stop, size: 18, tint: SottoTheme.neutralStoppedText)
-                            Text(strStop)
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(SottoTheme.neutralStoppedText)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(SottoTheme.neutralStoppedContainer)
-                        .cornerRadius(20)
-                    }
-                    .accessibilityLabel(strStop)
-                } else {
-                    // Freeform / Talk mode: Wait & Repeat
-                    Button(action: {
-                        let impact = UIImpactFeedbackGenerator(style: .medium)
-                        impact.impactOccurred()
-                        onWait()
-                    }) {
-                        HStack(spacing: 6) {
-                            SottoIconView(.hourglass, size: 18, tint: SottoTheme.neutralDarkText)
-                            Text(strWait)
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(SottoTheme.neutralDarkText)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(SottoTheme.neutralDarkContainer)
-                        .cornerRadius(20)
-                    }
-                    .accessibilityLabel(strWait)
-                    
-                    Button(action: {
-                        let impact = UIImpactFeedbackGenerator(style: .medium)
-                        impact.impactOccurred()
-                        onRepeat()
-                    }) {
-                        HStack(spacing: 6) {
-                            SottoIconView(.replay, size: 18, tint: SottoTheme.neutralDarkText)
-                            Text(strRepeat)
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(SottoTheme.neutralDarkText)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(SottoTheme.neutralDarkContainer)
-                        .cornerRadius(20)
-                    }
-                    .accessibilityLabel(strRepeat)
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 54)
+                    .background(SottoTheme.neutralDarkContainer)
+                    .cornerRadius(18)
                 }
+                .accessibilityLabel(strWait)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isId ? "Ketuk dua kali untuk meminta jeda waktu" : "Double tap to request a moment to pause")
+                
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onNotSure()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.questionmark, size: 18, tint: SottoTheme.warningHighText)
+                        Text(strNotSure)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(SottoTheme.warningHighText)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 54)
+                    .background(SottoTheme.warningHighContainer)
+                    .cornerRadius(18)
+                }
+                .accessibilityLabel(strNotSure)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isId ? "Ketuk dua kali jika ragu atau belum yakin" : "Double tap if unsure or not certain")
+                
+                Button(action: {
+                    let impact = UIImpactFeedbackGenerator(style: .medium)
+                    impact.impactOccurred()
+                    onStop()
+                }) {
+                    HStack(spacing: 6) {
+                        SottoIconView(.stop, size: 18, tint: SottoTheme.neutralStoppedText)
+                        Text(strStop)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(SottoTheme.neutralStoppedText)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(minHeight: 54)
+                    .background(SottoTheme.neutralStoppedContainer)
+                    .cornerRadius(18)
+                }
+                .accessibilityLabel(strStop)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityHint(isId ? "Ketuk dua kali untuk menghentikan pemeriksaan" : "Double tap to pause or stop check-in")
             }
         }
     }
@@ -1655,3 +1722,93 @@ private struct CaregiverBottomMenu: View {
         .padding(.bottom, 4)
     }
 }
+
+// MARK: - Upright Caregiver Mirror HUD (Facing Caregiver across table when flipped 180°)
+
+private struct CaregiverMirrorHUD: View {
+    @Environment(\.sottoPalette) private var palette
+    let activeTab: CaregiverTab
+    let whyState: WhyFinderState
+    let currentPrompt: String
+    let lastReply: String?
+    let appLanguage: String
+    let onRestartWhyTree: () -> Void
+    let onDone: () -> Void
+    
+    private var isIndonesian: Bool {
+        LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
+    }
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            if activeTab == .whyFinder, case .finished(let outcome, _, let cause, _, _, _, _, _) = whyState {
+                let outcomeLabel: String = {
+                    switch outcome {
+                    case .found:
+                        let prefix = isIndonesian ? "Penyebab Ditemukan" : "Cause Found"
+                        return cause != nil ? "\(prefix): \(cause!)" : prefix
+                    case .stopped:
+                        return isIndonesian ? "Dihentikan Sementara" : "Stopped for Now"
+                    case .notFound:
+                        return isIndonesian ? "Penyebab Belum Ditemukan" : "Could Not Pinpoint Cause"
+                    }
+                }()
+                
+                Text(outcomeLabel)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(palette.textPrimary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                Button(action: onRestartWhyTree) {
+                    Text(isIndonesian ? "Ulangi" : "Restart")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(palette.accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(palette.surface)
+                        .cornerRadius(8)
+                }
+                
+                Button(action: onDone) {
+                    Text(isIndonesian ? "Selesai" : "Done")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(SottoTheme.onPrimary)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(palette.accent)
+                        .cornerRadius(8)
+                }
+            } else {
+                Image(systemName: activeTab == .whyFinder ? "questionmark.circle.fill" : "person.2.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(palette.accent)
+                
+                Text(currentPrompt.isEmpty ? (isIndonesian ? "Mode dengar aktif..." : "Listening...") : currentPrompt)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(palette.textSecondary)
+                    .lineLimit(1)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                
+                if let reply = lastReply, !reply.isEmpty {
+                    Text(reply)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(SottoTheme.successText)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(SottoTheme.successContainer)
+                        .cornerRadius(8)
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(palette.surfaceVariant)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(palette.outlineVariant.opacity(0.5), lineWidth: 1)
+        )
+    }
+}
+

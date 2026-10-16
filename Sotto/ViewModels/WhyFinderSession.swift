@@ -67,8 +67,8 @@ public extension WhyFinderState {
 
 public final class WhyFinderSession: ObservableObject {
     public let tree: WhyTree
-    public let startedAt: Int64
-    public let sessionId: String
+    public private(set) var startedAt: Int64
+    public private(set) var sessionId: String
     
     @Published public private(set) var currentState: WhyFinderState
     
@@ -302,6 +302,8 @@ public final class WhyFinderSession: ObservableObject {
     }
     
     public func restart() {
+        self.sessionId = UUID().uuidString
+        self.startedAt = Int64(Date().timeIntervalSince1970 * 1000)
         recordedSteps.removeAll()
         historyStack.removeAll()
         if let first = tree.areas.first {

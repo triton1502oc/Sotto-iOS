@@ -100,13 +100,15 @@ public final class ChimePlayer: NSObject, AVAudioPlayerDelegate {
         return data
     }
     
-    public func play() {
+    public func play(respectSilentSwitch: Bool = false) {
         #if canImport(UIKit)
-        // Haptic feedback
-        DispatchQueue.main.async {
-            let feedback = UIImpactFeedbackGenerator(style: .medium)
-            feedback.prepare()
-            feedback.impactOccurred()
+        // Haptic feedback (suppressed when Reduce Motion is enabled)
+        if !UIAccessibility.isReduceMotionEnabled {
+            DispatchQueue.main.async {
+                let feedback = UIImpactFeedbackGenerator(style: .medium)
+                feedback.prepare()
+                feedback.impactOccurred()
+            }
         }
         #endif
         
@@ -117,7 +119,8 @@ public final class ChimePlayer: NSObject, AVAudioPlayerDelegate {
             
             do {
                 let audioSession = AVAudioSession.sharedInstance()
-                try audioSession.setCategory(.playback, mode: .default, options: [.duckOthers])
+                let category: AVAudioSession.Category = respectSilentSwitch ? .ambient : .playback
+                try audioSession.setCategory(category, mode: .default, options: [.duckOthers])
                 try audioSession.setActive(true)
                 
                 let player = try AVAudioPlayer(data: wavData)
