@@ -1279,6 +1279,77 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(importedLog.note, "Calmed down with ear defenders")
     }
     
+    // MARK: - Selective Category Export Tests (Milestone v1.7.5 - Ticket #63)
+    
+    func testSelectiveCategoryExportAndRoundTrip() {
+        let carePhrase = Phrase(text: "Need medication", category: .care)
+        let socialPhrase = Phrase(text: "Good morning", category: .social)
+        let generalPhrase = Phrase(text: "Thank you", category: .general)
+        
+        let allPhrases = [carePhrase, socialPhrase, generalPhrase]
+        let allCategories = ["Care", "Social", "General"]
+        
+        let selectedCategories: Set<String> = ["Care"]
+        
+        let filteredPhrases = allPhrases.filter { selectedCategories.contains($0.category.rawValue) }
+        let filteredCategories = allCategories.filter { selectedCategories.contains($0) }
+        
+        let json = PhraseBackupHelper.exportToJson(
+            phrases: filteredPhrases,
+            categories: filteredCategories
+        )
+        
+        XCTAssertTrue(json.contains("Need medication"))
+        XCTAssertTrue(json.contains("\"Care\""))
+        XCTAssertFalse(json.contains("Good morning"))
+        XCTAssertFalse(json.contains("Thank you"))
+        XCTAssertFalse(json.contains("\"Social\""))
+        XCTAssertFalse(json.contains("\"General\""))
+        
+        guard let imported = PhraseBackupHelper.parseJson(json) else {
+            XCTFail("Failed to parse filtered JSON")
+            return
+        }
+        
+        XCTAssertEqual(imported.phrases.count, 1)
+        XCTAssertEqual(imported.phrases.first?.text, "Need medication")
+        XCTAssertEqual(imported.phrases.first?.category, .care)
+        XCTAssertEqual(imported.categories, ["Care"])
+    }
+    
+    func testMainViewModelExportBackupWithSelectedCategories() {
+        let suite = "test_export_selective_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let phraseRepo = UserDefaultsPhraseRepository(userDefaults: defaults)
+        let voiceRepo = UserDefaultsVoiceSettingsRepository(userDefaults: defaults)
+        let viewModel = MainViewModel(
+            phraseRepository: phraseRepo,
+            voiceSettingsRepository: voiceRepo
+        )
+        
+        var settings = viewModel.voiceSettings
+        settings.shareUsabilityMetrics = true
+        viewModel.updateVoiceSettings(settings)
+        UsabilityTracker.shared.clearBuffer()
+        
+        let carePhrase = Phrase(text: "Need special care", category: .care)
+        let socialPhrase = Phrase(text: "Good afternoon", category: .social)
+        _ = viewModel.addPhrase(carePhrase)
+        _ = viewModel.addPhrase(socialPhrase)
+        
+        let json = viewModel.exportBackup(selectedCategories: ["Care"])
+        XCTAssertTrue(json.contains("Need special care"))
+        XCTAssertTrue(json.contains("\"Care\""))
+        XCTAssertFalse(json.contains("Good afternoon"))
+        XCTAssertFalse(json.contains("\"Social\""))
+        
+        // Verify telemetry recorded
+        let events = UsabilityTracker.shared.getPendingEvents(voiceSettings: viewModel.voiceSettings)
+        XCTAssertTrue(events.contains { $0.intent == "Activation" && $0.outcome == "backup_category_filtered_export" })
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
+    
     // MARK: - Audit & Parity Ticket Tests
     
     func testBackupDeduplicationCaseInsensitive() {

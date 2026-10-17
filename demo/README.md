@@ -1,7 +1,7 @@
 # Sotto Demo Videos (iOS)
 
 ### TL;DR
-High-definition demo videos and reproduction scripts showcasing Sotto's flagship assistive communication and crisis navigation features on iOS—including **Two-Way Caregiver Receptive Mode** (180° face-to-face screen flip and rapid triage responses), **Two-Tier Quick-Speak Bar**, **Bystander Safety Hero Card**, **Sensory Color Themes**, and the **Two-Tone Attention Chime**.
+High-definition demo videos and reproduction scripts showcasing Sotto's flagship assistive communication and crisis navigation features on iOS—including **Two-Way Caregiver Receptive Mode** (180° face-to-face screen flip and rapid binary responses), **Two-Tier Quick-Speak Bar**, **Bystander Safety Hero Card**, **Sensory Color Themes**, and the **Two-Tone Attention Chime**.
 
 ---
 
@@ -22,8 +22,8 @@ High-definition demo videos and reproduction scripts showcasing Sotto's flagship
 
 1. **Modern Two-Tier Quick-Speak Bar**: Spontaneous text input, instant speech playback (`🔊`), and large-card fullscreen modal (`⛶`).
 2. **Safety Bystander Mode & Fullscreen Card**: Category filtering and high-contrast emergency card with digit-by-digit phone number TTS.
-3. **Two-Way Caregiver Receptive Mode**: Dedicated receptive HUD, caregiver question prompt bank, 180° face-to-face tabletop screen flip (`🔄 Flip`), and dignified rapid-response buttons (`✓ Yes` / `✕ No` / `❔ Not sure` / `🛑 Stop`) with instant voice confirmation.
-4. **Why Finder Diagnostic Tree**: Binary yes/no inquiry tree to discover root triggers (physical pain, sensory overload, fatigue) calmly.
+3. **Two-Way Caregiver Receptive Mode**: Dedicated receptive HUD, caregiver question prompt bank, 180° face-to-face tabletop screen flip (`🔄 Flip`), and dignified rapid-response buttons (`✓ Yes` / `✕ No` / `⏳ Wait` / `🔁 Repeat`, with `? Not sure` / `⏹ Stop` in Why Finder) with instant voice confirmation.
+4. **Why Finder Root-Cause Discovery Tree**: Binary yes/no inquiry tree to discover root triggers (physical pain, sensory overload, fatigue) calmly.
 5. **Private Why Log & 30-Day Trends**: 100% on-device private crisis event logging with environmental trend insights.
 6. **Voice Customization & Attention Chime**: Two-tone pre-speech alert chime (D5 587.33 Hz + A5 880.00 Hz) and configurable speech rate/pitch.
 7. **5 Sensory Color Themes**: Charcoal, OLED Pure Black, Warm Amber, Slate Navy, and Soft Parchment for photophobia comfort.

@@ -134,13 +134,13 @@ For autistic teens and adults, as well as individuals with unclear, slurred, or 
 
 ### A. Speaking with Cards
 - **Instant Speech**: Tap any phrase card once. Sotto vocalizes the text using your device's native offline Text-to-Speech (TTS) engine (`AVSpeechSynthesizer`)—eliminating listener misunderstandings and vocal fatigue.
-- **Category Filter**: Use the top chips (`All`, `🛡️ Safety`, `Needs`, `Social`, `Care`, `General`, or custom categories) to filter phrases for your current situation.
+- **Category Filter**: Filter speech cards using the horizontal category chips (`Needs`, `Social`, `Care`, `General`, and your custom categories). Tapping an active chip toggles it off to return to all phrases. The Safety Emergency Card remains pinned at the top as a full-width hero card regardless of category.
 
-### B. Safety Bystander Mode & Setup Wizard
-- **Hero Card**: The prominent amber/gold safety card displays your local area and emergency contact directly to bystanders or first responders. Can be toggled on/off the Home screen in Voice & Language Settings (`Show Safety Cards on Home`).
-- **Guided Setup Wizard**: On initial launch or configuration, a guided wizard prompts for caregiver contact and locality orientation with helpful examples (e.g. `+1 (555) 019-2834` / `0812-3456-7890`), preventing sensitive home addresses from being accidentally displayed.
-- **Natural Digit-by-Digit Phone Speech**: Phone numbers are automatically formatted (`formatDigitsForSpeech`) so the TTS engine reads them aloud digit-by-digit (e.g. "0 8 1 2 ...") rather than as an unintelligible multi-billion integer.
-- **Fullscreen Mode**: Long-press any card (or tap fullscreen on the Quick-Speak bar) to fill the entire screen with giant, high-contrast text. Show your screen silently to bystanders or medical personnel.
+### B. Safety Bystander Mode & Setup
+- **Hero Card**: Anchored prominently at the top of the main phrase board, the amber/gold Safety card displays locality orientation and emergency contact details for bystanders or first responders. Features 1-tap **Speak (`🔊`)** and **Fullscreen (`⛶`)** hero action buttons.
+- **3-Step Welcome Onboarding & Guided Safety Setup**: On first launch, a 3-step skippable Welcome & Role Onboarding modal (`WelcomeOnboardingModal`) introduces Sotto's dual modes and prompts initial emergency details. If the card contains unconfigured placeholders (`[Area/Neighborhood]` or `[phone number]`), tapping the card automatically opens the 3-field `EmergencySafetySetupModal` to enter your area, contact name, and phone number without exposing private street addresses.
+- **Natural Digit-by-Digit Phone Speech**: Phone numbers are automatically formatted so the TTS engine reads them aloud digit-by-digit rather than as an unintelligible multi-billion integer. In Indonesian, digits are vocalized using natural spoken digit words (`nol`, `satu`, `dua`...) with clean 4-digit grouping and subtle pauses for clear comprehension by bystanders.
+- **Fullscreen Mode**: Tap the fullscreen button on the Safety Hero Card or long-press any card (or tap fullscreen on the Quick-Speak bar) to fill the entire screen with giant, high-contrast text. Show your screen silently to bystanders or medical personnel.
 
 ### C. Quick-Speak Input Bar
 - **Type Spontaneously**: Tap the bottom input bar to type any phrase. Sentences automatically expand up to 4 lines for easy editing.
@@ -162,8 +162,8 @@ For autistic teens and adults, as well as individuals with unclear, slurred, or 
 
 ### Instant QR Code Deck Sharing (`📷` / `⬛`)
 Exchange communication decks between caregivers, therapists, and users completely offline without internet, cloud logins, or AirDrop:
-- **Export to QR Code**: Inside Backup & Restore settings, tap **Export Deck as QR Code**. Sotto encodes phrases into high-density Base64 (`SOTTO:v1:...`) and renders an instant QR code.
-- **Scan QR Code**: Tap **Scan QR Code** to launch the camera scanner and instantly import phrase decks from another iPhone, iPad, or Android device.
+- **Export to QR Code**: In Settings > Data & Backup, tap **Export Deck as QR Code**. You can export all phrases or selectively filter specific category chips (with `Select All` / `Clear All` quick toggles and live phrase counts). Sotto encodes phrases into high-density Base64 (`SOTTO:v1:...`) and renders an instant QR code.
+- **Scan QR Code**: In Settings > Data & Backup, tap **Scan QR Code** to launch the camera scanner and instantly import phrase decks from another iPhone, iPad, or Android device.
 
 ### Voice & App Settings (`⚙️`)
 Tap the gear icon (`⚙️`) in the top app bar to adjust:
@@ -174,7 +174,7 @@ Tap the gear icon (`⚙️`) in the top app bar to adjust:
 - **Attention Alert Chime**: Play a polite alert chime before speaking to capture listener attention in noisy spaces.
 - **Sensory Themes**: Choose from 5 sensory-friendly color palettes (**Charcoal**, **OLED Pure Black**, **Warm Amber / Low Strain**, **Slate Navy**, and **Soft Parchment**) designed for photophobia, astigmatism halation, and calming focus.
 - **Dual-Language & On-Device Translation**: Display cards in English while speaking in Indonesian (or vice versa), powered by 100% offline Apple Translation framework.
-- **Backup & Restore**: Export or import your phrase library, customized Why tree, and optional Why log (`Backup v2`).
+- **Backup & Restore**: Export or import your phrase library (with selective per-category export filtering), customized Why tree, and optional Why log (`Backup v2`).
 - **Anonymous Usability Telemetry**: Review or toggle strictly opt-in anonymous interaction telemetry (zero text or speech collected). Preview the payload anytime.
 
 ---

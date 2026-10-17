@@ -49,10 +49,11 @@ We use Sotto in two distinct modes:
 - **Customizable Inquiry Tree (`🌳`)**: Personalize questions and areas with voice dictation (`🎤`), sequence reordering, and one-tap defaults reset.
 
 ### 2. Dignified Self-Expression (AAC Phrase Board)
+- **3-Step Welcome & Role Onboarding**: Frictionless first-launch onboarding tailored to the user's role (`For myself / AAC`, `Caregiver / Partner`, `Healthcare / Therapist`), prompting initial emergency details setup without requiring any account, login, or personal cloud profile (skippable in 1 tap).
 - **Low-Stimulus UI & Sensory Color Themes**: Curated sensory-friendly color palettes accessible from Voice & Language Settings (`Appearance` section) to accommodate neurodivergent needs, photophobia, and astigmatism halation while upholding WCAG 2.1 AAA contrast: **Charcoal** (default low-stimulus dark neutral), **OLED Pure Black** (maximum contrast and power efficiency), **Warm Amber / Low Strain** (low blue light dark sepia), **Slate Navy** (calm focus), and **Soft Parchment** (anti-halation muted daylight).
 - **Universal iPad & iPhone Support**: Full universal iPad and iPhone support with adaptive multi-column grid layouts, smooth rotation support across all orientations (Portrait, Landscape, Upside-Down), and zero visual clutter.
 - **Zero-Distraction Mode**: The main communication screen has no administrative clutter, providing a safe, predictable environment. Administrative actions (add, edit, delete, reorder) remain hidden during communication.
-- **Safety Bystander Card**: Dedicated full-width hero card for non-verbal episodes and shutdowns. Features a distinct `🛡️ Safety` badge, digit-by-digit phone number TTS formatting so emergency numbers are read naturally, and a specialized fullscreen view with high-contrast amber styling (`#251E14` / `#FFB74D`) for bystanders, doctors, or first responders.
+- **Safety Bystander Hero Card & Guided Setup**: Dedicated full-width hero card anchored at the top of the main phrase board for non-verbal episodes and shutdowns. Features a distinct `🛡️ Safety` badge, 1-tap `Speak` (`🔊`) and `Fullscreen` (`⛶`) actions, digit-by-digit phone number TTS formatting so emergency numbers are read naturally, and a specialized fullscreen view with high-contrast amber styling (`#251E14` / `#FFB74D`) for bystanders, doctors, or first responders. Tapping an unconfigured card with placeholder tags (`[Area/Neighborhood]` or `[phone number]`) automatically launches the guided 3-field `EmergencySafetySetupModal`.
 - **Multi-Line Quick-Speak Bar & Card Saving**: Spontaneous communication bar docked at the bottom with multi-line text input (1 to 4 lines), instant speech (`🔊`), fullscreen expansion (`⛶`), voice dictation (`🎤`), smart clear toggle (`✕`), and 1-tap card saving (`+`).
 - **Contextual Categories & Reordering**: Full custom category management with fine-motor single-step ▲/▼ reordering, protected system safety categories (**Safety**, **Needs**, **Social**, **Care**, **General**), and safe fallback reassignment upon deletion.
 - **High-Visibility Giant Fullscreen**: Long-press any card or tap the fullscreen button on the quick bar to open a full-screen, high-contrast modal for silent communication in loud spaces.
@@ -63,7 +64,7 @@ We use Sotto in two distinct modes:
 ### 3. Privacy & Offline Guarantee
 - **100% Offline Core**: Zero cloud accounts, zero ads, and zero third-party tracking SDKs. Audio, phrases, Why Finder trees, and Why logs stay strictly on-device.
 - **Instant Offline QR Code Deck Sharing**: Share and import phrase decks instantaneously offline using high-density QR codes (`SOTTO:v1:...`) and an integrated camera scanner between iOS and Android devices—zero accounts, cloud, or AirDrop required.
-- **Backup & Restore Format v2**: Granular export/import engine to selectively backup phrases, custom Why trees, and private Why logs into JSON files with merge and replace restore strategies. Easily export a customized tree to a therapist or teacher without sharing private crisis notes.
+- **Backup & Restore Format v2 (Selective Category Export)**: Granular export/import engine to selectively backup phrases (including per-category filtering with `Select All` / `Clear All` quick toggles and live phrase counts), custom Why trees, and private Why logs into JSON files or high-density QR codes with merge and replace restore strategies. Easily export specific category decks or a customized tree to a therapist or teacher without sharing personal categories or private crisis notes.
 - **Privacy-Preserving Telemetry v2/v3 (Opt-In)**: Optional, strictly opt-in (default OFF) anonymous interaction telemetry measuring accessibility latency and hesitation to assess product-market fit, complete with category scrubbing (`custom`), payload inspection preview sheet, and a 14-day PMF survey modal (zero text, audio, or phrase hashes collected).
 
 ---
@@ -99,16 +100,25 @@ Sotto-iOS/
 │   ├── APP_STORE_SUBMISSION_CHECKLIST.md # Step-by-step App Store publishing checklist
 │   ├── CAREGIVER_GUIDE.md          # User & Caregiver Guide (Two-Way Mode, cards, emergency)
 │   ├── CROSS_PLATFORM_WORKFLOW.md  # Android-to-iOS porting guide & checklist
+│   ├── FLOATING_COMMUNICATOR_PROPOSAL.md # Picture-in-picture & floating AAC overlay proposal
 │   ├── LANGUAGE_AND_LOCALIZATION.md# Language models, TTS voice data, and offline translation
 │   ├── RUNNING_ON_DEVICE.md        # Physical device installation instructions
-│   └── SCENARIO_DECKS.md           # Curated situational phrase packs & scannable QR codes
+│   ├── SCENARIO_DECKS.md           # Curated situational phrase packs & scannable QR codes
+│   └── tickets/                    # Architecture audit and ease-of-use engineering tickets
 ├── scripts/                        # Automation & recording pipeline scripts
+│   ├── sync_release_docs.py        # Automated release metadata, doc sync, and lint check
 │   ├── record_demo_en.sh           # Automated English screen recording & muxing
 │   ├── record_demo_id.sh           # Automated Indonesian screen recording & muxing
+│   ├── run_demo_flow_en.sh         # Headless English demo test execution
+│   ├── run_demo_flow_id.sh         # Headless Indonesian demo test execution
 │   ├── generate_audio.py           # Audio synthesis & Attention Chime generator (EN)
 │   ├── generate_audio_id.py        # Audio synthesis & Attention Chime generator (ID)
 │   ├── mux_audio.py                # Timeline audio-video muxer (EN)
-│   └── mux_audio_id.py             # Timeline audio-video muxer (ID)
+│   ├── mux_audio_id.py             # Timeline audio-video muxer (ID)
+│   ├── render_demo_video.py        # Cross-platform video compositing & audio sync
+│   ├── render_vertical_short.py    # Vertical (9:16) short video renderer
+│   ├── build_soundtrack.py         # Acoustic warmth audio synthesis pipeline
+│   └── capture_app_store_screenshots.py # App Store snapshot generator
 ├── Sotto.xcodeproj                 # Xcode project bundle (generated via XcodeGen)
 ├── project.yml                     # XcodeGen specification
 ├── Sotto/
@@ -125,29 +135,37 @@ Sotto-iOS/
 │   ├── Services/
 │   │   ├── ChimePlayer.swift       # In-memory D5->A5 chime PCM synthesizer & haptics
 │   │   ├── PhraseBackupHelper.swift # Backup v2 exporter, importer & log merger
+│   │   ├── SottoShortcuts.swift    # App Shortcuts & Spotlight Siri intents
 │   │   ├── SpeechService.swift     # AVSpeechSynthesizer management & rate mapping
 │   │   ├── SpeechRecognizerService.swift # SFSpeechRecognizer dictation service
 │   │   ├── TranslationHelper.swift # Offline phrase dictionary & language normalization
 │   │   └── UsabilityTracker.swift  # Privacy-preserving usability telemetry v2
 │   ├── Utils/
+│   │   ├── DemoAutomationRunner.swift # Automated UI flow runner for demo recordings
 │   │   └── LocaleHelper.swift      # Language detection & locale helpers
 │   ├── Theme/
+│   │   ├── SottoIcon.swift         # Low-stimulus SF Symbol vector iconography
 │   │   └── Theme.swift             # Centralized low-stimulus dark theme palette
 │   ├── ViewModels/
 │   │   ├── MainViewModel.swift     # Reactive state management
 │   │   └── WhyFinderSession.swift  # Why Finder crisis branching state machine
 │   ├── Views/
-│   │   ├── ExportBackupModal.swift # Backup v2 export dialog with checkboxes
+│   │   ├── EmergencySafetySetupModal.swift # Guided 3-field emergency contact setup modal
+│   │   ├── ExportBackupModal.swift # Backup v2 export dialog with checkboxes & per-category filtering
 │   │   ├── FullscreenPhraseModal.swift # High-visibility modal
 │   │   ├── ImportBackupModal.swift # Backup v2 import review & merge/replace dialog
+│   │   ├── MainSubViews.swift      # Top bar, category filter bar, persistent safety banner & cards
 │   │   ├── MainView.swift          # Main container screen
 │   │   ├── ManageCategoriesModal.swift # Category manager with single-step reordering
 │   │   ├── PhraseCardView.swift    # Standard & Emergency card components
 │   │   ├── PhraseEditModal.swift   # Add/Edit phrase dialog
 │   │   ├── PmfSurveyModal.swift    # 14-day low-stimulus PMF survey dialog
+│   │   ├── QRCodeModal.swift       # High-density QR code renderer for phrase decks
+│   │   ├── QRScannerModal.swift    # Camera QR code scanner for offline deck imports
 │   │   ├── QuickSpeakBarView.swift # Bottom spontaneous communication bar
 │   │   ├── TwoWayConversationModal.swift # Unified Caregiver HUD (Talk & Why Finder)
 │   │   ├── VoiceSettingsModal.swift # Voice & Language configuration sheet
+│   │   ├── WelcomeOnboardingModal.swift # 3-step first-launch role & safety onboarding
 │   │   ├── WhyLogModal.swift       # Private Why Log & 30-day pattern insights
 │   │   └── WhyTreeEditorModal.swift# Question Tree customizer dialog
 │   └── Resources/

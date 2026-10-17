@@ -5,9 +5,20 @@ import SwiftUI
 struct MainTopBarView: View {
     @ObservedObject var viewModel: MainViewModel
     let currentPalette: SottoPalette
+    var availableWidth: CGFloat = 430
     
     private var isIndonesian: Bool {
         LocaleHelper.getEffectiveLanguage(appLanguage: viewModel.voiceSettings.appLanguage) == LocaleHelper.langIndonesian
+    }
+    
+    private var useCompactPartnerButton: Bool {
+        if availableWidth < 400 {
+            return true
+        }
+        if availableWidth < 460 && (viewModel.voiceSettings.showLanguageSwitcher || !viewModel.ttsReady) {
+            return true
+        }
+        return false
     }
     
     var body: some View {
@@ -15,18 +26,22 @@ struct MainTopBarView: View {
             Text("Sotto")
                 .font(.system(size: 22, weight: .bold))
                 .foregroundColor(currentPalette.textPrimary)
+                .lineLimit(1)
+                .fixedSize(horizontal: true, vertical: false)
             
-            Spacer()
+            Spacer(minLength: 6)
             
             if !viewModel.ttsReady {
                 Text("Initializing")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.black)
+                    .lineLimit(1)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(SottoTheme.warning)
                     .cornerRadius(6)
-                    .padding(.trailing, 6)
+                    .padding(.trailing, 4)
+                    .fixedSize(horizontal: true, vertical: false)
             }
             
             if viewModel.voiceSettings.showLanguageSwitcher {
@@ -68,29 +83,23 @@ struct MainTopBarView: View {
                 .padding(2)
                 .background(currentPalette.surfaceVariant)
                 .cornerRadius(14)
-                .padding(.trailing, 4)
+                .padding(.trailing, 2)
+                .fixedSize(horizontal: true, vertical: false)
             }
             
-            // Partner Mode (Hero entry pill matching Android commit 5c877ff / #69)
+            // Partner Mode (Adaptive: icon-only squircle on compact screens like iPhone SE, icon + label pill on wider screens)
             Button(action: {
                 UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
                 viewModel.showTwoWayDialog = true
             }) {
-                HStack(spacing: 6) {
-                    SottoIconView(.partnerMode, size: 18, tint: currentPalette.accent)
-                    Text(isIndonesian ? "Mitra" : "Partner")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(currentPalette.accent)
+                if useCompactPartnerButton {
+                    partnerCompactLabel
+                } else {
+                    ViewThatFits(in: .horizontal) {
+                        partnerExpandedLabel
+                        partnerCompactLabel
+                    }
                 }
-                .padding(.horizontal, 10)
-                .frame(height: 44)
-                .background(currentPalette.surfaceVariant)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(currentPalette.outlineVariant, lineWidth: 1)
-                )
-                .contentShape(Rectangle())
             }
             .hoverEffect(.highlight)
             .accessibilityLabel(isIndonesian ? "Buka Mode Mitra untuk berkomunikasi langsung" : "Open Partner mode for communication partner")
@@ -140,6 +149,7 @@ struct MainTopBarView: View {
                     Text(LocaleHelper.getActionEdit(isEditMode: viewModel.isEditMode, appLanguage: viewModel.voiceSettings.appLanguage))
                         .font(.system(size: 14, weight: viewModel.isEditMode ? .bold : .medium))
                         .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary)
+                        .lineLimit(1)
                 }
                 .padding(.horizontal, 12)
                 .frame(minHeight: 44)
@@ -151,6 +161,7 @@ struct MainTopBarView: View {
                 )
                 .contentShape(Rectangle())
             }
+            .fixedSize(horizontal: true, vertical: false)
             .accessibilityLabel(viewModel.isEditMode ? "Done editing" : "Edit list")
             .demoTarget("topBar_editButton")
         }
@@ -158,6 +169,40 @@ struct MainTopBarView: View {
         .padding(.top, 10)
         .padding(.bottom, 6)
         .background(currentPalette.background)
+    }
+    
+    private var partnerExpandedLabel: some View {
+        HStack(spacing: 6) {
+            SottoIconView(.partnerMode, size: 18, tint: currentPalette.accent)
+            Text(isIndonesian ? "Mitra" : "Partner")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(currentPalette.accent)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 10)
+        .frame(height: 44)
+        .background(currentPalette.surfaceVariant)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(currentPalette.outlineVariant, lineWidth: 1)
+        )
+        .contentShape(Rectangle())
+        .fixedSize(horizontal: true, vertical: false)
+    }
+    
+    private var partnerCompactLabel: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(currentPalette.surfaceVariant)
+                .frame(width: 44, height: 44)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(currentPalette.accent.opacity(0.45), lineWidth: 1)
+                )
+            SottoIconView(.partnerMode, size: 20, tint: currentPalette.accent)
+        }
+        .contentShape(Rectangle())
     }
 }
 

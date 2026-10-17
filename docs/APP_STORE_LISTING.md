@@ -13,7 +13,7 @@ Ready-to-use metadata, descriptions, keywords, screenshot specifications, and pr
 * **Primary Category:** `Accessibility` or `Utilities`  
 * **Secondary Category:** `Productivity`  
 * **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)  
-* **Copyright:** `2026 Budi Aprianto`  
+* **Copyright:** `2026 Sotto Contributors`  
 * **Content Rights (Third-Party Content):** Select **"No"** (Core app uses 100% native Apple frameworks, SF Symbols, and local storage; zero external copyrighted assets).  
 
 ### Promotional Text (English) *(156 / 170 characters; editable anytime without a new build)*
@@ -132,7 +132,7 @@ github.com/triton1502oc/Sotto-iOS | Tersedia versi Android
 • Performance & Zero-Lag Typing: Isolated speech bar state and equatable cards eliminate grid redraws during typing.
 • Sub-50ms Speech Latency: Cached voice selection and pre-warmed audio session for faster spoken response.
 • Zero-Distraction Category Strip: Category management is neatly tucked into Edit Mode to keep active communication distraction-free.
-• Offline QR Deck Sharing Parity: Bidirectional phrase deck sharing with Android devices without accounts or cloud.
+• Selective Category Export & Offline QR Sharing: Choose specific phrase categories to export via Backup JSON or cross-platform Android/iOS QR Code Decks.
 ```
 
 ### URLs
@@ -212,12 +212,12 @@ Note on specific flows:
 Sotto is an assistive augmentative and alternative communication (AAC) application designed for autistic teens and adults, situational non-speaking individuals, and family caregivers navigating acute sensory meltdowns or verbal shutdowns. Traditional AAC tools rely on multi-tier pediatric menus that cause cognitive overload during crisis. Sotto provides a dignified, low-stimulus speech board for daily communication and a 2-way binary response HUD (Yes/No/Wait) so caregivers can de-escalate crises without verbal pressure.
 
 3. Setup & Access Instructions:
-No setup, onboarding, login credentials, or sample files are required. The app opens immediately in a ready-to-use functional state:
+No accounts, login credentials, or sample files are required. On first launch, a 3-step skippable Welcome & Role Onboarding is presented (skippable in 1 tap, zero login or personal info required), placing the user immediately into the functional AAC board:
 - Tap any card to speak via iOS native text-to-speech.
-- Tap '🤝' in top bar to open Two-Way Partner Mode with 180° rotation dock.
-- Tap 'Why Finder' tab inside Partner Mode for guided root-cause triage.
-- Tap '🛡️' in top bar for the Emergency Bystander Card.
-- Tap '⚙️' for sensory themes and speech settings.
+- Tap 'Partner' ('🤝' / squircle icon) in the top bar to open Two-Way Partner Mode with 180° rotation dock.
+- Tap 'Why Finder' tab inside Partner Mode for guided root-cause discovery.
+- The Emergency Safety Card is anchored at the top of the main phrase board (tap to open guided 3-field setup or speak/expand in 1 tap).
+- Tap '⚙️' in the top bar for sensory themes and speech settings.
 
 4. External Services & Platforms:
 Zero external services, third-party APIs, cloud backends, payment processors, or AI services are used. Sotto operates 100% offline using only native Apple frameworks:

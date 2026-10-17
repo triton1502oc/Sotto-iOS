@@ -42,7 +42,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 1. Sign in to [App Store Connect](https://appstoreconnect.apple.com).
 2. Navigate to **Apps** and click the **+** button > **New App**:
    - **Platforms**: `iOS`
-   - **Name**: `Sotto - Assistive AAC Speech`
+   - **Name**: `Sotto: AAC Autism Talk Yes/No`
    - **Primary Language**: `English (U.S.)`
    - **Bundle ID**: Select `com.amh.sotto`
    - **SKU**: `sotto-ios-01` (or any internal identifier)
@@ -50,8 +50,8 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
    - Click **Create**.
 
 3. In **App Information** (left sidebar):
-   - **Subtitle**: `Dignified Low-Stimulus AAC`
-   - **Primary Category**: `Medical` or `Utilities`
+   - **Subtitle**: `Calm Speech & Meltdown Cards`
+   - **Primary Category**: `Accessibility` or `Utilities`
    - **Secondary Category**: `Productivity`
    - **Content Rights**: Select "No" (does not contain third-party content).
    - **Age Rating**: Complete the questionnaire (all answers are "None" / "No" -> Result: `4+`).
@@ -122,7 +122,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
    - Tap phrase cards to verify text-to-speech with natural voices (Samantha/Siri/Damayanti).
    - Test voice input (microphone & speech recognition permission dialogs).
    - Test Safety bystander cards (`🛡️ Safety`), fullscreen mode, and Partner Mode (`🤝`).
-   - Test Why Finder guided crisis tree and 4-card response dock (`✓ Yes`, `✕ No`, `? Not Sure`, `⏹ Stop`).
+   - Test Why Finder guided crisis tree and 4-card response dock (`✓ Yes`, `✕ No`, `⏳ Wait`, `🔁 Repeat` in Talk tab, and `✓ Yes`, `✕ No`, `? Not Sure`, `⏹ Stop` in Guided tab).
    - Test offline QR Code deck export and camera scanner import.
    - Test sensory appearance themes in Settings.
 
@@ -130,16 +130,16 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 
 ## Step 6: App Store Listing & Review Submission
 
-1. In App Store Connect, go to **iOS App > 1.7.0 Prepare for Submission**.
+1. In App Store Connect, go to **iOS App > 1.7.4 Prepare for Submission**.
 2. Fill in the listing details using [APP_STORE_LISTING.md](APP_STORE_LISTING.md):
    - **Promotional Text**:
      ```text
-     Calm yes/no communication for caregivers reaching autistic loved ones in shutdowns, paired with a dignified low-stimulus AAC speech board & Action Button launch.
+     Calm AAC speech board & crisis Yes/No communication for autism, speech delays & sensory overload. 100% offline, low-stimulus, with caregiver 180° flip mode.
      ```
    - **Description**: Paste the full description from `APP_STORE_LISTING.md`.
    - **Keywords**:
      ```text
-     aac,autism,shutdown,meltdown,nonspeaking,yesno,caregiver,tts,offline,autistic
+     nonverbal,pecs,apraxia,assistive,communication,caregiver,sensory,neurodivergent,stroke,slp,delay
      ```
    - **Support URL**: `https://github.com/triton1502oc/Sotto-iOS/issues`
    - **Marketing URL**: `https://github.com/triton1502oc/Sotto-iOS`

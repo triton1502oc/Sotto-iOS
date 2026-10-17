@@ -61,7 +61,8 @@ Sotto was created by a father to navigate overwhelming communication breakdowns 
 ## 4. Release Process & Guides
 
 * Releases are tracked in [CHANGELOG.md](CHANGELOG.md) and published via GitHub Releases (`gh release create` or automated tag-triggered GitHub Action in `.github/workflows/release.yml`).
-* Automated continuous integration runs on pull requests and pushes to `main` via `.github/workflows/ios.yml` (Gitleaks security scanning, XcodeGen generation, unit tests, and IPA artifact packaging).
+* Before publishing any release or version bump, run `python3 scripts/sync_release_docs.py --check` to verify cross-document version parity, deployment targets, and documentation integrity.
+* Automated continuous integration runs on pull requests and pushes to `main` via `.github/workflows/ios.yml` (Gitleaks security scanning, documentation verification, XcodeGen generation, unit tests, and IPA artifact packaging).
 * User and caregiver workflows are documented in [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md).
 * App Store assets and metadata are documented in [docs/APP_STORE_LISTING.md](docs/APP_STORE_LISTING.md).
 * Cross-platform porting guidelines are documented in [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md).

@@ -44,16 +44,24 @@ public struct MainView: View {
                         phraseCount: viewModel.phrases.count,
                         areaCount: viewModel.whyFinderRepository.getTree().areas.count,
                         logCount: viewModel.whyFinderRepository.getLogs().count,
-                        onExport: { exportPhrases, exportTree, exportLog in
-                            let json = viewModel.exportBackup(exportPhrases: exportPhrases, exportTree: exportTree, exportLog: exportLog)
+                        phrases: viewModel.phrases,
+                        categories: viewModel.categories,
+                        appLanguage: viewModel.voiceSettings.appLanguage,
+                        onExport: { exportPhrases, exportTree, exportLog, selectedCategories in
+                            let json = viewModel.exportBackup(
+                                exportPhrases: exportPhrases,
+                                exportTree: exportTree,
+                                exportLog: exportLog,
+                                selectedCategories: selectedCategories
+                            )
                             let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent("sotto_deck_\(Int(Date().timeIntervalSince1970)).sotto")
                             try? json.write(to: tempUrl, atomically: true, encoding: .utf8)
                             shareUrl = tempUrl
                             showShareSheet = true
                             viewModel.showExportBackupDialog = false
                         },
-                        onShareQR: { _, _, _ in
-                            let json = viewModel.exportCompactPhrasesForQR()
+                        onShareQR: { _, _, _, selectedCategories in
+                            let json = viewModel.exportCompactPhrasesForQR(selectedCategories: selectedCategories)
                             viewModel.showExportBackupDialog = false
                             activeQRShareItem = QRShareItem(
                                 title: "Sotto Vocabulary Deck",
@@ -441,7 +449,8 @@ public struct MainView: View {
             VStack(spacing: 0) {
                 MainTopBarView(
                     viewModel: viewModel,
-                    currentPalette: currentPalette
+                    currentPalette: currentPalette,
+                    availableWidth: size.width
                 )
                 
                 CategoryFilterBarView(

@@ -299,10 +299,25 @@ public final class MainViewModel: ObservableObject {
     public func exportBackup(
         exportPhrases: Bool = true,
         exportTree: Bool = false,
-        exportLog: Bool = false
+        exportLog: Bool = false,
+        selectedCategories: Set<String>? = nil
     ) -> String {
-        let phrasesToExport = exportPhrases ? phrases : nil
-        let categoriesToExport = exportPhrases ? categories : nil
+        let phrasesToExport: [Phrase]?
+        let categoriesToExport: [String]?
+        
+        if exportPhrases {
+            if let selected = selectedCategories {
+                phrasesToExport = phrases.filter { selected.contains($0.category.rawValue) }
+                categoriesToExport = categories.filter { selected.contains($0) }
+            } else {
+                phrasesToExport = phrases
+                categoriesToExport = categories
+            }
+        } else {
+            phrasesToExport = nil
+            categoriesToExport = nil
+        }
+        
         let treeToExport = exportTree ? whyFinderRepository.getTree() : nil
         let logToExport = exportLog ? whyFinderRepository.getLogs() : nil
         
@@ -322,11 +337,26 @@ public final class MainViewModel: ObservableObject {
             voiceSettings: voiceSettings
         )
         
+        if exportPhrases, let selected = selectedCategories, selected.count < categories.count {
+            UsabilityTracker.shared.recordActivation(key: "backup_category_filtered_export", voiceSettings: voiceSettings)
+        }
+        
         return json
     }
     
-    public func exportCompactPhrasesForQR() -> String {
-        let json = PhraseBackupHelper.exportCompactPhrasesForQR(phrases: phrases, categories: categories)
+    public func exportCompactPhrasesForQR(selectedCategories: Set<String>? = nil) -> String {
+        let phrasesToExport: [Phrase]
+        let categoriesToExport: [String]
+        
+        if let selected = selectedCategories {
+            phrasesToExport = phrases.filter { selected.contains($0.category.rawValue) }
+            categoriesToExport = categories.filter { selected.contains($0) }
+        } else {
+            phrasesToExport = phrases
+            categoriesToExport = categories
+        }
+        
+        let json = PhraseBackupHelper.exportCompactPhrasesForQR(phrases: phrasesToExport, categories: categoriesToExport)
         UsabilityTracker.shared.recordBackupAction(
             isExport: true,
             includesPhrases: true,
@@ -335,6 +365,11 @@ public final class MainViewModel: ObservableObject {
             isReplace: false,
             voiceSettings: voiceSettings
         )
+        
+        if let selected = selectedCategories, selected.count < categories.count {
+            UsabilityTracker.shared.recordActivation(key: "backup_category_filtered_export", voiceSettings: voiceSettings)
+        }
+        
         return json
     }
     

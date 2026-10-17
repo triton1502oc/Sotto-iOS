@@ -199,6 +199,21 @@ public enum LocaleHelper {
         }
     }
     
+    public static func getExportSelectCategoriesLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Kategori untuk diekspor:" : "Categories to export:"
+    }
+    
+    public static func getActionSelectAll(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Pilih Semua" : "Select All"
+    }
+    
+    public static func getActionDeselectAll(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Hapus Pilihan" : "Clear All"
+    }
+    
     public static func getTwoWayResponseLabel(responseKey: String, appLanguage: String = "system") -> String {
         let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
         switch responseKey.lowercased() {

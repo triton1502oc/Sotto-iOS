@@ -13,7 +13,7 @@ On first run, [`UserDefaultsPhraseRepository`](../Sotto/Data/PhraseRepository.sw
 
 | Category | English | Indonesian |
 | :--- | :--- | :--- |
-| **Safety** (🛡️ full width) | "I cannot speak right now. Please read my screen." | "Saya tidak bisa bicara sekarang. Tolong baca layar saya." |
+| **Safety** (🛡️ full width) | "I live around [Area/Neighborhood], please call my emergency contact: [phone number]" | "Saya tinggal di sekitar [Area / Lingkungan], tolong hubungi kontak darurat saya: [nomor telepon]" |
 | **Needs** | 1. "I need a quiet space."<br>2. "Please give me time."<br>3. "I need to leave now." | 1. "Saya butuh tempat tenang."<br>2. "Tolong beri saya waktu."<br>3. "Saya harus pergi sekarang." |
 | **Social** | 1. "Yes, please."<br>2. "No, thank you."<br>3. "Thank you." | 1. "Ya, silakan."<br>2. "Tidak, terima kasih."<br>3. "Terima kasih." |
 | **Care** | 1. "Are you in pain?"<br>2. "Do you need water or food?"<br>3. "Do you need the restroom?"<br>4. "Are you feeling cold or warm?"<br>5. "Do you want to rest or sleep?" | 1. "Apakah merasa sakit?"<br>2. "Apakah butuh minum atau makan?"<br>3. "Apakah perlu ke kamar mandi?"<br>4. "Apakah merasa dingin atau panas?"<br>5. "Apakah ingin istirahat atau tidur?" |
@@ -31,7 +31,9 @@ There are two distinct language features in Sotto:
 - **UI Chrome**: All app text switches language instantly, including:
   - Top Bar action buttons: `[✏️ Edit]` / `[✓ Done]` (English) ➔ `[✏️ Edit]` / `[✓ Selesai]` (Indonesian).
   - Partner Mode (`🤝`) tabs: `Talk` / `Why Finder` ➔ `Bicara` / `Pencari Sebab`.
-  - Receptive 4-Card Dock: `Yes`, `No`, `Not Sure`, `Stop` ➔ `Ya`, `Tidak`, `Belum Tahu`, `Stop`.
+  - Receptive 4-Card Dock:
+    - Talk tab: `Yes`, `No`, `Wait`, `Repeat` ➔ `Ya`, `Tidak`, `Tunggu`, `Ulangi`.
+    - Guided tab: `Yes`, `No`, `Not Sure`, `Stop` ➔ `Ya`, `Tidak`, `Belum Tahu`, `Stop`.
   - Partner action controls: `Clear`, `Flip`, `Read Aloud` ➔ `Bersihkan`, `Putar`, `Baca Bersuara`.
 - **Existing Cards**: Remain in their original language (persisted in `UserDefaults`).
 - **TTS Engine**: Default voice switches, but [`LocaleHelper.detectLocale()`](../Sotto/Utils/LocaleHelper.swift) detects English or Indonesian words on existing cards and still speaks them with the appropriate voice.

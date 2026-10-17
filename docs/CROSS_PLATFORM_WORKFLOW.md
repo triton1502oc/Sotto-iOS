@@ -9,7 +9,7 @@ Sotto features are developed first in the Android repository (`../Sotto`), and s
 
 | Layer / Feature | Android (`Sotto`) | iOS (`Sotto-iOS`) |
 |---|---|---|
-| **Data Models** | `data/PhraseRepository.kt` (`data class Phrase`) | `Sotto/Models/Phrase.swift` (`struct Phrase`) |
+| **Data Models** | `model/Phrase.kt` (`data class Phrase`) | `Sotto/Models/Phrase.swift` (`struct Phrase`) |
 | **Voice Settings** | `data/VoiceSettingsRepository.kt` (`VoiceSettings`) | `Sotto/Models/VoiceSettings.swift` (`VoiceSettings`) |
 | **Local Storage** | `SharedPreferencesPhraseRepository.kt` | `Sotto/Data/PhraseRepository.swift` (`UserDefaults`) |
 | **Theme / Palette** | `theme/Color.kt` & `Theme.kt` (5 sensory palettes) | `Sotto/Theme/Theme.swift` (`SottoTheme`, 5 sensory palettes) |
@@ -17,20 +17,24 @@ Sotto features are developed first in the Android repository (`../Sotto`), and s
 | **Text-to-Speech** | `MainActivity.kt` (`android.speech.tts.TextToSpeech`) | `Sotto/Services/SpeechService.swift` (`AVSpeechSynthesizer`) |
 | **Voice Dictation** | `RecognizerIntent.ACTION_RECOGNIZE_SPEECH` | `Sotto/Services/SpeechRecognizerService.swift` (`SFSpeechRecognizer`) |
 | **Language Detection** | `util/LocaleHelper.kt` (word frequency matching) | `Sotto/Utils/LocaleHelper.swift` (word matching + `NaturalLanguage`) |
-| **Main Screen** | `MainActivity.kt` (`SottoApp`, `LazyVerticalGrid`) | `Sotto/Views/MainView.swift` (Adaptive 2-4 column grid, iPad support) |
+| **Main Screen** | `MainActivity.kt` (`SottoApp`, `LazyVerticalGrid`) | `Sotto/Views/MainView.swift` (Adaptive 2–6 column adaptive grid, iPad support) |
+| **Modular Main Views** | `SottoApp.kt` sub-composables | `Sotto/Views/MainSubViews.swift` (top bar, category chips, cards) |
 | **Phrase Card** | `MainActivity.kt` (`Card`, `isEmergency` hero card) | `Sotto/Views/PhraseCardView.swift` (`PhraseCardView`, Safety banner) |
 | **Quick-Speak Bar** | `MainActivity.kt` (`bottomBar`, multiline, save-as-card) | `Sotto/Views/QuickSpeakBarView.swift` (`QuickSpeakBarView`) |
 | **Fullscreen Modal** | `MainActivity.kt` (`Dialog`, high-contrast text) | `Sotto/Views/FullscreenPhraseModal.swift` |
 | **Add / Edit Dialog**| `MainActivity.kt` (`AlertDialog`, category chips) | `Sotto/Views/PhraseEditModal.swift` |
 | **Voice Settings** | `ui/main/VoiceSettingsDialog.kt` | `Sotto/Views/VoiceSettingsModal.swift` |
-| **Partner Mode & Why Finder (🤝)** | `TwoWayConversationDialog.kt` | `Sotto/Views/TwoWayConversationModal.swift` (Talk & Why Finder) |
+| **Partner Mode & Why Finder (🤝)** | `ui/conversation/TwoWayConversationDialog.kt` | `Sotto/Views/TwoWayConversationModal.swift` (Talk & Why Finder) |
 | **Why Finder Crisis Tree** | `WhyFinderSession.kt`, `WhyFinderRepository.kt` | `WhyFinderSession.swift`, `WhyFinderRepository.swift` |
 | **Why Tree Editor** | `WhyTreeEditorDialog.kt` | `Sotto/Views/WhyTreeEditorModal.swift` |
 | **Private Why Log** | `WhyLogDialog.kt` | `Sotto/Views/WhyLogModal.swift` |
 | **Backup & Restore v2** | `PhraseBackupHelper.kt` | `Sotto/Services/PhraseBackupHelper.swift`, `ExportBackupModal.swift`, `ImportBackupModal.swift` |
 | **Category Management** | `ManageCategoriesDialog.kt` | `Sotto/Views/ManageCategoriesModal.swift` |
 | **QR Code Sharing** | `QrShareDialog.kt`, `QrScanActivity.kt` | `Sotto/Views/QRCodeModal.swift`, `QRScannerModal.swift` |
-| **Emergency Setup Wizard** | `EmergencySetupDialog.kt` | `Sotto/Views/EmergencySetupWizardModal.swift` |
+| **Emergency Safety Setup** | `EmergencySafetySetupDialog.kt` | `Sotto/Views/EmergencySafetySetupModal.swift` |
+| **Welcome Onboarding** | `WelcomeOnboardingDialog.kt` | `Sotto/Views/WelcomeOnboardingModal.swift` |
+| **Vector Icons** | `SottoIcon.kt` | `Sotto/Theme/SottoIcon.swift` (low-stimulus SF Symbols) |
+| **Quick Shortcuts / App Intents** | `EmergencyTileService.kt` | `Sotto/Services/SottoShortcuts.swift` (App Intents & Siri) |
 | **Voice Scoring & Quality** | `TtsEngineHelper.kt` | `Sotto/Services/SpeechService.swift` (flagship heuristic scoring) |
 | **Usability Telemetry v3** | `UsabilityTracker.kt` | `Sotto/Services/UsabilityTracker.swift` (tap event aggregation) |
 | **14-Day PMF Survey** | `PmfSurveyDialog.kt` | `Sotto/Views/PmfSurveyModal.swift` |

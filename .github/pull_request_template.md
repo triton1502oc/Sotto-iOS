@@ -21,7 +21,7 @@ Fixes #(issue)
 - [ ] **Dignified & Mature UI**: Free of pediatric clutter, cartoon icons, or childish styling.
 - [ ] **Low-Stimulation**: Preserves dark-neutral palette, calm transitions, and high contrast.
 - [ ] **Zero-Distraction Mode**: Administrative actions (add, edit, delete, reorder) remain hidden during communication.
-- [ ] **100% Offline & Private**: Zero analytics, telemetry, remote network calls, or cloud sync.
+- [ ] **100% Offline & Private**: Zero third-party trackers, covert analytics, remote network calls, or cloud sync (opt-in anonymous UsabilityTracker only).
 - [ ] **Lifecycle Safety**: Audio sessions and speech synthesizers cleanly handle system interruptions.
 
 ---

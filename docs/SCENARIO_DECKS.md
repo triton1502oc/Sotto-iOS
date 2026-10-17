@@ -1,16 +1,19 @@
 # Curated Situational AAC Decks & Scannable QR Codes
 
 ### TL;DR
-Ready-to-use, therapist-reviewed phrase packs for high-friction real-world environments (Medical/ER, Transit, School, and Dental care). Scan the QR codes directly using Sotto's built-in offline scanner (top bar `QR` icon) on iOS or Android to import these decks instantaneously with zero typing or cloud setup.
+Ready-to-use, therapist-reviewed phrase packs for high-friction real-world environments (Medical/ER, Transit, School, and Dental care). Scan the QR codes directly using Sotto's built-in offline scanner (`Settings (⚙️) > Data & Backup > Scan QR Code (📷)`) on iOS or Android to import these decks instantaneously with zero typing or cloud setup. Users can also selectively export individual categories as JSON files or QR codes via `Settings (⚙️) > Data & Backup`.
 
 ---
 
 ## How to Import a Deck
 
 1. Open **Sotto** on your iPhone, iPad, or Android device.
-2. In the top bar, tap the **QR Scanner icon** (`📷` / `Scan QR`).
+2. Navigate to **Settings (`⚙️`) > Data & Backup > Scan QR Code (`📷`)**.
 3. Point your camera at any QR code on this page (or a printed copy).
 4. Review the incoming phrases and select **Merge** (adds to existing cards) or **Replace** (creates a dedicated scenario board).
+
+> [!TIP]
+> **Selective Category Export**: In **Settings (`⚙️`) > Data & Backup**, you can also export your own custom scenario decks or individual categories as JSON backup files or high-density offline QR codes with per-category filtering toggles (`Select All` / `Clear All`).
 
 ---
 

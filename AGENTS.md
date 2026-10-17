@@ -37,8 +37,8 @@ Before making changes, familiarize yourself with [CONTRIBUTING.md](CONTRIBUTING.
 5. **Environment & Secrets**:
    - Never commit signing keys, personal Apple Developer accounts, personal team IDs, or personal machine paths.
    - Use relative paths (`../Sotto`) instead of absolute user paths.
-6. **Pre-Release Device Verification Prompt (MANDATORY)**:
-   - When assisting with any release, version bump, or release preparation, AI agents **MUST ALWAYS explicitly ask and remind the user to install and test the Release build on a physical device or simulator** before creating the git tag or pushing the release. Never tag or finalize a release without prompting the user.
+6. **Pre-Release Device Verification Prompt & Doc Audit (MANDATORY)**:
+   - When assisting with any release, version bump, or release preparation, AI agents **MUST ALWAYS run `python3 scripts/sync_release_docs.py --check`** to verify cross-document version parity, deployment targets, source structure, and prohibited terms, and **MUST ALWAYS explicitly ask and remind the user to install and test the Release build on a physical device or simulator** before creating the git tag or pushing the release. Never tag or finalize a release without prompting the user.
 7. **Autonomous Asset Rebuilding**:
    - When requested to update or rebuild demo assets, execute `./scripts/record_demo_en.sh` and `./scripts/record_demo_id.sh` directly without requiring multi-step approval.
 8. **Issue Assignment on Close**:
@@ -54,4 +54,6 @@ Before making changes, familiarize yourself with [CONTRIBUTING.md](CONTRIBUTING.
     - **Surgical Diffs**: Only edit sections directly affected by code changes. Never rewrite whole documents or alter established structure and human tone.
     - **High Signal, Low Stimulus**: Strip introductory filler, conversational throat-clearing, and boilerplate. Always lead with a concise `TL;DR` or direct imperative steps.
     - **Co-Location**: Always update relevant documentation in the same commit or PR as the corresponding feature or bugfix to prevent documentation drift.
-
+12. **Self-Unstuck & Watchdog Recovery**:
+    - Never block indefinitely on subagents or CLI commands (especially `xcrun simctl` or simulator booting). Pair `invoke_subagent` with a generous `schedule` watchdog timer (`DurationSeconds: 240`, `TimerCondition: "any"`).
+    - When a watchdog timer fires, check `manage_subagents(Action: "list")`: **do NOT kill the subagent or dump its full transcript if it is still actively making progress**—simply reschedule the timer and wait. Only kill a subagent/task (`manage_subagents(Action: "kill")`) if it is genuinely hung (zero step progress for $>90\text{s}$ or blocked on `xcrun simctl`), then fall back to bounded commands (`perl -e 'alarm 60; exec @ARGV'` or generic-device `xcodebuild` with `CODE_SIGNING_ALLOWED=NO`).

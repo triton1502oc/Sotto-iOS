@@ -29,7 +29,6 @@ CUES = [
 def find_edge_tts():
     for candidate in [
         shutil.which("edge-tts"),
-        "/Users/budiap/Library/Python/3.9/bin/edge-tts",
         os.path.expanduser("~/Library/Python/3.9/bin/edge-tts"),
         os.path.expanduser("~/.local/bin/edge-tts"),
         os.path.join(os.path.dirname(sys.executable), "edge-tts")
