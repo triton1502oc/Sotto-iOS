@@ -1,59 +1,127 @@
 # Apple App Store Listing & Submission Guide
 
 ### TL;DR
-Ready-to-use metadata, descriptions, keywords, screenshot specifications, and privacy nutrition label answers for submitting Sotto to Apple App Store Connect.
+Ready-to-use metadata, descriptions, keywords, screenshot specifications, and privacy nutrition label answers for submitting Sotto to Apple App Store Connect in both English (Primary) and Indonesian (`id`).
 
 ---
 
 ## 1. App Store Connect Metadata
 
-### App Details
-* **App Name:** `Sotto` *(5 / 30 characters)*
-* **Subtitle:** `Calm Yes/No for Meltdowns` *(25 / 30 characters)*
-* **Primary Category:** `Accessibility` or `Utilities`
-* **Secondary Category:** `Productivity`
-* **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)
-* **Copyright:** `2026 Budi Aprianto`
-* **Content Rights (Third-Party Content):** Select **"No"** (Core app uses 100% native Apple frameworks, SF Symbols, and local storage; zero external copyrighted assets).
+### App Details (Primary: English - US)
+* **App Name:** `Sotto: AAC Autism Talk Yes/No` *(29 / 30 characters; App Store title limit is 30 characters)*  
+* **Subtitle:** `Calm Speech & Meltdown Cards` *(28 / 30 characters; App Store subtitle limit is 30 characters)*  
+* **Primary Category:** `Accessibility` or `Utilities`  
+* **Secondary Category:** `Productivity`  
+* **Age Rating:** `4+` (No violence, no objectionable content, no user tracking)  
+* **Copyright:** `2026 Budi Aprianto`  
+* **Content Rights (Third-Party Content):** Select **"No"** (Core app uses 100% native Apple frameworks, SF Symbols, and local storage; zero external copyrighted assets).  
 
-### Promotional Text *(167 / 170 characters)*
+### Promotional Text (English) *(156 / 170 characters; editable anytime without a new build)*
 ```text
-Calm yes/no communication for caregivers reaching autistic loved ones in shutdowns, paired with a dignified low-stimulus AAC speech board & Action Button launch.
+Calm AAC speech board & crisis Yes/No communication for autism, speech delays & sensory overload. 100% offline, low-stimulus, with caregiver 180° flip mode.
 ```
 
-### Keywords *(Comma-separated, no spaces after commas, 77 / 100 characters)*
+### Keywords (English) *(Comma-separated, no spaces after commas, zero overlap with Title/Subtitle, 96 / 100 characters)*
 ```text
-aac,autism,shutdown,meltdown,nonspeaking,yesno,caregiver,tts,offline,autistic
+nonverbal,pecs,apraxia,assistive,communication,caregiver,sensory,neurodivergent,stroke,slp,delay
 ```
+*(Note: Apple automatically indexes all words from App Name and Subtitle. Do not duplicate "aac", "autism", "speech", "talk", "cards", "meltdown", or "yesno" in this field).*
 
-### Full Description *(Markdown & Plain Text compliant)*
+### Full Description (English) *(Plain Text & Markdown compliant)*
 ```text
 When speech is hard, tap instead.
 
-Built by a father in Singapore for his two autistic sons (22 & 15) who can speak but not always. During meltdown, operating a phone is too hard. So I operate Sotto on MY phone, they tap Yes/No/Wait to pinpoint — issue resolved.
+Sotto is a dignified, low-stimulus AAC (Augmentative and Alternative Communication) app built for autism, speech delays, sensory overload, and crisis meltdowns. Universal for iPhone and iPad.
 
-Two modes, one family system:
+Built by a father in Singapore for his two autistic sons (22 & 15) who can speak but not always. During sensory overload or a meltdown, operating a phone is too hard. So the caregiver operates Sotto on their phone, flips the screen, and the communicator taps Yes, No, Wait, or Not sure to pinpoint the problem — issue resolved with zero friction.
 
-MODE 1 - DAILY (He holds his phone):
-Self-operated dignified AAC for complex info. Tap cards, multi-line Quick-Speak Bar, long-press giant fullscreen. Universal iPhone & iPad.
+We use Sotto in two distinct AAC modes:
 
-MODE 2 - MELTDOWN (You hold YOUR phone):
-You hold your phone. Tap partner, Flip 180° to face him, he taps Yes/No/Not sure/Stop. Direct pinpoint, no branching tree during crisis. This is what works at home.
+MODE 1 — DAILY INDEPENDENT AAC (He holds his phone):
+For complex information, noisy places, school, or communicating with new people. The user opens Sotto independently and taps visual cards — Needs, Social, Care, General — or types in the Quick-Speak Bar. One-tap speech with native iOS text-to-speech (AVSpeechSynthesizer), or long-press for a giant fullscreen card readable across a room without speaking.
 
-Crafted for sensory needs:
-• 5 Sensory Themes: Charcoal, OLED Pure Black, Warm Amber Low Strain, Slate Navy, Soft Parchment — WCAG AAA
-• Dignified Speech: AVSpeechSynthesizer with Samantha, Siri, Ava, Damayanti, digit-by-digit phone TTS for Safety card
-• Attention Chime: D5->A5 musical + haptics
-• Safety Bystander Card: 🛡️ badge, high-contrast amber #251E14/#FFB74D, digit-by-digit phone TTS
-• Two-Way HUD: Talk first during crisis, Why Finder second tab post-crisis
-• Why Log & Trends: After Yes/No resolves, log root cause locally
-• QR Offline Sharing: SOTTO:v1:... between iOS & Android, zero cloud
-• Backup v2: Granular JSON merge/replace
-• 100% Offline, Zero Trackers, Telemetry v3 opt-in with payload preview & 14-day PMF survey
+MODE 2 — CRISIS & MELTDOWN PARTNER MODE (Caregiver holds their phone):
+This is what stops meltdowns at home and in public. You open Sotto on YOUR phone, enter Partner Mode, and flip the screen 180° face-to-face. Your autistic loved one sees giant tactile buttons and taps Yes, No, Wait, Not sure, or Stop. No complex branching menus, no confusing symbol trees to navigate. That simple tap IS their voice when speech shuts down.
 
-Free. Private. GPL-3.0 with App Store exception. Sotto is not a medical device and does not provide medical advice, diagnosis, or treatment. It is an assistive communication tool.
+Why Sotto works for Autism & AAC:
+• Direct Yes/No Pinpoint Cards: Huge tactile buttons with CoreHaptics sensory feedback designed for shaky or overwhelmed hands
+• Two-Way Caregiver Partner Mode: Talk HUD with speech-to-text dictation, question bank, read-aloud prompts, and animated 180° flip display
+• High-Contrast Safety Bystander Card: Instant amber hero card for nonverbal episodes, emergencies, and medical needs with digit-by-digit phone number readout
+• 1-Press Hardware Action Button: Launch directly into Partner Talk mode via the iPhone Action Button, Back Tap, or Siri Shortcuts (AppIntents)
+• Single-Row Quick-Speak Dock: Spontaneous text-to-speech, fullscreen presentation, and one-tap phrase saving
+• Low-Stimulus Sensory Design: 5 dark-neutral palettes (Charcoal, OLED Pure Black, Warm Amber, Slate Navy, Soft Parchment) meeting WCAG AAA contrast, zero cartoon clutter
+• Dual-Language Offline AAC: Built-in English and Indonesian with natural on-device voices (Samantha, Ava, Damayanti)
+• Private Pattern Logger: After resolution, optionally log Pain, Sensory/Noise, Task, or Emotion triggers locally to identify 30-day patterns
+• Offline QR Deck Sharing: Share custom AAC phrase decks instantly between iOS and Android via encrypted QR codes — zero cloud required
+• Universal iPad Support: Fluid grid layouts optimized for 13-inch and 11-inch iPad displays for tabletop speech therapy
+• Flexible Backup v2: Easily export and import custom phrases, Why trees, and trigger logs
 
-github.com/triton1502oc/Sotto-iOS | Android available
+Who Sotto is built for:
+• Autistic individuals, neurodivergent communicators, and those experiencing sensory overload or autistic burnout
+• Nonspeaking, minimally verbal, or situational nonverbal teens and adults
+• Children and individuals with speech delay, apraxia of speech, dysarthria, or aphasia
+• Caregivers, parents, special education teachers, and Speech-Language Pathologists (SLPs) looking for a rapid, low-stimulus communication tool
+
+100% offline core. Zero accounts, zero ads, zero trackers. Rated "Data Not Collected" on App Privacy labels. Completely private. Open source (GPL-3.0 with App Store exception).
+
+Sotto is an assistive communication tool and does not provide medical advice, diagnosis, or treatment.
+
+github.com/triton1502oc/Sotto-iOS | Android version available
+```
+
+### Localized Store Listing (Indonesian - Bahasa Indonesia `id`)
+
+* **Nama Aplikasi (App Name):** `Sotto: AAC Autisme Ya/Tidak` *(27 / 30 characters)*  
+* **Subjudul (Subtitle):** `Bicara Nonverbal & Meltdown` *(27 / 30 characters)*  
+* **Kata Kunci (Keywords):** *(100 / 100 characters; tanpa spasi setelah koma)*  
+  ```text
+  wicara,terapi,pendamping,bisu,stroke,afasia,anak,sensorik,disabilitas,pecs,papan,kartu,suara,offline
+  ```
+* **Teks Promosi (Promotional Text):** *(156 / 170 characters)*  
+  ```text
+  Aplikasi komunikasi AAC autisme & krisis meltdown bermartabat dengan kartu bicara visual, tombol Ya/Tidak cepat untuk pendamping, dan dukungan offline 100%.
+  ```
+
+### Deskripsi Lengkap (Full Description - Indonesian)
+```text
+Saat bicara terasa sulit, cukup ketuk layar.
+
+Sotto adalah aplikasi komunikasi alternatif dan augmentatif (AAC) yang bermartabat dan minim stimulasi, dirancang khusus untuk autisme, keterlambatan bicara (speech delay), dan krisis meltdown. Universal untuk iPhone dan iPad.
+
+Dibuat oleh seorang ayah di Singapura untuk kedua anak laki-lakinya yang autistik (usia 22 & 15 tahun) yang bisa berbicara namun tidak selalu mampu saat stres melanda. Saat sensory overload atau meltdown, mengoperasikan ponsel sendiri menjadi terlalu berat. Maka pendamping (caregiver) mengoperasikan Sotto di ponselnya, memutar layar, dan anak cukup mengetuk Ya, Tidak, atau Tunggu untuk menunjukkan inti masalah — persoalan terselesaikan tanpa frustrasi.
+
+Sotto digunakan dalam 2 mode komunikasi AAC:
+
+MODE 1 — AAC MANDIRI SEHARI-HARI (Anak memegang perangkatnya sendiri):
+Untuk menyampaikan kebutuhan, di tempat bising, di sekolah, atau saat bertemu orang baru. Pengguna membuka Sotto secara mandiri dan memilih kartu visual — Kebutuhan, Sosial, Perawatan, Umum — atau mengetik di Bilah Quick-Speak. Sekali ketuk untuk berbicara dengan suara offline (AVSpeechSynthesizer), atau tekan lama untuk menampilkan kartu teks raksasa layar penuh yang mudah dibaca tanpa harus bersuara.
+
+MODE 2 — MODE PENDAMPING SAAT KRISIS & MELTDOWN (Pendamping memegang perangkat):
+Inilah fitur utama yang menenangkan situasi saat krisis di rumah maupun di tempat umum. Buka Sotto di iPhone/iPad ANDA, masuk ke Mode Pendamping (Partner Mode), lalu putar layar 180° berhadapan muka. Anak melihat tombol taktil besar dan cukup mengetuk Ya, Tidak, Tunggu, atau Ragu. Tidak ada menu bertingkat yang rumit, tidak ada pohon kategori yang membingungkan. Ketukan sederhana itu menjadi suara mereka saat kemampuan bicara terhenti.
+
+Mengapa Sotto Sangat Efektif untuk Autisme & AAC di iOS:
+• Tombol Krisis Ya / Tidak Raksasa: Tombol taktil dengan getaran CoreHaptics yang ramah untuk tangan gemetar atau panik
+• Mode Pendamping Dua Arah: Dilengkapi dikte suara lokal, bank pertanyaan cepat, pembacaan audio, dan tampilan putar layar 180°
+• Kartu Keselamatan Darurat: Kartu warna amber kontras tinggi untuk kondisi non-verbal darurat dengan pelafalan nomor telepon per digit
+• Tombol Aksi (Action Button): Akses kilat ke Mode Pendamping via Action Button iPhone, Ketuk Belakang (Back Tap), atau Siri Shortcuts
+• Bilah Quick-Speak: Ketik bebas untuk langsung disuarakan, kartu layar penuh, dan simpan frasa dengan 1 ketukan
+• Desain Minim Stimulasi: 5 palet warna sensorik netral-gelap standar WCAG AAA, tanpa animasi kartun yang memicu distraksi
+• AAC Offline Dua Bahasa: Mendukung bahasa Indonesia dan Inggris secara penuh dengan suara alami (Damayanti, Samantha)
+• Pencatat Pemicu Pribadi: Setelah krisis mereda, catat pemicu (Rasa Sakit, Bising, Tugas, atau Emosi) untuk melacak tren 30 hari secara lokal
+• Berbagi Kartu via QR: Bagikan dek kartu kata antar perangkat iOS dan Android via kode QR offline tanpa internet
+• Tampilan Universal iPad: Tata letak responsif dioptimalkan untuk iPad 11 inci dan 13 inci untuk sesi terapi wicara
+• Cadangkan & Pulihkan (Backup v2): Ekspor dan impor frasa khusus, pohon tanya, dan catatan pemicu dengan mudah
+
+Untuk Siapa Sotto Diciptakan:
+• Individu dengan spektrum autisme, neurodivergen, dan mereka yang mengalami kelelahan sensorik (autistic burnout)
+• Remaja dan dewasa non-verbal, minim bicara, atau yang kehilangan kemampuan bicara saat stres (situational mutism)
+• Anak dan individu dengan speech delay, apraxia bicara, disartria, atau afasia pasca stroke
+• Orang tua, pendamping (caregiver), guru PLB, dan terapis wicara
+
+100% inti offline. Tanpa akun, tanpa iklan, tanpa pelacak. Label Privasi: Data Not Collected. Terbuka (Open Source, lisensi GPL-3.0 dengan pengecualian App Store).
+
+Sotto adalah alat bantu komunikasi asistif dan tidak menyediakan diagnosis atau perawatan medis.
+
+github.com/triton1502oc/Sotto-iOS | Tersedia versi Android
 ```
 
 ### What's New *(v1.7.2)*
