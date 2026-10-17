@@ -117,6 +117,23 @@ public struct PhraseEditModal: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .stroke(speechRecognizer.isRecording ? SottoTheme.danger : Color.white.opacity(0.12), lineWidth: 1)
                             )
+                            
+                            if let speechErr = speechRecognizer.errorMessage {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(SottoTheme.warning)
+                                    Text(speechErr)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(SottoTheme.danger)
+                                    Spacer()
+                                    Button(action: { speechRecognizer.errorMessage = nil }) {
+                                        Image(systemName: "xmark")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundColor(SottoTheme.textSecondary)
+                                    }
+                                }
+                            }
                         }
                         
                         // Alternate Spoken Text (Only when Dual-Language is enabled)

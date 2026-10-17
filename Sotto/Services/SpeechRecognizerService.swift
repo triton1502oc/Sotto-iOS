@@ -19,20 +19,28 @@ public final class SpeechRecognizerService: ObservableObject {
     public init() {}
     
     public func requestPermissions(completion: @escaping (Bool) -> Void) {
-        SFSpeechRecognizer.requestAuthorization { authStatus in
+        SFSpeechRecognizer.requestAuthorization { [weak self] authStatus in
             DispatchQueue.main.async {
                 switch authStatus {
                 case .authorized:
                     if #available(iOS 17.0, macOS 14.0, *) {
-                        AVAudioApplication.requestRecordPermission { granted in
+                        AVAudioApplication.requestRecordPermission { [weak self] granted in
                             DispatchQueue.main.async {
+                                if !granted {
+                                    self?.errorMessage = "Microphone permission is required in Settings."
+                                    UsabilityTracker.shared.recordFriction("speech_error")
+                                }
                                 completion(granted)
                             }
                         }
                     } else {
                         #if canImport(UIKit)
-                        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                        AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
                             DispatchQueue.main.async {
+                                if !granted {
+                                    self?.errorMessage = "Microphone permission is required in Settings."
+                                    UsabilityTracker.shared.recordFriction("speech_error")
+                                }
                                 completion(granted)
                             }
                         }
@@ -41,6 +49,8 @@ public final class SpeechRecognizerService: ObservableObject {
                         #endif
                     }
                 default:
+                    self?.errorMessage = "Speech recognition permission is required in Settings."
+                    UsabilityTracker.shared.recordFriction("speech_error")
                     completion(false)
                 }
             }
@@ -59,7 +69,8 @@ public final class SpeechRecognizerService: ObservableObject {
         speechRecognizer = SFSpeechRecognizer(locale: locale) ?? SFSpeechRecognizer(locale: Locale(identifier: "en-US"))
         
         guard let speechRecognizer = speechRecognizer, speechRecognizer.isAvailable else {
-            self.errorMessage = "Speech recognition is not available."
+            self.errorMessage = "Offline speech recognition is not available on this device."
+            UsabilityTracker.shared.recordFriction("speech_error")
             return
         }
         

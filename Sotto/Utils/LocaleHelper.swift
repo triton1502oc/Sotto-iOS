@@ -83,6 +83,10 @@ public enum LocaleHelper {
         return (appLanguage == "in") ? langIndonesian : appLanguage
     }
     
+    private static let sharedRecognizer = NLLanguageRecognizer()
+    private static let recognizerLock = NSLock()
+    private static let phoneDigitRegex = try? NSRegularExpression(pattern: "(\\+?[0-9][0-9\\s\\-\\(\\)]{3,}[0-9])")
+    
     public static func detectLocale(phrase: String, appLanguage: String) -> Locale {
         let tokens = phrase.lowercased()
             .components(separatedBy: CharacterSet.alphanumerics.inverted)
@@ -102,10 +106,14 @@ public enum LocaleHelper {
             return Locale(identifier: "en_US")
         }
         
-        // Fall back to NaturalLanguage recognizer if word count is tied or zero
-        let recognizer = NLLanguageRecognizer()
-        recognizer.processString(phrase)
-        if let dominant = recognizer.dominantLanguage?.rawValue {
+        // Fall back to shared NaturalLanguage recognizer if word count is tied or zero
+        recognizerLock.lock()
+        sharedRecognizer.reset()
+        sharedRecognizer.processString(phrase)
+        let dominant = sharedRecognizer.dominantLanguage?.rawValue
+        recognizerLock.unlock()
+        
+        if let dominant = dominant {
             if dominant == "id" {
                 return Locale(identifier: "id_ID")
             } else if dominant == "en" {
@@ -327,7 +335,7 @@ public enum LocaleHelper {
         
         let digitsOnly = clean.filter { $0.isNumber }
         let is62CountryCode = clean.hasPrefix("62") && digitsOnly.count > 8
-        var chars = Array(clean)
+        let chars = Array(clean)
         var i = 0
         if is62CountryCode {
             sb.append("enam dua, ")
@@ -382,8 +390,7 @@ public enum LocaleHelper {
         }
         
         // Matches sequences of digits (phone numbers) with optional international prefix, dashes, parens, spaces
-        let pattern = "(\\+?[0-9][0-9\\s\\-\\(\\)]{3,}[0-9])"
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return text }
+        guard let regex = phoneDigitRegex else { return text }
         
         let nsString = text as NSString
         let matches = regex.matches(in: text, range: NSRange(location: 0, length: nsString.length))
@@ -415,6 +422,29 @@ public enum LocaleHelper {
             }
         }
         return result
+    }
+    
+    public static func formatSafetyPhrase(
+        area: String,
+        contactName: String,
+        phone: String,
+        appLanguage: String = "system"
+    ) -> (displayText: String, spokenText: String) {
+        let effectiveLang = getEffectiveLanguage(appLanguage: appLanguage)
+        let isIndonesian = effectiveLang == langIndonesian || effectiveLang == "in"
+        let trimmedArea = area.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedContact = contactName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedPhone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
+        let namePart = trimmedContact.isEmpty ? "" : " (\(trimmedContact))"
+        
+        let displayText: String
+        if isIndonesian {
+            displayText = "Saya tinggal di sekitar \(trimmedArea), tolong hubungi kontak darurat saya\(namePart): \(trimmedPhone)"
+        } else {
+            displayText = "I live around \(trimmedArea), please call my emergency contact\(namePart): \(trimmedPhone)"
+        }
+        let spokenText = formatDigitsForSpeech(displayText, language: effectiveLang)
+        return (displayText, spokenText)
     }
 }
 

@@ -33,65 +33,454 @@ public struct MainView: View {
     }
     
     private var isIndonesian: Bool {
-        viewModel.voiceSettings.appLanguage == "id"
+        LocaleHelper.getEffectiveLanguage(appLanguage: viewModel.voiceSettings.appLanguage) == LocaleHelper.langIndonesian
     }
     
     public var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                currentPalette.background
-                    .ignoresSafeArea()
-                
-                VStack(spacing: 0) {
-                    // Top Bar
-                    topBar
-                    
-                    // Category Filter Chips
-                    categoryFilterRow
-                        .padding(.vertical, 8)
-                    
-                    // Persistent Safety / SOS Quick-Action Banner when viewing sub-categories
-                    if viewModel.voiceSettings.showSafetyCards && viewModel.selectedCategory != .all && viewModel.selectedCategory != .emergency,
-                       let emergencyPhrase = viewModel.phrases.first(where: { $0.isEmergency }) {
-                        persistentEmergencyBanner(phrase: emergencyPhrase)
-                    }
-                    
-                    // Phrases Grid / List
-                    phrasesContent(width: geometry.size.width)
-                    
-                    // Quick Speak Bar (docked at bottom)
-                    QuickSpeakBarView(
-                        text: $viewModel.quickText,
-                        onSpeak: { text in
-                            viewModel.speakQuickText(text)
+            coreLayoutWithPrimarySheets(size: geometry.size)
+                .sheet(isPresented: $viewModel.showExportBackupDialog) {
+                    ExportBackupModal(
+                        phraseCount: viewModel.phrases.count,
+                        areaCount: viewModel.whyFinderRepository.getTree().areas.count,
+                        logCount: viewModel.whyFinderRepository.getLogs().count,
+                        onExport: { exportPhrases, exportTree, exportLog in
+                            let json = viewModel.exportBackup(exportPhrases: exportPhrases, exportTree: exportTree, exportLog: exportLog)
+                            let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent("sotto_deck_\(Int(Date().timeIntervalSince1970)).sotto")
+                            try? json.write(to: tempUrl, atomically: true, encoding: .utf8)
+                            shareUrl = tempUrl
+                            showShareSheet = true
+                            viewModel.showExportBackupDialog = false
                         },
-                        onFullscreen: { text in
-                            UsabilityTracker.shared.endIntent(
-                                "QuickSpeak",
-                                outcome: "shown_fullscreen",
-                                contextTag: "dock_v2 len_\(text.count)",
-                                voiceSettings: viewModel.voiceSettings
+                        onShareQR: { _, _, _ in
+                            let json = viewModel.exportCompactPhrasesForQR()
+                            viewModel.showExportBackupDialog = false
+                            activeQRShareItem = QRShareItem(
+                                title: "Sotto Vocabulary Deck",
+                                subtitle: "Scan with camera to import phrases",
+                                data: json
                             )
-                            let phrase = Phrase(text: text, language: LocaleHelper.langAuto)
-                            viewModel.activeFullscreenPhrase = phrase
                         },
-                        onSaveAsCard: { text in
-                            UsabilityTracker.shared.endIntent(
-                                "QuickSpeak",
-                                outcome: "saved_as_card",
-                                contextTag: "dock_v2 len_\(text.count)",
-                                voiceSettings: viewModel.voiceSettings
-                            )
-                            viewModel.initialAddText = text
-                            viewModel.showAddPhraseDialog = true
-                        },
-                        onClear: {
-                            viewModel.onQuickTextCleared()
+                        onDismiss: {
+                            viewModel.showExportBackupDialog = false
                         }
                     )
                 }
+                .sheet(isPresented: Binding(
+                    get: { viewModel.showImportBackupDialog && viewModel.backupDataToImport != nil },
+                    set: { if !$0 { viewModel.showImportBackupDialog = false; viewModel.backupDataToImport = nil } }
+                )) {
+                    if let backupData = viewModel.backupDataToImport {
+                        ImportBackupModal(
+                            backupData: backupData,
+                            onMerge: { selectedData in
+                                _ = viewModel.importBackup(backupData: selectedData, replace: false)
+                                viewModel.backupDataToImport = nil
+                                viewModel.showImportBackupDialog = false
+                            },
+                            onReplace: { selectedData in
+                                _ = viewModel.importBackup(backupData: selectedData, replace: true)
+                                viewModel.backupDataToImport = nil
+                                viewModel.showImportBackupDialog = false
+                            },
+                            onDismiss: {
+                                viewModel.backupDataToImport = nil
+                                viewModel.showImportBackupDialog = false
+                            }
+                        )
+                    }
+                }
+                .sheet(isPresented: $viewModel.showPmfSurveyDialog) {
+                    PmfSurveyModal(
+                        initialRole: viewModel.voiceSettings.userRole,
+                        onSubmit: { pmfScore, primaryBenefit, role in
+                            viewModel.onPmfSurveyAnswered(pmfScore: pmfScore, primaryBenefit: primaryBenefit, role: role) { s, b, r in
+                                UsabilityTracker.shared.recordSurvey(
+                                    pmfScore: s,
+                                    primaryBenefit: b,
+                                    confirmedRole: r,
+                                    voiceSettings: viewModel.voiceSettings
+                                )
+                            }
+                            viewModel.showPmfSurveyDialog = false
+                        },
+                        onDismiss: {
+                            viewModel.onPmfSurveyDismissed()
+                            viewModel.showPmfSurveyDialog = false
+                        }
+                    )
+                }
+                .sheet(isPresented: $showShareSheet, onDismiss: {
+                    if let url = shareUrl {
+                        try? FileManager.default.removeItem(at: url)
+                        shareUrl = nil
+                    }
+                }) {
+                    if let url = shareUrl {
+                        ShareActivityView(activityItems: [url])
+                    }
+                }
+                .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [UTType(filenameExtension: "sotto") ?? .json, .json]) { result in
+                    if case .success(let url) = result {
+                        handleIncomingDeckUrl(url)
+                    }
+                }
+                .sheet(item: $activeQRShareItem) { item in
+                    QRCodeModal(
+                        title: item.title,
+                        subtitle: item.subtitle,
+                        dataString: item.data,
+                        onDismiss: {
+                            activeQRShareItem = nil
+                        }
+                    )
+                }
+                .sheet(isPresented: $showQRScanner) {
+                    QRScannerModal(
+                        onScan: { scanned in
+                            showQRScanner = false
+                            handleIncomingDeckString(scanned)
+                        },
+                        onDismiss: {
+                            showQRScanner = false
+                        }
+                    )
+                }
+                .onOpenURL { url in
+                    handleIncomingDeckUrl(url)
+                }
+                .alert(isIndonesian ? "Frasa Sudah Ada" : "Duplicate Phrase", isPresented: $viewModel.showDuplicatePhraseAlert) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(isIndonesian ? "Kartu dengan teks ini sudah ada di dek Anda." : "A card with this exact text already exists in your deck.")
+                }
+                .alert("Add Category", isPresented: $showAddCategoryAlert) {
+                    TextField("Category name", text: $newCategoryNameInput)
+                    Button("Add") {
+                        viewModel.addCategory(newCategoryNameInput)
+                        newCategoryNameInput = ""
+                    }
+                    Button("Cancel", role: .cancel) {
+                        newCategoryNameInput = ""
+                    }
+                }
+                .alert("Rename Category", isPresented: Binding(
+                    get: { categoryToRename != nil },
+                    set: { if !$0 { categoryToRename = nil } }
+                )) {
+                    TextField("Category name", text: $categoryRenameInput)
+                    Button("Save") {
+                        if let oldName = categoryToRename {
+                            viewModel.renameCategory(oldName: oldName, newName: categoryRenameInput)
+                        }
+                        categoryToRename = nil
+                    }
+                    Button("Cancel", role: .cancel) {
+                        categoryToRename = nil
+                    }
+                }
+                .alert("Delete Category?", isPresented: Binding(
+                    get: { categoryToDelete != nil },
+                    set: { if !$0 { categoryToDelete = nil } }
+                )) {
+                    Button("Delete", role: .destructive) {
+                        if let cat = categoryToDelete {
+                            viewModel.deleteCategory(cat)
+                        }
+                        categoryToDelete = nil
+                    }
+                    Button("Cancel", role: .cancel) {
+                        categoryToDelete = nil
+                    }
+                } message: {
+                    if let cat = categoryToDelete {
+                        Text("Phrases in \"\(cat)\" will be moved to General.")
+                    }
+                }
+                .onAppear {
+                    handleMainViewAppear(size: geometry.size)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: .sottoEmergencyAction)) { notification in
+                    if let action = notification.object as? EmergencyLaunchManager.Action {
+                        handleEmergencyAction(action)
+                    }
+                }
+                .preferredColorScheme(viewModel.voiceSettings.appTheme == VoiceSettings.themeSoftParchment ? .light : .dark)
+                .environment(\.sottoPalette, currentPalette)
+        }
+    }
+
+    private func coreLayoutWithPrimarySheets(size: CGSize) -> some View {
+        mainLayout(size: size)
+            .fullScreenCover(isPresented: $viewModel.showTwoWayDialog) {
+                TwoWayConversationModal(
+                    allPhrases: viewModel.phrases,
+                    categories: viewModel.categories,
+                    whyFinderRepository: viewModel.whyFinderRepository,
+                    voiceSettings: viewModel.voiceSettings,
+                    appLanguage: viewModel.voiceSettings.appLanguage,
+                    onSpeakResponse: { text in
+                        viewModel.onTwoWayResponseSpoken()
+                        viewModel.speakText(text, language: LocaleHelper.langAuto)
+                    },
+                    onDismiss: {
+                        viewModel.onTwoWayDismissed()
+                        viewModel.showTwoWayDialog = false
+                    }
+                )
+            }
+            .fullScreenCover(item: $viewModel.activeFullscreenPhrase) { phrase in
+                FullscreenPhraseModal(
+                    phrase: phrase,
+                    voiceSettings: viewModel.voiceSettings,
+                    onSpeak: { toSpeak in
+                        viewModel.speakText(toSpeak.text, language: toSpeak.language)
+                    },
+                    onSpeakSecondary: { toSpeak in
+                        handleFullscreenSpeakSecondary(toSpeak)
+                    },
+                    onOpenPartnerMode: {
+                        UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
+                        viewModel.activeFullscreenPhrase = nil
+                        viewModel.showTwoWayDialog = true
+                    },
+                    onDismiss: {
+                        viewModel.activeFullscreenPhrase = nil
+                    }
+                )
+            }
+            .sheet(item: $viewModel.phraseForSafetySetup) { safetyPhrase in
+                EmergencySafetySetupModal(
+                    phrase: safetyPhrase,
+                    voiceSettings: viewModel.voiceSettings,
+                    onSavePhrase: { updated in
+                        _ = viewModel.editPhrase(old: safetyPhrase, new: updated)
+                        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
+                        viewModel.phraseForSafetySetup = nil
+                        viewModel.speakPhraseDirectly(updated)
+                    },
+                    onSpeakAnyway: { rawPhrase in
+                        viewModel.phraseForSafetySetup = nil
+                        viewModel.speakPhraseDirectly(rawPhrase)
+                    },
+                    onDismiss: {
+                        viewModel.phraseForSafetySetup = nil
+                    }
+                )
+                .environment(\.sottoPalette, currentPalette)
+            }
+            .sheet(isPresented: $viewModel.showWelcomeOnboarding) {
+                WelcomeOnboardingModal(
+                    initialRole: viewModel.voiceSettings.userRole,
+                    emergencyPhrase: viewModel.phrases.first(where: { $0.isEmergency }),
+                    voiceSettings: viewModel.voiceSettings,
+                    onSaveEmergencyPhrase: { updatedPhrase in
+                        if let existingEmergency = viewModel.phrases.first(where: { $0.isEmergency }) {
+                            _ = viewModel.editPhrase(old: existingEmergency, new: updatedPhrase)
+                        } else {
+                            _ = viewModel.addPhrase(updatedPhrase)
+                        }
+                    },
+                    onFinish: { selectedRole in
+                        viewModel.onRolePromptAnswered(selectedRole)
+                        viewModel.showWelcomeOnboarding = false
+                    }
+                )
+                .environment(\.sottoPalette, currentPalette)
+            }
+            .sheet(isPresented: $viewModel.showAddPhraseDialog) {
+                PhraseEditModal(
+                    initialText: viewModel.initialAddText,
+                    voiceSettings: viewModel.voiceSettings,
+                    onSave: { newPhrase in
+                        handleAddPhraseSave(newPhrase)
+                    },
+                    onCancel: {
+                        viewModel.initialAddText = ""
+                        viewModel.showAddPhraseDialog = false
+                    }
+                )
+            }
+            .sheet(item: $viewModel.phraseToEdit) { phrase in
+                PhraseEditModal(
+                    existingPhrase: phrase,
+                    voiceSettings: viewModel.voiceSettings,
+                    onSave: { updated in
+                        handleEditPhraseSave(old: phrase, updated: updated)
+                    },
+                    onDelete: { toDelete in
+                        viewModel.deletePhrase(toDelete)
+                        viewModel.phraseToEdit = nil
+                    },
+                    onCancel: {
+                        viewModel.phraseToEdit = nil
+                    }
+                )
+            }
+            .sheet(isPresented: $viewModel.showVoiceSettingsDialog) {
+                VoiceSettingsModal(
+                    settings: Binding(
+                        get: { viewModel.voiceSettings },
+                        set: { viewModel.updateVoiceSettings($0) }
+                    ),
+                    whyFinderRepository: viewModel.whyFinderRepository,
+                    onTestVoice: { testSettings in
+                        viewModel.testVoice(with: testSettings)
+                    },
+                    onOpenWhyLog: {
+                        viewModel.showWhyLogDialog = true
+                    },
+                    onOpenWhyTreeEditor: {
+                        viewModel.showWhyTreeEditorDialog = true
+                    },
+                    onOpenQRScanner: {
+                        showQRScanner = true
+                    },
+                    onExportPhrases: {
+                        viewModel.showExportBackupDialog = true
+                    },
+                    onImportPhrases: {
+                        showFileImporter = true
+                    },
+                    onDismiss: {
+                        viewModel.showVoiceSettingsDialog = false
+                    }
+                )
+            }
+            .sheet(isPresented: $viewModel.showManageCategoriesDialog) {
+                ManageCategoriesModal(
+                    viewModel: viewModel,
+                    onDismiss: {
+                        viewModel.showManageCategoriesDialog = false
+                    }
+                )
+            }
+            .sheet(isPresented: $viewModel.showWhyTreeEditorDialog) {
+                WhyTreeEditorModal(
+                    repository: viewModel.whyFinderRepository,
+                    onDismiss: {
+                        viewModel.showWhyTreeEditorDialog = false
+                    }
+                )
+                .environment(\.sottoPalette, currentPalette)
+            }
+            .sheet(isPresented: $viewModel.showWhyLogDialog) {
+                WhyLogModal(
+                    repository: viewModel.whyFinderRepository,
+                    onDismiss: {
+                        viewModel.showWhyLogDialog = false
+                    }
+                )
+                .environment(\.sottoPalette, currentPalette)
+            }
+    }
+
+    private func handleFullscreenSpeakSecondary(_ toSpeak: Phrase) {
+        let targetLang = viewModel.voiceSettings.secondaryLanguage
+        if let spoken = toSpeak.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
+            let hasExplicitLang = (toSpeak.spokenLanguage?.isEmpty == false && toSpeak.spokenLanguage != LocaleHelper.langAuto)
+            let spokenLang = hasExplicitLang ? toSpeak.spokenLanguage! : targetLang
+            viewModel.speakText(spoken, language: spokenLang)
+        }
+    }
+
+    private func handleAddPhraseSave(_ newPhrase: Phrase) {
+        let added = viewModel.addPhrase(newPhrase)
+        if !added {
+            UsabilityTracker.shared.recordFriction("duplicate_phrase_blocked", voiceSettings: viewModel.voiceSettings)
+            viewModel.showAddPhraseDialog = false
+            viewModel.showDuplicatePhraseAlert = true
+            return
+        }
+        if newPhrase.isEmergency {
+            UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
+        }
+        viewModel.initialAddText = ""
+        viewModel.showAddPhraseDialog = false
+    }
+
+    private func handleEditPhraseSave(old phrase: Phrase, updated: Phrase) {
+        let saved = viewModel.editPhrase(old: phrase, new: updated)
+        if !saved {
+            UsabilityTracker.shared.recordFriction("duplicate_phrase_blocked", voiceSettings: viewModel.voiceSettings)
+            viewModel.phraseToEdit = nil
+            viewModel.showDuplicatePhraseAlert = true
+            return
+        }
+        if updated.isEmergency {
+            UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
+        }
+        viewModel.phraseToEdit = nil
+    }
+
+    private func handleMainViewAppear(size: CGSize) {
+        UsabilityTracker.shared.recordAppOpen(voiceSettings: viewModel.voiceSettings)
+        let customCount = viewModel.phrases.filter { !PhraseCategory.defaultCategories.contains($0.category) }.count
+        UsabilityTracker.shared.recordSettingsState(settings: viewModel.voiceSettings, customPhraseCount: customCount)
+        
+        if let pending = EmergencyLaunchManager.shared.pendingAction {
+            handleEmergencyAction(pending)
+        } else if DemoAutomationRunner.shared.isScreenshotRequested {
+            DemoAutomationRunner.shared.startScreenshotCapture(viewModel: viewModel)
+        } else if DemoAutomationRunner.shared.isDemoRequested {
+            DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: size)
+        } else if viewModel.shouldPromptRole() {
+            viewModel.showWelcomeOnboarding = true
+        } else if viewModel.shouldPromptPmfSurvey() {
+            viewModel.showPmfSurveyDialog = true
+        }
+    }
+
+    // MARK: - Main Layout & QuickSpeak Actions
+
+    private func mainLayout(size: CGSize) -> some View {
+        ZStack {
+            currentPalette.background
+                .ignoresSafeArea()
             
-            // Floating Action Button (+) in Edit Mode
+            VStack(spacing: 0) {
+                MainTopBarView(
+                    viewModel: viewModel,
+                    currentPalette: currentPalette
+                )
+                
+                CategoryFilterBarView(
+                    viewModel: viewModel,
+                    currentPalette: currentPalette,
+                    onAddCategoryTap: {
+                        newCategoryNameInput = ""
+                        showAddCategoryAlert = true
+                    }
+                )
+                .padding(.vertical, 8)
+                
+                if viewModel.voiceSettings.showSafetyCards && viewModel.selectedCategory != .all && viewModel.selectedCategory != .emergency,
+                   let emergencyPhrase = viewModel.phrases.first(where: { $0.isEmergency }) {
+                    PersistentEmergencyBannerView(
+                        viewModel: viewModel,
+                        phrase: emergencyPhrase
+                    )
+                }
+                
+                phrasesContent(width: size.width)
+                
+                QuickSpeakBarView(
+                    text: $viewModel.quickText,
+                    onSpeak: { text in
+                        viewModel.speakQuickText(text)
+                    },
+                    onFullscreen: { text in
+                        handleQuickSpeakFullscreen(text)
+                    },
+                    onSaveAsCard: { text in
+                        handleQuickSpeakSaveAsCard(text)
+                    },
+                    onClear: {
+                        viewModel.onQuickTextCleared()
+                    }
+                )
+            }
+            
             if viewModel.isEditMode {
                 VStack {
                     Spacer()
@@ -113,329 +502,60 @@ public struct MainView: View {
                                 )
                         }
                         .padding(.trailing, 20)
-                        .padding(.bottom, 72) // Above the quick-speak bar
+                        .padding(.bottom, 72)
                     }
                 }
             }
         }
-        // Modals
-        .fullScreenCover(isPresented: $viewModel.showTwoWayDialog) {
-            TwoWayConversationModal(
-                allPhrases: viewModel.phrases,
-                categories: viewModel.categories,
-                whyFinderRepository: viewModel.whyFinderRepository,
-                voiceSettings: viewModel.voiceSettings,
-                appLanguage: viewModel.voiceSettings.appLanguage,
-                onSpeakResponse: { text in
-                    viewModel.onTwoWayResponseSpoken()
-                    viewModel.speakText(text, language: LocaleHelper.langAuto)
-                },
-                onDismiss: {
-                    viewModel.onTwoWayDismissed()
-                    viewModel.showTwoWayDialog = false
-                }
-            )
-        }
-        .fullScreenCover(item: $viewModel.activeFullscreenPhrase) { phrase in
-            FullscreenPhraseModal(
-                phrase: phrase,
-                voiceSettings: viewModel.voiceSettings,
-                onSpeak: { toSpeak in
-                    viewModel.speakText(toSpeak.text, language: toSpeak.language)
-                },
-                onSpeakSecondary: { toSpeak in
-                    let targetLang = viewModel.voiceSettings.secondaryLanguage
-                    if let spoken = toSpeak.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines), !spoken.isEmpty {
-                        let spokenLang = (toSpeak.spokenLanguage?.isEmpty == false && toSpeak.spokenLanguage != LocaleHelper.langAuto)
-                            ? toSpeak.spokenLanguage!
-                            : targetLang
-                        viewModel.speakText(spoken, language: spokenLang)
-                    }
-                },
-                onOpenPartnerMode: {
-                    UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
-                    viewModel.activeFullscreenPhrase = nil
-                    viewModel.showTwoWayDialog = true
-                },
-                onDismiss: {
-                    viewModel.activeFullscreenPhrase = nil
-                }
-            )
-        }
-        .sheet(isPresented: $viewModel.showAddPhraseDialog) {
-            PhraseEditModal(
-                initialText: viewModel.initialAddText,
-                voiceSettings: viewModel.voiceSettings,
-                onSave: { newPhrase in
-                    viewModel.addPhrase(newPhrase)
-                    if newPhrase.isEmergency {
-                        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
-                    }
-                    viewModel.initialAddText = ""
-                    viewModel.showAddPhraseDialog = false
-                },
-                onCancel: {
-                    viewModel.initialAddText = ""
-                    viewModel.showAddPhraseDialog = false
-                }
-            )
-        }
-        .sheet(item: $viewModel.phraseToEdit) { phrase in
-            PhraseEditModal(
-                existingPhrase: phrase,
-                voiceSettings: viewModel.voiceSettings,
-                onSave: { updated in
-                    viewModel.editPhrase(old: phrase, new: updated)
-                    if updated.isEmergency {
-                        UsabilityTracker.shared.recordSafetyCardSaved(voiceSettings: viewModel.voiceSettings)
-                    }
-                    viewModel.phraseToEdit = nil
-                },
-                onDelete: { toDelete in
-                    viewModel.deletePhrase(toDelete)
-                    viewModel.phraseToEdit = nil
-                },
-                onCancel: {
-                    viewModel.phraseToEdit = nil
-                }
-            )
-        }
-        .sheet(isPresented: $viewModel.showVoiceSettingsDialog) {
-            VoiceSettingsModal(
-                settings: Binding(
-                    get: { viewModel.voiceSettings },
-                    set: { viewModel.updateVoiceSettings($0) }
-                ),
-                whyFinderRepository: viewModel.whyFinderRepository,
-                onTestVoice: { testSettings in
-                    viewModel.testVoice(with: testSettings)
-                },
-                onOpenWhyLog: {
-                    viewModel.showWhyLogDialog = true
-                },
-                onOpenWhyTreeEditor: {
-                    viewModel.showWhyTreeEditorDialog = true
-                },
-                onOpenQRScanner: {
-                    showQRScanner = true
-                },
-                onExportPhrases: {
-                    viewModel.showExportBackupDialog = true
-                },
-                onImportPhrases: {
-                    showFileImporter = true
-                },
-                onDismiss: {
-                    viewModel.showVoiceSettingsDialog = false
-                }
-            )
-        }
-        .sheet(isPresented: $viewModel.showManageCategoriesDialog) {
-            ManageCategoriesModal(
-                viewModel: viewModel,
-                onDismiss: {
-                    viewModel.showManageCategoriesDialog = false
-                }
-            )
-        }
-        .sheet(isPresented: $viewModel.showWhyTreeEditorDialog) {
-            WhyTreeEditorModal(
-                repository: viewModel.whyFinderRepository,
-                onDismiss: {
-                    viewModel.showWhyTreeEditorDialog = false
-                }
-            )
-            .environment(\.sottoPalette, currentPalette)
-        }
-        .sheet(isPresented: $viewModel.showWhyLogDialog) {
-            WhyLogModal(
-                repository: viewModel.whyFinderRepository,
-                onDismiss: {
-                    viewModel.showWhyLogDialog = false
-                }
-            )
-            .environment(\.sottoPalette, currentPalette)
-        }
-        .sheet(isPresented: $viewModel.showExportBackupDialog) {
-            ExportBackupModal(
-                phraseCount: viewModel.phrases.count,
-                areaCount: viewModel.whyFinderRepository.getTree().areas.count,
-                logCount: viewModel.whyFinderRepository.getLogs().count,
-                onExport: { exportPhrases, exportTree, exportLog in
-                    let json = viewModel.exportBackup(exportPhrases: exportPhrases, exportTree: exportTree, exportLog: exportLog)
-                    let tempUrl = FileManager.default.temporaryDirectory.appendingPathComponent("sotto_deck_\(Int(Date().timeIntervalSince1970)).sotto")
-                    try? json.write(to: tempUrl, atomically: true, encoding: .utf8)
-                    shareUrl = tempUrl
-                    showShareSheet = true
-                    viewModel.showExportBackupDialog = false
-                },
-                onShareQR: { exportPhrases, exportTree, exportLog in
-                    let json = viewModel.exportCompactPhrasesForQR()
-                    viewModel.showExportBackupDialog = false
-                    activeQRShareItem = QRShareItem(
-                        title: "Sotto Vocabulary Deck",
-                        subtitle: "Scan with camera to import phrases",
-                        data: json
-                    )
-                },
-                onDismiss: {
-                    viewModel.showExportBackupDialog = false
-                }
-            )
-        }
-        .sheet(isPresented: Binding(
-            get: { viewModel.showImportBackupDialog && viewModel.backupDataToImport != nil },
-            set: { if !$0 { viewModel.showImportBackupDialog = false; viewModel.backupDataToImport = nil } }
-        )) {
-            if let backupData = viewModel.backupDataToImport {
-                ImportBackupModal(
-                    backupData: backupData,
-                    onMerge: { selectedData in
-                        _ = viewModel.importBackup(backupData: selectedData, replace: false)
-                        viewModel.backupDataToImport = nil
-                        viewModel.showImportBackupDialog = false
-                    },
-                    onReplace: { selectedData in
-                        _ = viewModel.importBackup(backupData: selectedData, replace: true)
-                        viewModel.backupDataToImport = nil
-                        viewModel.showImportBackupDialog = false
-                    },
-                    onDismiss: {
-                        viewModel.backupDataToImport = nil
-                        viewModel.showImportBackupDialog = false
-                    }
-                )
-            }
-        }
-        .sheet(isPresented: $viewModel.showPmfSurveyDialog) {
-            PmfSurveyModal(
-                initialRole: viewModel.voiceSettings.userRole,
-                onSubmit: { pmfScore, primaryBenefit, role in
-                    viewModel.onPmfSurveyAnswered(pmfScore: pmfScore, primaryBenefit: primaryBenefit, role: role) { s, b, r in
-                        UsabilityTracker.shared.recordSurvey(
-                            pmfScore: s,
-                            primaryBenefit: b,
-                            confirmedRole: r,
-                            voiceSettings: viewModel.voiceSettings
-                        )
-                    }
-                    viewModel.showPmfSurveyDialog = false
-                },
-                onDismiss: {
-                    viewModel.onPmfSurveyDismissed()
-                    viewModel.showPmfSurveyDialog = false
-                }
-            )
-        }
-        .sheet(isPresented: $showShareSheet, onDismiss: {
-            if let url = shareUrl {
-                try? FileManager.default.removeItem(at: url)
-                shareUrl = nil
-            }
-        }) {
-            if let url = shareUrl {
-                ShareActivityView(activityItems: [url])
-            }
-        }
-        .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [UTType(filenameExtension: "sotto") ?? .json, .json]) { result in
-            if case .success(let url) = result {
-                handleIncomingDeckUrl(url)
-            }
-        }
-        .sheet(item: $activeQRShareItem) { item in
-            QRCodeModal(
-                title: item.title,
-                subtitle: item.subtitle,
-                dataString: item.data,
-                onDismiss: {
-                    activeQRShareItem = nil
-                }
-            )
-        }
-        .sheet(isPresented: $showQRScanner) {
-            QRScannerModal(
-                onScan: { scanned in
-                    showQRScanner = false
-                    handleIncomingDeckString(scanned)
-                },
-                onDismiss: {
-                    showQRScanner = false
-                }
-            )
-        }
-        .onOpenURL { url in
-            handleIncomingDeckUrl(url)
-        }
-        // Alerts for In-Row Category Editing
-        .alert("Add Category", isPresented: $showAddCategoryAlert) {
-            TextField("Category name", text: $newCategoryNameInput)
-            Button("Add") {
-                viewModel.addCategory(newCategoryNameInput)
-                newCategoryNameInput = ""
-            }
-            Button("Cancel", role: .cancel) {
-                newCategoryNameInput = ""
-            }
-        }
-        .alert("Rename Category", isPresented: Binding(
-            get: { categoryToRename != nil },
-            set: { if !$0 { categoryToRename = nil } }
-        )) {
-            TextField("Category name", text: $categoryRenameInput)
-            Button("Save") {
-                if let oldName = categoryToRename {
-                    viewModel.renameCategory(oldName: oldName, newName: categoryRenameInput)
-                }
-                categoryToRename = nil
-            }
-            Button("Cancel", role: .cancel) {
-                categoryToRename = nil
-            }
-        }
-        .alert("Delete Category?", isPresented: Binding(
-            get: { categoryToDelete != nil },
-            set: { if !$0 { categoryToDelete = nil } }
-        )) {
-            Button("Delete", role: .destructive) {
-                if let cat = categoryToDelete {
-                    viewModel.deleteCategory(cat)
-                }
-                categoryToDelete = nil
-            }
-            Button("Cancel", role: .cancel) {
-                categoryToDelete = nil
-            }
-        } message: {
-            if let cat = categoryToDelete {
-                Text("Phrases in \"\(cat)\" will be moved to General.")
-            }
-        }
-        .onAppear {
-            UsabilityTracker.shared.recordAppOpen(voiceSettings: viewModel.voiceSettings)
-            let customCount = viewModel.phrases.filter { !PhraseCategory.defaultCategories.contains($0.category) }.count
-            UsabilityTracker.shared.recordSettingsState(settings: viewModel.voiceSettings, customPhraseCount: customCount)
-            
-            if viewModel.shouldPromptPmfSurvey() {
-                viewModel.showPmfSurveyDialog = true
-            }
-            if let pending = EmergencyLaunchManager.shared.pendingAction {
-                handleEmergencyAction(pending)
-            }
-            if DemoAutomationRunner.shared.isScreenshotRequested {
-                DemoAutomationRunner.shared.startScreenshotCapture(viewModel: viewModel)
-            } else if DemoAutomationRunner.shared.isDemoRequested {
-                DemoAutomationRunner.shared.startDemo(viewModel: viewModel, size: geometry.size)
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .sottoEmergencyAction)) { notification in
-            if let action = notification.object as? EmergencyLaunchManager.Action {
-                handleEmergencyAction(action)
-            }
-        }
-        .preferredColorScheme(viewModel.voiceSettings.appTheme == VoiceSettings.themeSoftParchment ? .light : .dark)
-        .environment(\.sottoPalette, currentPalette)
     }
-}
+
+    private func handleQuickSpeakFullscreen(_ text: String) {
+        let contextStr = "dock_v2 len_\(text.count)"
+        UsabilityTracker.shared.endIntent(
+            "QuickSpeak",
+            outcome: "shown_fullscreen",
+            contextTag: contextStr,
+            voiceSettings: viewModel.voiceSettings
+        )
+        var spokenTranslation: String? = nil
+        var spokenLang: String? = nil
+        if viewModel.voiceSettings.showLanguageSwitcher {
+            let sourceLocale = LocaleHelper.resolvePhraseLocale(
+                phraseLang: LocaleHelper.langAuto,
+                phraseText: text,
+                appLanguage: viewModel.voiceSettings.appLanguage
+            )
+            let sourceLang = sourceLocale.language.languageCode?.identifier ?? "en"
+            let targetLang = viewModel.voiceSettings.secondaryLanguage
+            if let match = TranslationHelper.dictionaryTranslation(for: text, sourceLang: sourceLang, targetLang: targetLang) {
+                spokenTranslation = match
+                spokenLang = targetLang
+            }
+        }
+        viewModel.activeFullscreenPhrase = Phrase(
+            text: text,
+            spokenText: spokenTranslation,
+            spokenLanguage: spokenLang,
+            language: LocaleHelper.langAuto
+        )
+    }
+
+    private func handleQuickSpeakSaveAsCard(_ text: String) {
+        if viewModel.hasDuplicatePhrase(text) {
+            UsabilityTracker.shared.recordFriction("duplicate_phrase_blocked", voiceSettings: viewModel.voiceSettings)
+            viewModel.showDuplicatePhraseAlert = true
+            return
+        }
+        let contextStr = "dock_v2 len_\(text.count)"
+        UsabilityTracker.shared.endIntent(
+            "QuickSpeak",
+            outcome: "saved_as_card",
+            contextTag: contextStr,
+            voiceSettings: viewModel.voiceSettings
+        )
+        viewModel.initialAddText = text
+        viewModel.showAddPhraseDialog = true
+    }
 
     // MARK: - Emergency Shortcut Handler (Issue #18)
 
@@ -507,342 +627,6 @@ public struct MainView: View {
         }
     }
     
-    // MARK: - Top Bar
-    
-    private var topBar: some View {
-        HStack {
-            Text("Sotto")
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(currentPalette.textPrimary)
-            
-            Spacer()
-            
-            if !viewModel.ttsReady {
-                Text("Initializing")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.black)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(SottoTheme.warning)
-                    .cornerRadius(6)
-                    .padding(.trailing, 6)
-            }
-            
-            if viewModel.voiceSettings.showLanguageSwitcher {
-                let isPrimary = viewModel.activeSpeechTarget == "primary"
-                let primaryCode = LocaleHelper.getLocaleForLanguage(
-                    LocaleHelper.getEffectiveLanguage(appLanguage: viewModel.voiceSettings.appLanguage)
-                ).language.languageCode?.identifier.uppercased() ?? "EN"
-                let secondaryCode = viewModel.voiceSettings.secondaryLanguage.uppercased()
-                
-                HStack(spacing: 2) {
-                    Button(action: { viewModel.activeSpeechTarget = "primary" }) {
-                        Text(primaryCode)
-                            .font(.system(size: 12, weight: isPrimary ? .bold : .regular))
-                            .foregroundColor(isPrimary ? currentPalette.background : currentPalette.textSecondary)
-                            .padding(.horizontal, 8)
-                            .frame(minWidth: 36, minHeight: 44)
-                            .background(isPrimary ? currentPalette.accent : Color.clear)
-                            .cornerRadius(12)
-                            .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Speak in primary language, \(primaryCode)")
-                    .accessibilityAddTraits(isPrimary ? [.isSelected] : [])
-                    .demoTarget("langSwitch_primary")
-                    
-                    Button(action: { viewModel.activeSpeechTarget = "secondary" }) {
-                        Text(secondaryCode)
-                            .font(.system(size: 12, weight: !isPrimary ? .bold : .regular))
-                            .foregroundColor(!isPrimary ? currentPalette.background : currentPalette.textSecondary)
-                            .padding(.horizontal, 8)
-                            .frame(minWidth: 36, minHeight: 44)
-                            .background(!isPrimary ? currentPalette.accent : Color.clear)
-                            .cornerRadius(12)
-                            .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Speak in secondary language, \(secondaryCode)")
-                    .accessibilityAddTraits(!isPrimary ? [.isSelected] : [])
-                    .demoTarget("langSwitch_secondary")
-                }
-                .padding(2)
-                .background(currentPalette.surfaceVariant)
-                .cornerRadius(14)
-                .padding(.trailing, 4)
-            }
-            
-            // Partner Mode (Hero entry pill matching Android commit 5c877ff / #69)
-            Button(action: {
-                UserDefaults.standard.set("freeform", forKey: "partner_mode_last_tab")
-                viewModel.showTwoWayDialog = true
-            }) {
-                HStack(spacing: 6) {
-                    SottoIconView(.partnerMode, size: 18, tint: currentPalette.accent)
-                    Text(isIndonesian ? "Mitra" : "Partner")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(currentPalette.accent)
-                }
-                .padding(.horizontal, 10)
-                .frame(height: 44)
-                .background(currentPalette.surfaceVariant)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(currentPalette.outlineVariant, lineWidth: 1)
-                )
-                .contentShape(Rectangle())
-            }
-            .hoverEffect(.highlight)
-            .accessibilityLabel(isIndonesian ? "Buka Mode Mitra untuk berkomunikasi langsung" : "Open Partner mode for communication partner")
-            .accessibilityAddTraits(.isButton)
-            .demoTarget("topBar_listenModeButton")
-            
-            // Settings Gear Icon (Always accessible)
-            Button(action: {
-                viewModel.showVoiceSettingsDialog = true
-            }) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(currentPalette.surfaceVariant)
-                        .frame(width: 44, height: 44)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
-                        )
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(currentPalette.textSecondary)
-                }
-                .contentShape(Rectangle())
-            }
-            .accessibilityLabel("Settings")
-            .demoTarget("topBar_voiceButton")
-            
-            // Edit / Done Button (12pt container with animated switch)
-            Button(action: {
-                let entering = !viewModel.isEditMode
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.isEditMode = entering
-                }
-                UsabilityTracker.shared.startIntent("edit_mode_toggle")
-                UsabilityTracker.shared.endIntent(
-                    "edit_mode_toggle",
-                    outcome: entering ? "enter" : "exit",
-                    voiceSettings: viewModel.voiceSettings
-                )
-            }) {
-                HStack(spacing: 6) {
-                    SottoIconView(
-                        viewModel.isEditMode ? .check : .edit,
-                        size: 14,
-                        tint: viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary
-                    )
-                    Text(LocaleHelper.getActionEdit(isEditMode: viewModel.isEditMode, appLanguage: viewModel.voiceSettings.appLanguage))
-                        .font(.system(size: 14, weight: viewModel.isEditMode ? .bold : .medium))
-                        .foregroundColor(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.textPrimary)
-                }
-                .padding(.horizontal, 12)
-                .frame(minHeight: 44)
-                .background(viewModel.isEditMode ? SottoTheme.confirm.opacity(0.15) : currentPalette.surfaceVariant)
-                .cornerRadius(12)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(viewModel.isEditMode ? SottoTheme.confirm : currentPalette.outlineVariant, lineWidth: 1)
-                )
-                .contentShape(Rectangle())
-            }
-            .accessibilityLabel(viewModel.isEditMode ? "Done editing" : "Edit list")
-            .demoTarget("topBar_editButton")
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 6)
-        .background(currentPalette.background)
-    }
-    
-    // MARK: - Category Filter Row
-    
-    private var categoryFilterRow: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                // "ALL" Category Chip
-                let isAllSelected = viewModel.selectedCategory == .all
-                Button(action: {
-                    viewModel.selectedCategory = .all
-                }) {
-                    Text(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: viewModel.voiceSettings.appLanguage))
-                        .font(.system(size: 14, weight: isAllSelected ? .bold : .regular))
-                        .foregroundColor(isAllSelected ? currentPalette.textPrimary : currentPalette.textSecondary)
-                        .padding(.horizontal, 14)
-                        .frame(minHeight: 44)
-                        .background(isAllSelected ? currentPalette.surfaceVariant : currentPalette.surface)
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(isAllSelected ? currentPalette.accent.opacity(0.8) : currentPalette.outlineVariant, lineWidth: 1)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .accessibilityLabel(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: viewModel.voiceSettings.appLanguage))
-                .accessibilityAddTraits(isAllSelected ? [.isSelected] : [])
-                .demoTarget("chip_all")
-                
-                // Dynamic Categories from Repository (Safety chip hidden on main bar to reduce visual clutter)
-                let mainBarCategories = viewModel.categories.filter { PhraseCategory($0) != .emergency }
-                ForEach(mainBarCategories, id: \.self) { catName in
-                    let catObj = PhraseCategory(catName)
-                    let isSelected = viewModel.selectedCategory == catObj
-                    let isEmergency = catObj == .emergency
-                    
-                    Button(action: {
-                        viewModel.selectedCategory = catObj
-                    }) {
-                        HStack(spacing: 6) {
-                            if isEmergency {
-                                SottoIconView(.shield, size: 12, tint: SottoTheme.safetyBadgeText)
-                            }
-                            Text(LocaleHelper.getCategoryDisplayName(catName, appLanguage: viewModel.voiceSettings.appLanguage))
-                                .font(.system(size: 14, weight: isSelected ? .bold : .regular))
-                        }
-                        .foregroundColor(
-                            isEmergency && isSelected ? SottoTheme.emergencyChipSelectedText :
-                            (isSelected ? currentPalette.textPrimary : currentPalette.textSecondary)
-                        )
-                        .padding(.horizontal, 14)
-                        .frame(minHeight: 44)
-                        .background(
-                            isEmergency && isSelected ? SottoTheme.emergencyChipSelectedBg :
-                            (isSelected ? currentPalette.surfaceVariant : currentPalette.surface)
-                        )
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(
-                                    isEmergency && isSelected ? SottoTheme.emergencyBorder :
-                                    (isSelected ? currentPalette.accent.opacity(0.8) : currentPalette.outlineVariant),
-                                    lineWidth: 1
-                                )
-                        )
-                        .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel(LocaleHelper.getCategoryDisplayName(catName, appLanguage: viewModel.voiceSettings.appLanguage))
-                    .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-                    .demoTarget("chip_\(catName)")
-                }
-                
-                // Anchored Tune Button (opens ManageCategoriesModal) (#34)
-                Button(action: {
-                    UsabilityTracker.shared.startIntent("manage_categories_open")
-                    UsabilityTracker.shared.endIntent(
-                        "manage_categories_open",
-                        outcome: "opened",
-                        voiceSettings: viewModel.voiceSettings
-                    )
-                    viewModel.showManageCategoriesDialog = true
-                }) {
-                    SottoIconView(.tune, size: 16, tint: currentPalette.accent)
-                        .frame(width: 44, height: 44)
-                        .background(currentPalette.surface)
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
-                        )
-                        .contentShape(Rectangle())
-                }
-                .accessibilityLabel("Manage categories")
-                
-                // In Edit Mode: Add Category Chip
-                if viewModel.isEditMode {
-                    Button(action: {
-                        newCategoryNameInput = ""
-                        showAddCategoryAlert = true
-                    }) {
-                        HStack(spacing: 4) {
-                            SottoIconView(.add, size: 13, tint: currentPalette.accent)
-                            Text("Add")
-                                .font(.system(size: 14, weight: .semibold))
-                        }
-                        .foregroundColor(currentPalette.accent)
-                        .padding(.horizontal, 12)
-                        .frame(minHeight: 44)
-                        .background(currentPalette.surface)
-                        .cornerRadius(20)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(currentPalette.outlineVariant, lineWidth: 1)
-                        )
-                        .contentShape(Rectangle())
-                    }
-                    .accessibilityLabel("Add category")
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-    
-    // MARK: - Persistent Emergency Banner (Issue #11)
-    
-    @ViewBuilder
-    private func persistentEmergencyBanner(phrase: Phrase) -> some View {
-        Button(action: {
-            if viewModel.isEditMode {
-                viewModel.phraseToEdit = phrase
-            } else {
-                viewModel.speak(phrase: phrase)
-            }
-        }) {
-            HStack(spacing: 10) {
-                Text("🛡️")
-                    .font(.system(size: 16))
-                
-                Text(phrase.text)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundColor(SottoTheme.safetyText)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                
-                Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: 14))
-                    .foregroundColor(SottoTheme.safetyBadgeText)
-            }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .frame(minHeight: 44)
-            .background(SottoTheme.safetyBackground)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(SottoTheme.safetyBorder.opacity(0.8), lineWidth: 1)
-            )
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(SottoCardButtonStyle())
-        .simultaneousGesture(
-            LongPressGesture(minimumDuration: 0.5).onEnded { _ in
-                if !viewModel.isEditMode {
-                    #if canImport(UIKit)
-                    let feedback = UIImpactFeedbackGenerator(style: .medium)
-                    feedback.impactOccurred()
-                    #endif
-                    viewModel.activeFullscreenPhrase = phrase
-                }
-            }
-        )
-        .padding(.horizontal, 16)
-        .padding(.bottom, 6)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("Quick Emergency Phrase: \(phrase.text)")
-        .accessibilityHint(viewModel.isEditMode ? "Double tap to edit emergency card." : "Double tap to speak aloud. Double tap and hold to show fullscreen.")
-        .accessibilityAction(named: "Speak Aloud") {
-            viewModel.speak(phrase: phrase)
-        }
-        .accessibilityAction(named: "Show Fullscreen") {
-            viewModel.activeFullscreenPhrase = phrase
-        }
-        .demoTarget("persistentEmergencyBanner")
-    }
-    
     // MARK: - Phrases Grid Content
     
     private func calculateColumnCount(width: CGFloat) -> Int {
@@ -889,7 +673,6 @@ public struct MainView: View {
                                     demoTargetId: targetId
                                 )
                             }
-                            // If row has fewer items than columnsCount, pad the other cells
                             if row.items.count < columnsCount {
                                 ForEach(0..<(columnsCount - row.items.count), id: \.self) { _ in
                                     Spacer()
@@ -948,100 +731,4 @@ public struct MainView: View {
         
         return rows
     }
-}
-
-// MARK: - Reorderable Phrase Card Component
-
-private struct ReorderablePhraseCard: View {
-    @ObservedObject var viewModel: MainViewModel
-    let phrase: Phrase
-    let isEmergency: Bool
-    let currentPalette: SottoPalette
-    var demoTargetId: String? = nil
-    
-    @State private var isTargeted: Bool = false
-    
-    var body: some View {
-        let card = PhraseCardView(
-            phrase: phrase,
-            isEditMode: viewModel.isEditMode,
-            showAlternateSpeech: viewModel.voiceSettings.showLanguageSwitcher,
-            appLanguage: viewModel.voiceSettings.appLanguage,
-            cardLayout: viewModel.voiceSettings.cardLayout,
-            onTap: {
-                if viewModel.isEditMode {
-                    viewModel.phraseToEdit = phrase
-                } else {
-                    viewModel.speak(phrase: phrase)
-                }
-            },
-            onLongPress: {
-                viewModel.activeFullscreenPhrase = phrase
-            }
-        )
-        .scaleEffect(isTargeted ? 1.03 : 1.0)
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(isTargeted ? currentPalette.accent : Color.clear, lineWidth: 2)
-        )
-        .animation(.easeInOut(duration: 0.18), value: isTargeted)
-        .modifier(ReorderableCardModifier(
-            phrase: phrase,
-            viewModel: viewModel,
-            isTargeted: $isTargeted
-        ))
-        
-        if let target = demoTargetId {
-            card.demoTarget(target)
-        } else {
-            card
-        }
-    }
-}
-
-private struct ReorderableCardModifier: ViewModifier {
-    let phrase: Phrase
-    @ObservedObject var viewModel: MainViewModel
-    @Binding var isTargeted: Bool
-    
-    func body(content: Content) -> some View {
-        if viewModel.isEditMode {
-            content
-                .draggable(phrase.id.uuidString)
-                .dropDestination(for: String.self) { items, _ in
-                    isTargeted = false
-                    guard let draggedIdString = items.first,
-                          let draggedId = UUID(uuidString: draggedIdString),
-                          let fromPhrase = viewModel.phrases.first(where: { $0.id == draggedId }),
-                          fromPhrase.id != phrase.id else {
-                        return false
-                    }
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        viewModel.movePhrase(fromPhrase: fromPhrase, toPhrase: phrase)
-                    }
-                    #if canImport(UIKit)
-                    let feedback = UIImpactFeedbackGenerator(style: .medium)
-                    feedback.impactOccurred()
-                    #endif
-                    return true
-                } isTargeted: { targeted in
-                    isTargeted = targeted
-                }
-        } else {
-            content
-        }
-    }
-}
-
-// MARK: - Activity View for File Sharing
-
-struct ShareActivityView: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    let applicationActivities: [UIActivity]? = nil
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

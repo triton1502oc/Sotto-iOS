@@ -155,6 +155,11 @@ public struct TwoWayConversationModal: View {
                 displayedText = newText
             }
         }
+        .onChange(of: speechRecognizer.errorMessage) { newError in
+            if let err = newError, !err.isEmpty {
+                UsabilityTracker.shared.recordFriction("speech_error", voiceSettings: voiceSettings)
+            }
+        }
         .onChange(of: whySession.currentState) { state in
             if case .finished = state {
                 finishAndSaveWhySession()
@@ -298,6 +303,30 @@ public struct TwoWayConversationModal: View {
             .animation(reduceMotion ? nil : .spring(response: 0.3, dampingFraction: 0.8), value: isFlipped)
             
             // Caregiver controls facing the caregiver at the bottom
+            if let speechErr = speechRecognizer.errorMessage {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 13))
+                        .foregroundColor(SottoTheme.warning)
+                    Text(speechErr)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(palette.textPrimary)
+                        .lineLimit(2)
+                    Spacer()
+                    Button(action: { speechRecognizer.errorMessage = nil }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(palette.textSecondary)
+                    }
+                    .accessibilityLabel("Dismiss dictation error")
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(palette.surfaceVariant)
+                .cornerRadius(10)
+                .padding(.horizontal, 16)
+            }
+
             if let feedback = triggerLoggedFeedback {
                 Text(feedback)
                     .font(.system(size: 13, weight: .bold))

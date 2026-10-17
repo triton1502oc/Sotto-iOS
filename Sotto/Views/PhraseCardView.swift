@@ -1,6 +1,6 @@
 import SwiftUI
 
-public struct PhraseCardView: View {
+public struct PhraseCardView: View, Equatable {
     @Environment(\.sottoPalette) private var palette
     @Environment(\.sizeCategory) private var sizeCategory
     public let phrase: Phrase
@@ -10,6 +10,14 @@ public struct PhraseCardView: View {
     public let cardLayout: String
     public let onTap: () -> Void
     public let onLongPress: () -> Void
+    
+    public static func == (lhs: PhraseCardView, rhs: PhraseCardView) -> Bool {
+        lhs.phrase == rhs.phrase &&
+        lhs.isEditMode == rhs.isEditMode &&
+        lhs.showAlternateSpeech == rhs.showAlternateSpeech &&
+        lhs.appLanguage == rhs.appLanguage &&
+        lhs.cardLayout == rhs.cardLayout
+    }
     
     public init(
         phrase: Phrase,
@@ -33,6 +41,15 @@ public struct PhraseCardView: View {
         cardLayout == VoiceSettings.cardLayoutCompact
     }
     
+    private var isIndonesian: Bool {
+        let lang = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage)
+        return lang == LocaleHelper.langIndonesian || lang == "in"
+    }
+    
+    private var isUnresolvedSafety: Bool {
+        phrase.isEmergency && LocaleHelper.hasUnresolvedPlaceholders(phrase.text)
+    }
+    
     private var hasSpokenText: Bool {
         guard showAlternateSpeech, let spoken = phrase.spokenText?.trimmingCharacters(in: .whitespacesAndNewlines) else {
             return false
@@ -41,6 +58,9 @@ public struct PhraseCardView: View {
     }
     
     private var accessibilityLabelText: String {
+        if isUnresolvedSafety {
+            return isIndonesian ? "Atur Kontak Darurat: \(phrase.text)" : "Set Up Emergency Contact: \(phrase.text)"
+        }
         let typePrefix = phrase.isEmergency ? "Safety phrase, \(phrase.category.displayName)" : "\(phrase.category.displayName) phrase"
         if hasSpokenText, let spoken = phrase.spokenText {
             return "\(typePrefix): \(phrase.text). Alternate speech: \(spoken)"
@@ -51,6 +71,9 @@ public struct PhraseCardView: View {
     private var accessibilityHintText: String {
         if isEditMode {
             return "Double tap to edit card."
+        }
+        if isUnresolvedSafety {
+            return isIndonesian ? "Ketuk dua kali untuk mengatur kontak darurat." : "Double tap to configure emergency contact details."
         }
         return "Double tap to speak aloud. Double tap and hold to show fullscreen."
     }
@@ -69,7 +92,7 @@ public struct PhraseCardView: View {
         .accessibilityLabel(accessibilityLabelText)
         .accessibilityHint(accessibilityHintText)
         .accessibilityAddTraits(.isButton)
-        .accessibilityAction(named: isEditMode ? "Edit Card" : "Speak Aloud") {
+        .accessibilityAction(named: isEditMode ? "Edit Card" : (isUnresolvedSafety ? "Set Up Emergency Contact" : "Speak Aloud")) {
             onTap()
         }
         .accessibilityAction(named: "Show Fullscreen") {
@@ -104,18 +127,47 @@ public struct PhraseCardView: View {
     
     @ViewBuilder
     private var emergencyCardContent: some View {
-        VStack(spacing: 8) {
-            // Safety Badge
-            HStack(spacing: 5) {
-                SottoIconView(.shield, size: 12, tint: SottoTheme.safetyBadgeText)
-                Text(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: appLanguage))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(SottoTheme.safetyBadgeText)
+        VStack(spacing: 10) {
+            // Header Row: Safety Badge on Left, 1-Tap Fullscreen & Speak (or Drag Handle) on Right
+            HStack {
+                HStack(spacing: 5) {
+                    SottoIconView(.shield, size: 12, tint: SottoTheme.safetyBadgeText)
+                    Text(LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: appLanguage))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(SottoTheme.safetyBadgeText)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(SottoTheme.safetyBadgeBg)
+                .cornerRadius(6)
+                
+                Spacer()
+                
+                if isEditMode {
+                    SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.8))
+                        .frame(width: 40, height: 40)
+                        .contentShape(Rectangle())
+                        .accessibilityLabel("Drag to reorder")
+                } else {
+                    HStack(spacing: 4) {
+                        Button(action: onLongPress) {
+                            SottoIconView(.fullscreen, size: 18, tint: SottoTheme.safetyBadgeText)
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(isIndonesian ? "Tampilkan layar penuh" : "Show fullscreen")
+                        
+                        Button(action: onTap) {
+                            SottoIconView(.volumeUp, size: 18, tint: SottoTheme.safetyBadgeText)
+                                .frame(width: 40, height: 40)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(isIndonesian ? "Bicara" : "Speak")
+                    }
+                }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(SottoTheme.safetyBadgeBg)
-            .cornerRadius(6)
             
             // Safety Phrase Text
             Text(phrase.text)
@@ -125,6 +177,19 @@ public struct PhraseCardView: View {
                 .lineSpacing(4)
                 .minimumScaleFactor(0.7)
                 .padding(.horizontal, 12)
+            
+            if isUnresolvedSafety {
+                HStack(spacing: 5) {
+                    SottoIconView(.edit, size: 12, tint: SottoTheme.safetyBadgeText)
+                    Text(isIndonesian ? "Ketuk untuk mengatur" : "Tap to configure")
+                        .font(.caption.weight(.bold))
+                        .foregroundColor(SottoTheme.safetyBadgeText)
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(SottoTheme.safetyBadgeBg)
+                .cornerRadius(8)
+            }
             
             if hasSpokenText, let spoken = phrase.spokenText {
                 HStack(spacing: 5) {
@@ -147,14 +212,6 @@ public struct PhraseCardView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(SottoTheme.safetyBorder, lineWidth: 1.5)
         )
-        .overlay(alignment: .topTrailing) {
-            if isEditMode {
-                SottoIconView(.dragHandle, size: 14, tint: palette.textSecondary.opacity(0.8))
-                    .frame(width: 40, height: 40)
-                    .contentShape(Rectangle())
-                    .accessibilityLabel("Drag to reorder")
-            }
-        }
     }
     
     @ViewBuilder

@@ -23,6 +23,10 @@ public extension WhyFinderRepositoryProtocol {
 
 public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol {
     public static let shared = UserDefaultsWhyFinderRepository()
+    private static let ioQueue = DispatchQueue(label: "com.sotto.whyFinderRepository.io", qos: .userInitiated)
+    private static let encoder = JSONEncoder()
+    private static let decoder = JSONDecoder()
+    
     private let userDefaults: UserDefaults
     public static let keyTree = "why_tree"
     public static let keyLogs = "why_logs"
@@ -180,26 +184,31 @@ public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol 
         }
     }
     
-    public func getTree() -> WhyTree {
-        guard let data = userDefaults.data(forKey: Self.keyTree) else {
-            let def = Self.defaultTree()
-            saveTree(def)
-            return def
+    private func saveTreeSync(_ tree: WhyTree) {
+        if let data = try? Self.encoder.encode(tree) {
+            userDefaults.set(data, forKey: Self.keyTree)
         }
-        do {
-            let tree = try JSONDecoder().decode(WhyTree.self, from: data)
-            return tree.areas.isEmpty ? Self.defaultTree() : tree
-        } catch {
-            return Self.defaultTree()
+    }
+    
+    public func getTree() -> WhyTree {
+        Self.ioQueue.sync {
+            guard let data = userDefaults.data(forKey: Self.keyTree) else {
+                let def = Self.defaultTree()
+                saveTreeSync(def)
+                return def
+            }
+            do {
+                let tree = try Self.decoder.decode(WhyTree.self, from: data)
+                return tree.areas.isEmpty ? Self.defaultTree() : tree
+            } catch {
+                return Self.defaultTree()
+            }
         }
     }
     
     public func saveTree(_ tree: WhyTree) {
-        do {
-            let data = try JSONEncoder().encode(tree)
-            userDefaults.set(data, forKey: Self.keyTree)
-        } catch {
-            // Ignore encoding errors
+        Self.ioQueue.async { [weak self] in
+            self?.saveTreeSync(tree)
         }
     }
     
@@ -220,64 +229,77 @@ public final class UserDefaultsWhyFinderRepository: WhyFinderRepositoryProtocol 
         return dir.appendingPathComponent("why_logs.json")
     }
     
-    public func getLogs() -> [WhyLogEntry] {
+    private func getLogsSync() -> [WhyLogEntry] {
         var diskLogs: [WhyLogEntry] = []
         if let fileURL = logsFileURL,
            FileManager.default.fileExists(atPath: fileURL.path),
            let data = try? Data(contentsOf: fileURL),
-           let list = try? JSONDecoder().decode([WhyLogEntry].self, from: data) {
+           let list = try? Self.decoder.decode([WhyLogEntry].self, from: data) {
             diskLogs = list
         }
         
         // Backward compatibility migration from legacy UserDefaults
         if let data = userDefaults.data(forKey: Self.keyLogs),
-           let legacyList = try? JSONDecoder().decode([WhyLogEntry].self, from: data) {
+           let legacyList = try? Self.decoder.decode([WhyLogEntry].self, from: data) {
             let existingIds = Set(diskLogs.map { $0.id })
             let newLegacy = legacyList.filter { !existingIds.contains($0.id) }
             diskLogs.append(contentsOf: newLegacy)
             diskLogs.sort(by: { $0.startedAt > $1.startedAt })
-            saveLogsInternal(diskLogs)
+            saveLogsSync(diskLogs)
             userDefaults.removeObject(forKey: Self.keyLogs)
         }
         
         return diskLogs.sorted(by: { $0.startedAt > $1.startedAt })
     }
     
+    public func getLogs() -> [WhyLogEntry] {
+        Self.ioQueue.sync {
+            getLogsSync()
+        }
+    }
+    
     public func addLog(_ entry: WhyLogEntry) {
-        var current = getLogs()
-        if let existingIndex = current.firstIndex(where: { $0.id == entry.id }) {
-            current[existingIndex] = entry
-        } else {
-            current.insert(entry, at: 0)
+        Self.ioQueue.async { [weak self] in
+            guard let self = self else { return }
+            var current = self.getLogsSync()
+            if let existingIndex = current.firstIndex(where: { $0.id == entry.id }) {
+                current[existingIndex] = entry
+            } else {
+                current.insert(entry, at: 0)
+            }
+            if current.count > Self.maxLogEntries {
+                current = Array(current.prefix(Self.maxLogEntries))
+            }
+            self.saveLogsSync(current)
         }
-        if current.count > Self.maxLogEntries {
-            current = Array(current.prefix(Self.maxLogEntries))
-        }
-        saveLogsInternal(current)
     }
     
     @discardableResult
     public func deleteLog(id: String) -> Bool {
-        var current = getLogs()
-        let countBefore = current.count
-        current.removeAll(where: { $0.id == id })
-        let removed = current.count < countBefore
-        if removed {
-            saveLogsInternal(current)
+        Self.ioQueue.sync {
+            var current = getLogsSync()
+            let countBefore = current.count
+            current.removeAll(where: { $0.id == id })
+            let removed = current.count < countBefore
+            if removed {
+                saveLogsSync(current)
+            }
+            return removed
         }
-        return removed
     }
     
     public func clearLogs() {
-        if let fileURL = logsFileURL, FileManager.default.fileExists(atPath: fileURL.path) {
-            try? FileManager.default.removeItem(at: fileURL)
+        Self.ioQueue.sync {
+            if let fileURL = logsFileURL, FileManager.default.fileExists(atPath: fileURL.path) {
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+            userDefaults.removeObject(forKey: Self.keyLogs)
         }
-        userDefaults.removeObject(forKey: Self.keyLogs)
     }
     
-    private func saveLogsInternal(_ entries: [WhyLogEntry]) {
+    private func saveLogsSync(_ entries: [WhyLogEntry]) {
         do {
-            let data = try JSONEncoder().encode(entries)
+            let data = try Self.encoder.encode(entries)
             if let fileURL = logsFileURL {
                 try data.write(to: fileURL, options: [.atomic, .completeFileProtection])
             }

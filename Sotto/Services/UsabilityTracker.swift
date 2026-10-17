@@ -400,6 +400,20 @@ public final class UsabilityTracker {
         }
     }
 
+    public func recordFriction(_ frictionTag: String, voiceSettings: VoiceSettings? = nil) {
+        let settings = voiceSettings ?? UserDefaultsVoiceSettingsRepository().getVoiceSettings()
+        guard settings.shareUsabilityMetrics else { return }
+        queue.async {
+            let event = UsabilityEvent(
+                intent: "Friction",
+                durationMs: 0,
+                outcome: "blocked",
+                frictionTag: frictionTag
+            )
+            self.appendAndSync(event, voiceSettings: settings)
+        }
+    }
+
     public func recordSettingsState(settings: VoiceSettings, customPhraseCount: Int) {
         guard settings.shareUsabilityMetrics else { return }
         queue.async {

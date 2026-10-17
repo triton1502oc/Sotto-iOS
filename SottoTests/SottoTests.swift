@@ -1429,9 +1429,161 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(SpeechService.shared.lastSpokenText, "I need help", "When showLanguageSwitcher is false, tapping the card must speak phrase.text, never spokenText")
         XCTAssertEqual(SpeechService.shared.lastSpokenLocale?.language.languageCode?.identifier, "en")
     }
+    
+    // MARK: - Optimization & Ease-of-Use Tickets (#55 - #62)
+    
+    func testSafetyCardSetupInterceptionAndFormatSafetyPhrase() {
+        let suite = "test_safety_setup_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let phraseRepo = UserDefaultsPhraseRepository(userDefaults: defaults)
+        let voiceRepo = UserDefaultsVoiceSettingsRepository(userDefaults: defaults)
+        let viewModel = MainViewModel(
+            phraseRepository: phraseRepo,
+            voiceSettingsRepository: voiceRepo,
+            speechService: SpeechService.shared
+        )
+        
+        let unconfiguredEmergency = Phrase(
+            text: "I live around [Area/Neighborhood], please call my emergency contact: [phone number]",
+            isEmergency: true,
+            category: .emergency
+        )
+        XCTAssertTrue(LocaleHelper.hasUnresolvedPlaceholders(unconfiguredEmergency.text))
+        
+        // Tapping an unconfigured emergency card must intercept and set phraseForSafetySetup
+        viewModel.speak(phrase: unconfiguredEmergency)
+        XCTAssertEqual(viewModel.phraseForSafetySetup?.id, unconfiguredEmergency.id)
+        
+        // Formatting EN safety phrase
+        let formattedEn = LocaleHelper.formatSafetyPhrase(
+            area: "Menteng",
+            contactName: "Mom",
+            phone: "0812-3456-7890",
+            appLanguage: "en"
+        )
+        XCTAssertEqual(formattedEn.displayText, "I live around Menteng, please call my emergency contact: Mom (0812-3456-7890)")
+        XCTAssertFalse(LocaleHelper.hasUnresolvedPlaceholders(formattedEn.displayText))
+        XCTAssertTrue(formattedEn.spokenText.contains("0 8 1 2"))
+        
+        // Formatting ID safety phrase
+        let formattedId = LocaleHelper.formatSafetyPhrase(
+            area: "Kebayoran Baru",
+            contactName: "Ibu",
+            phone: "0812-3456-7890",
+            appLanguage: "id"
+        )
+        XCTAssertEqual(formattedId.displayText, "Saya tinggal di sekitar Kebayoran Baru, tolong hubungi kontak darurat saya: Ibu (0812-3456-7890)")
+        XCTAssertFalse(LocaleHelper.hasUnresolvedPlaceholders(formattedId.displayText))
+        XCTAssertTrue(formattedId.spokenText.contains("nol delapan satu dua"))
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
+    
+    func testPhraseCardViewEquatableConformance() {
+        let phraseA = Phrase(id: UUID(), text: "Hello", category: .general)
+        let phraseB = Phrase(id: phraseA.id, text: "Hello", category: .general)
+        let phraseC = Phrase(id: phraseA.id, text: "Updated", category: .general)
+        
+        let card1 = PhraseCardView(
+            phrase: phraseA,
+            isEditMode: false,
+            showAlternateSpeech: false,
+            appLanguage: "en",
+            cardLayout: "compact",
+            onTap: {},
+            onLongPress: {}
+        )
+        let card2 = PhraseCardView(
+            phrase: phraseB,
+            isEditMode: false,
+            showAlternateSpeech: false,
+            appLanguage: "en",
+            cardLayout: "compact",
+            onTap: {},
+            onLongPress: {}
+        )
+        let card3 = PhraseCardView(
+            phrase: phraseC,
+            isEditMode: false,
+            showAlternateSpeech: false,
+            appLanguage: "en",
+            cardLayout: "compact",
+            onTap: {},
+            onLongPress: {}
+        )
+        
+        XCTAssertEqual(card1, card2)
+        XCTAssertNotEqual(card1, card3)
+    }
+    
+    func testSpeechServiceVoiceCacheAndSharedLanguageRecognizer() {
+        let v1 = SpeechService.bestVoice(forLanguage: "en-US", preferredIdentifier: nil)
+        let v2 = SpeechService.bestVoice(forLanguage: "en-US", preferredIdentifier: nil)
+        XCTAssertEqual(v1?.identifier, v2?.identifier)
+        
+        // Shared NLLanguageRecognizer thread-safe detection
+        let idLocale = LocaleHelper.resolvePhraseLocale(
+            phraseLang: LocaleHelper.langAuto,
+            phraseText: "Saya butuh bantuan sekarang tolong panggil keluarga saya",
+            appLanguage: "en"
+        )
+        XCTAssertEqual(idLocale.language.languageCode?.identifier, "id")
+    }
+    
+    func testWelcomeOnboardingRolePromptLifecycle() {
+        let suite = "test_onboarding_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let phraseRepo = UserDefaultsPhraseRepository(userDefaults: defaults)
+        let voiceRepo = UserDefaultsVoiceSettingsRepository(userDefaults: defaults)
+        let viewModel = MainViewModel(
+            phraseRepository: phraseRepo,
+            voiceSettingsRepository: voiceRepo
+        )
+        
+        XCTAssertTrue(viewModel.shouldPromptRole())
+        viewModel.onRolePromptAnswered(VoiceSettings.roleSelf)
+        XCTAssertFalse(viewModel.shouldPromptRole())
+        XCTAssertEqual(viewModel.voiceSettings.userRole, VoiceSettings.roleSelf)
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
+    
+    func testDuplicatePhrasePreventionAndFrictionTelemetry() {
+        let suite = "test_dup_phrase_\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        let phraseRepo = UserDefaultsPhraseRepository(userDefaults: defaults)
+        let voiceRepo = UserDefaultsVoiceSettingsRepository(userDefaults: defaults)
+        let viewModel = MainViewModel(
+            phraseRepository: phraseRepo,
+            voiceSettingsRepository: voiceRepo
+        )
+        
+        var settings = viewModel.voiceSettings
+        settings.shareUsabilityMetrics = true
+        viewModel.updateVoiceSettings(settings)
+        UsabilityTracker.shared.clearBuffer()
+        
+        let first = Phrase(text: "Unique Custom Test Phrase", category: .general)
+        XCTAssertTrue(viewModel.addPhrase(first))
+        
+        // Case-insensitive duplicate add must return false
+        let duplicate = Phrase(text: "  unique custom test phrase  ", category: .needs)
+        XCTAssertTrue(viewModel.hasDuplicatePhrase(duplicate.text))
+        XCTAssertFalse(viewModel.addPhrase(duplicate))
+        
+        // Editing the same phrase with its own text must succeed (excludingId == first.id)
+        let editedSame = Phrase(id: first.id, text: "Unique Custom Test Phrase", category: .needs)
+        XCTAssertTrue(viewModel.editPhrase(old: first, new: editedSame))
+        
+        // Record friction telemetry
+        UsabilityTracker.shared.recordFriction("duplicate_phrase_blocked", voiceSettings: viewModel.voiceSettings)
+        UsabilityTracker.shared.recordFriction("speech_error", voiceSettings: viewModel.voiceSettings)
+        
+        let events = UsabilityTracker.shared.getPendingEvents(voiceSettings: viewModel.voiceSettings)
+        XCTAssertTrue(events.contains { $0.intent == "friction" && $0.frictionTag == "duplicate_phrase_blocked" })
+        XCTAssertTrue(events.contains { $0.intent == "friction" && $0.frictionTag == "speech_error" })
+        
+        defaults.removePersistentDomain(forName: suite)
+    }
 }
-
-
-
-
 

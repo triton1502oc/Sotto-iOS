@@ -10,6 +10,10 @@ public protocol PhraseRepositoryProtocol {
 }
 
 public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
+    private static let ioQueue = DispatchQueue(label: "com.sotto.phraseRepository.io", qos: .userInitiated)
+    private static let encoder = JSONEncoder()
+    private static let decoder = JSONDecoder()
+    
     private let userDefaults: UserDefaults
     private let keyPhrases = "saved_phrases"
     private let keyCustomCategories = "saved_custom_categories"
@@ -62,129 +66,136 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
     }
     
     public func getPhrases() -> [Phrase] {
-        guard let data = userDefaults.data(forKey: keyPhrases) else {
-            let defaults = Self.defaultPhrases()
-            savePhrases(defaults)
-            userDefaults.set(true, forKey: keyMigrated)
-            userDefaults.set(true, forKey: keyCareMigrated)
-            userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
-            return defaults
-        }
-        
-        do {
-            var phrases = try JSONDecoder().decode([Phrase].self, from: data)
-            var needsSave = false
+        Self.ioQueue.sync {
+            guard let data = userDefaults.data(forKey: keyPhrases) else {
+                let defaults = Self.defaultPhrases()
+                savePhrasesSync(defaults)
+                userDefaults.set(true, forKey: keyMigrated)
+                userDefaults.set(true, forKey: keyCareMigrated)
+                userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
+                return defaults
+            }
             
-            // Sanitize legacy "auto" spoken text
-            for i in 0..<phrases.count {
-                if phrases[i].spokenText == "auto" {
-                    phrases[i].spokenText = nil
+            do {
+                var phrases = try Self.decoder.decode([Phrase].self, from: data)
+                var needsSave = false
+                
+                // Sanitize legacy "auto" spoken text
+                for i in 0..<phrases.count {
+                    if phrases[i].spokenText == "auto" {
+                        phrases[i].spokenText = nil
+                        needsSave = true
+                    }
+                }
+                
+                // Check emergency migration
+                let isMigrated = userDefaults.bool(forKey: keyMigrated)
+                if !isMigrated {
+                    if !phrases.contains(where: { $0.isEmergency }) {
+                        if let emergencyDefault = Self.defaultPhrases().first(where: { $0.isEmergency }) {
+                            phrases.insert(emergencyDefault, at: 0)
+                        }
+                    }
+                    userDefaults.set(true, forKey: keyMigrated)
                     needsSave = true
                 }
-            }
-            
-            // Check emergency migration
-            let isMigrated = userDefaults.bool(forKey: keyMigrated)
-            if !isMigrated {
-                if !phrases.contains(where: { $0.isEmergency }) {
-                    if let emergencyDefault = Self.defaultPhrases().first(where: { $0.isEmergency }) {
-                        phrases.insert(emergencyDefault, at: 0)
+                
+                // Check Care category migration
+                let isCareMigrated = userDefaults.bool(forKey: keyCareMigrated)
+                if !isCareMigrated {
+                    if !phrases.contains(where: { $0.category == .care }) {
+                        let careDefaults = Self.defaultPhrases().filter { $0.category == .care }
+                        phrases.append(contentsOf: careDefaults)
                     }
+                    userDefaults.set(true, forKey: keyCareMigrated)
+                    needsSave = true
                 }
-                userDefaults.set(true, forKey: keyMigrated)
-                needsSave = true
-            }
-            
-            // Check Care category migration
-            let isCareMigrated = userDefaults.bool(forKey: keyCareMigrated)
-            if !isCareMigrated {
-                if !phrases.contains(where: { $0.category == .care }) {
-                    let careDefaults = Self.defaultPhrases().filter { $0.category == .care }
-                    phrases.append(contentsOf: careDefaults)
-                }
-                userDefaults.set(true, forKey: keyCareMigrated)
-                needsSave = true
-            }
 
-            // One-time upgrade: Consolidate default Safety cards into single contact/area card
-            let isSafetyConsolidated = userDefaults.bool(forKey: keySafetyConsolidatedMigrated)
-            if !isSafetyConsolidated {
-                let oldDefaultSafetyTexts: Set<String> = [
-                    "I cannot speak right now. Please read my screen.",
-                    "Please call my emergency contact: [Phone Number]",
-                    "I live around [Area / Neighborhood]. Please call my contact.",
-                    "Saya tidak bisa bicara sekarang. Tolong baca layar saya.",
-                    "Tolong hubungi kontak darurat saya: [Nomor Telepon]",
-                    "Saya tinggal di sekitar [Area / Lingkungan]. Tolong hubungi kontak saya."
-                ]
-                let newSafetyDefault = Self.defaultPhrases().first { $0.isEmergency }
-                if let newSafetyDefault = newSafetyDefault {
-                    let hadOldDefaults = phrases.contains { $0.isEmergency && oldDefaultSafetyTexts.contains($0.text) }
-                    if hadOldDefaults {
-                        let firstEmergencyIdx = phrases.firstIndex { $0.isEmergency } ?? 0
-                        phrases.removeAll { $0.isEmergency && oldDefaultSafetyTexts.contains($0.text) }
-                        let insertIdx = min(max(firstEmergencyIdx, 0), phrases.count)
-                        if !phrases.contains(where: { $0.isEmergency }) {
-                            phrases.insert(newSafetyDefault, at: insertIdx)
+                // One-time upgrade: Consolidate default Safety cards into single contact/area card
+                let isSafetyConsolidated = userDefaults.bool(forKey: keySafetyConsolidatedMigrated)
+                if !isSafetyConsolidated {
+                    let oldDefaultSafetyTexts: Set<String> = [
+                        "I cannot speak right now. Please read my screen.",
+                        "Please call my emergency contact: [Phone Number]",
+                        "I live around [Area / Neighborhood]. Please call my contact.",
+                        "Saya tidak bisa bicara sekarang. Tolong baca layar saya.",
+                        "Tolong hubungi kontak darurat saya: [Nomor Telepon]",
+                        "Saya tinggal di sekitar [Area / Lingkungan]. Tolong hubungi kontak saya."
+                    ]
+                    let newSafetyDefault = Self.defaultPhrases().first { $0.isEmergency }
+                    if let newSafetyDefault = newSafetyDefault {
+                        let hadOldDefaults = phrases.contains { $0.isEmergency && oldDefaultSafetyTexts.contains($0.text) }
+                        if hadOldDefaults {
+                            let firstEmergencyIdx = phrases.firstIndex { $0.isEmergency } ?? 0
+                            phrases.removeAll { $0.isEmergency && oldDefaultSafetyTexts.contains($0.text) }
+                            let insertIdx = min(max(firstEmergencyIdx, 0), phrases.count)
+                            if !phrases.contains(where: { $0.isEmergency }) {
+                                phrases.insert(newSafetyDefault, at: insertIdx)
+                            }
+                        } else if !phrases.contains(where: { $0.isEmergency }) {
+                            phrases.insert(newSafetyDefault, at: 0)
                         }
-                    } else if !phrases.contains(where: { $0.isEmergency }) {
-                        phrases.insert(newSafetyDefault, at: 0)
                     }
+                    userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
+                    needsSave = true
                 }
-                userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
-                needsSave = true
+                
+                if needsSave {
+                    savePhrasesSync(phrases)
+                }
+                
+                return phrases.isEmpty ? Self.defaultPhrases() : phrases
+            } catch {
+                return Self.defaultPhrases()
             }
-            
-            if needsSave {
-                savePhrases(phrases)
-            }
-            
-            return phrases.isEmpty ? Self.defaultPhrases() : phrases
-        } catch {
-            return Self.defaultPhrases()
+        }
+    }
+    
+    private func savePhrasesSync(_ phrases: [Phrase]) {
+        if let data = try? Self.encoder.encode(phrases) {
+            userDefaults.set(data, forKey: keyPhrases)
         }
     }
     
     public func savePhrases(_ phrases: [Phrase]) {
-        do {
-            let data = try JSONEncoder().encode(phrases)
-            userDefaults.set(data, forKey: keyPhrases)
-        } catch {
-            // Ignore encoding errors
+        Self.ioQueue.async { [weak self] in
+            self?.savePhrasesSync(phrases)
         }
     }
     
     public func getCategories() -> [String] {
-        guard let data = userDefaults.data(forKey: keyCategoryOrder),
-              let list = try? JSONDecoder().decode([String].self, from: data) else {
-            let legacyCustom = getCustomCategories()
-            var result = PhraseCategory.defaultCategoryNames
-            for custom in legacyCustom {
-                if !result.contains(where: { $0.caseInsensitiveCompare(custom) == .orderedSame }) {
-                    result.append(custom)
+        Self.ioQueue.sync {
+            guard let data = userDefaults.data(forKey: keyCategoryOrder),
+                  let list = try? Self.decoder.decode([String].self, from: data) else {
+                let legacyCustom = getCustomCategoriesSync()
+                var result = PhraseCategory.defaultCategoryNames
+                for custom in legacyCustom {
+                    if !result.contains(where: { $0.caseInsensitiveCompare(custom) == .orderedSame }) {
+                        result.append(custom)
+                    }
+                }
+                saveCategoriesSync(result)
+                return result
+            }
+            
+            var cleanList: [String] = []
+            for cat in list {
+                let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty && trimmed.uppercased() != "ALL" && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                    cleanList.append(trimmed)
                 }
             }
-            saveCategories(result)
-            return result
-        }
-        
-        var cleanList: [String] = []
-        for cat in list {
-            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty && trimmed.uppercased() != "ALL" && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
-                cleanList.append(trimmed)
+            if !cleanList.contains(where: { $0.caseInsensitiveCompare("Emergency") == .orderedSame }) {
+                cleanList.insert("Emergency", at: 0)
             }
+            if !cleanList.contains(where: { $0.caseInsensitiveCompare("General") == .orderedSame }) {
+                cleanList.append("General")
+            }
+            return cleanList
         }
-        if !cleanList.contains(where: { $0.caseInsensitiveCompare("Emergency") == .orderedSame }) {
-            cleanList.insert("Emergency", at: 0)
-        }
-        if !cleanList.contains(where: { $0.caseInsensitiveCompare("General") == .orderedSame }) {
-            cleanList.append("General")
-        }
-        return cleanList
     }
     
-    public func saveCategories(_ categories: [String]) {
+    private func saveCategoriesSync(_ categories: [String]) {
         var cleanList: [String] = []
         for cat in categories {
             let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -199,14 +210,20 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             cleanList.append("General")
         }
         
-        if let data = try? JSONEncoder().encode(cleanList) {
+        if let data = try? Self.encoder.encode(cleanList) {
             userDefaults.set(data, forKey: keyCategoryOrder)
         }
     }
     
-    public func getCustomCategories() -> [String] {
+    public func saveCategories(_ categories: [String]) {
+        Self.ioQueue.async { [weak self] in
+            self?.saveCategoriesSync(categories)
+        }
+    }
+    
+    private func getCustomCategoriesSync() -> [String] {
         guard let data = userDefaults.data(forKey: keyCustomCategories),
-              let list = try? JSONDecoder().decode([String].self, from: data) else {
+              let list = try? Self.decoder.decode([String].self, from: data) else {
             return []
         }
         var result: [String] = []
@@ -219,16 +236,25 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
         return result
     }
     
-    public func saveCustomCategories(_ categories: [String]) {
-        var cleanList: [String] = []
-        for cat in categories {
-            let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !trimmed.isEmpty && !PhraseCategory.isUndeletableCategory(trimmed) && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
-                cleanList.append(trimmed)
-            }
+    public func getCustomCategories() -> [String] {
+        Self.ioQueue.sync {
+            getCustomCategoriesSync()
         }
-        if let data = try? JSONEncoder().encode(cleanList) {
-            userDefaults.set(data, forKey: keyCustomCategories)
+    }
+    
+    public func saveCustomCategories(_ categories: [String]) {
+        Self.ioQueue.async { [weak self] in
+            guard let self = self else { return }
+            var cleanList: [String] = []
+            for cat in categories {
+                let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty && !PhraseCategory.isUndeletableCategory(trimmed) && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+                    cleanList.append(trimmed)
+                }
+            }
+            if let data = try? Self.encoder.encode(cleanList) {
+                self.userDefaults.set(data, forKey: self.keyCustomCategories)
+            }
         }
     }
 }

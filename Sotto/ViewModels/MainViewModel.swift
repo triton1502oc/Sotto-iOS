@@ -10,6 +10,9 @@ public final class MainViewModel: ObservableObject {
     @Published public var ttsReady: Bool = true
     @Published public var activeFullscreenPhrase: Phrase? = nil
     @Published public var phraseToEdit: Phrase? = nil
+    @Published public var phraseForSafetySetup: Phrase? = nil
+    @Published public var showWelcomeOnboarding: Bool = false
+    @Published public var showDuplicatePhraseAlert: Bool = false
     @Published public var showAddPhraseDialog: Bool = false
     @Published public var showVoiceSettingsDialog: Bool = false
     @Published public var showManageCategoriesDialog: Bool = false
@@ -55,6 +58,7 @@ public final class MainViewModel: ObservableObject {
         self.phrases = phraseRepository.getPhrases()
         self.categories = phraseRepository.getCategories()
         self.voiceSettings = voiceSettingsRepository.getVoiceSettings()
+        self.speechService.prewarmAudioSession()
     }
     
     public var filteredPhrases: [Phrase] {
@@ -178,16 +182,39 @@ public final class MainViewModel: ObservableObject {
     
     // MARK: - Phrase Operations
     
-    public func addPhrase(_ phrase: Phrase) {
-        phrases.append(phrase)
-        phraseRepository.savePhrases(phrases)
+    public func hasDuplicatePhrase(_ text: String, excludingId: UUID? = nil) -> Bool {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+        return phrases.contains { existing in
+            if let excludingId = excludingId, existing.id == excludingId {
+                return false
+            }
+            return existing.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                .caseInsensitiveCompare(trimmed) == .orderedSame
+        }
     }
     
-    public func editPhrase(old: Phrase, new: Phrase) {
+    @discardableResult
+    public func addPhrase(_ phrase: Phrase) -> Bool {
+        if hasDuplicatePhrase(phrase.text) {
+            return false
+        }
+        phrases.append(phrase)
+        phraseRepository.savePhrases(phrases)
+        return true
+    }
+    
+    @discardableResult
+    public func editPhrase(old: Phrase, new: Phrase) -> Bool {
+        if hasDuplicatePhrase(new.text, excludingId: old.id) {
+            return false
+        }
         if let index = phrases.firstIndex(where: { $0.id == old.id }) {
             phrases[index] = new
             phraseRepository.savePhrases(phrases)
+            return true
         }
+        return false
     }
     
     public func deletePhrase(_ phrase: Phrase) {
@@ -368,6 +395,14 @@ public final class MainViewModel: ObservableObject {
     // MARK: - Speech
     
     public func speak(phrase: Phrase) {
+        if phrase.isEmergency && LocaleHelper.hasUnresolvedPlaceholders(phrase.text) {
+            phraseForSafetySetup = phrase
+            return
+        }
+        speakPhraseDirectly(phrase)
+    }
+    
+    public func speakPhraseDirectly(_ phrase: Phrase) {
         UsabilityTracker.shared.recordCardTap(
             category: phrase.category.rawValue,
             phraseId: phrase.id.uuidString,

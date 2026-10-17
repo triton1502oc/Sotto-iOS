@@ -20,6 +20,14 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
     private override init() {
         super.init()
         synthesizer.delegate = self
+        prewarmAudioSession()
+    }
+    
+    public func prewarmAudioSession() {
+        let session = AVAudioSession.sharedInstance()
+        guard session.category != .playback || session.mode != .spokenAudio else { return }
+        try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? session.setActive(true)
     }
     
     public func speak(
@@ -42,17 +50,11 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
         let performSpeak = { [weak self] in
             guard let self = self else { return }
             
-            // Set audio session to playback to ensure sound is played even in silent mode
-            do {
-                let session = AVAudioSession.sharedInstance()
-                try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-                try session.setActive(true)
-            } catch {
-                // Ignore audio session errors
-            }
+            // Ensure audio session is in playback mode (re-apply only if altered by mic/ambient chime)
+            self.prewarmAudioSession()
             
             let cleaned = LocaleHelper.cleanPlaceholdersForSpeech(text)
-            let speechText = LocaleHelper.formatDigitsForSpeech(cleaned, language: targetLocale.languageCode)
+            let speechText = LocaleHelper.formatDigitsForSpeech(cleaned, language: targetLocale.language.languageCode?.identifier)
             let utterance = AVSpeechUtterance(string: speechText)
             
             // Rate mapping: Android 1.0 -> iOS AVSpeechUtteranceDefaultSpeechRate (0.5)
@@ -62,7 +64,7 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
             // Pitch mapping: 1:1 directly
             utterance.pitchMultiplier = max(0.5, min(2.0, settings.speechPitch))
             
-            // Voice selection - pick user-selected voice or best available neural/enhanced voice
+            // Voice selection - pick user-selected voice or best available neural/enhanced voice (cached O(1))
             let languageCode = targetLocale.identifier.replacingOccurrences(of: "_", with: "-")
             if let bestVoice = SpeechService.bestVoice(forLanguage: languageCode, preferredIdentifier: settings.voiceIdentifier) {
                 utterance.voice = bestVoice
@@ -151,14 +153,34 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
         return score
     }
     
+    private static var voiceCache: [String: AVSpeechSynthesisVoice] = [:]
+    private static let voiceCacheLock = NSLock()
+    
+    public static func clearVoiceCache() {
+        voiceCacheLock.lock()
+        voiceCache.removeAll()
+        voiceCacheLock.unlock()
+    }
+    
     public static func bestVoice(forLanguage languageCode: String, preferredIdentifier: String? = nil) -> AVSpeechSynthesisVoice? {
         let normalizedCode = languageCode.replacingOccurrences(of: "_", with: "-").lowercased()
         let langPrefix = String(normalizedCode.prefix(2))
+        let cacheKey = "\(normalizedCode)|\(preferredIdentifier ?? "")"
+        
+        voiceCacheLock.lock()
+        if let cached = voiceCache[cacheKey] {
+            voiceCacheLock.unlock()
+            return cached
+        }
+        voiceCacheLock.unlock()
         
         // Only use user-preferred voice if its language matches the target language prefix
         if let id = preferredIdentifier, !id.isEmpty, let voice = AVSpeechSynthesisVoice(identifier: id) {
             let vLang = voice.language.replacingOccurrences(of: "_", with: "-").lowercased()
             if vLang == normalizedCode || vLang.starts(with: langPrefix) {
+                voiceCacheLock.lock()
+                voiceCache[cacheKey] = voice
+                voiceCacheLock.unlock()
                 return voice
             }
         }
@@ -172,10 +194,19 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
         }
         
         if let best = candidates.max(by: { scoreVoice($0, targetLanguage: languageCode) < scoreVoice($1, targetLanguage: languageCode) }) {
+            voiceCacheLock.lock()
+            voiceCache[cacheKey] = best
+            voiceCacheLock.unlock()
             return best
         }
         
-        return AVSpeechSynthesisVoice(language: languageCode)
+        if let fallback = AVSpeechSynthesisVoice(language: languageCode) {
+            voiceCacheLock.lock()
+            voiceCache[cacheKey] = fallback
+            voiceCacheLock.unlock()
+            return fallback
+        }
+        return nil
     }
     
     public func getAvailableVoices(forLocale locale: Locale? = nil) -> [AVSpeechSynthesisVoice] {
