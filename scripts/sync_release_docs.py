@@ -148,6 +148,9 @@ def check_docs(repo_root: Path) -> bool:
             else:
                 print(f"{RED}[FAIL]{RESET} {name} does not match deployment target iOS {target_deployment}+")
                 all_passed = False
+        elif name == "ANTIGRAVITY.md":
+            # Local-only AI instructions (gitignored), skip in clean CI checkouts
+            continue
         else:
             print(f"{RED}[FAIL]{RESET} Missing {name}")
             all_passed = False
