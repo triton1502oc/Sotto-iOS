@@ -124,14 +124,15 @@ Sotto adalah alat bantu komunikasi asistif dan tidak menyediakan diagnosis atau 
 github.com/triton1502oc/Sotto-iOS | Tersedia versi Android
 ```
 
-### What's New *(v1.7.2)*
+### What's New *(v1.7.4)*
 ```text
-• Modernized Caregiver HUD: Elevated 2x2 response dock with tactile haptics and smooth 180° flip animation.
-• 1-Tap Trigger Logger: Fast on-device logging to Why Log following crisis resolution.
-• Streamlined Main Screen: Modern top action bar, single-row QuickSpeak capsule dock, and drag-and-drop card reordering in Edit Mode.
-• Compact Card Density: Opt-in 1.25:1 card density option in Settings.
-• 3-Tab Categorized Settings: Reorganized settings into Voice, Appearance, and Data with in-context question tree editing.
-• Sensory Theme Parity: All modals dynamically adapt to your selected sensory palette.
+• Guided Emergency Setup: 1-tap configuration modal for neighborhood, contact, and phone with natural digit speech.
+• 3-Step Onboarding: Guided role selection (Self, Caregiver, Professional) and quick-start interface walkthrough.
+• Upright Caregiver HUD: Live selections and check-in depth directly visible to the caregiver in 180° flip mode with screen wake lock.
+• Performance & Zero-Lag Typing: Isolated speech bar state and equatable cards eliminate grid redraws during typing.
+• Sub-50ms Speech Latency: Cached voice selection and pre-warmed audio session for faster spoken response.
+• Zero-Distraction Category Strip: Category management is neatly tucked into Edit Mode to keep active communication distraction-free.
+• Offline QR Deck Sharing Parity: Bidirectional phrase deck sharing with Android devices without accounts or cloud.
 ```
 
 ### URLs

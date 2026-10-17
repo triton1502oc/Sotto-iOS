@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04E3758B9B6810FC8E8A93EC /* WelcomeOnboardingModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7C94148F5523C697C80D733 /* WelcomeOnboardingModal.swift */; };
 		05B3418EA6489E45985CF1EE /* UsabilityTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D717F43AE5A734412BEA896 /* UsabilityTracker.swift */; };
 		1261DEC94E9AFB324AC2D8D7 /* BackupData.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD53981A09D731C3D34A2376 /* BackupData.swift */; };
 		13194355F7DC73021586698F /* SottoShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76510944EEF3B44580D288EA /* SottoShortcuts.swift */; };
@@ -18,6 +19,7 @@
 		3DDC0BE5B1377078B0E6621C /* QuickSpeakBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */; };
 		473A4D1EF52751EC7BDC3A64 /* SpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */; };
 		4CD6302713AC84FEFD20215E /* SpeechRecognizerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 560972E52962ED7AD92AC85A /* SpeechRecognizerService.swift */; };
+		4F778E01E5752DE15352FA06 /* MainSubViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A67DFC574C34A9041ED2F8 /* MainSubViews.swift */; };
 		6012A55B5746CBF6A9D0461A /* ExportBackupModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCB269166351DC98A174384 /* ExportBackupModal.swift */; };
 		691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B55F23C484A0237DA644B35 /* ChimePlayer.swift */; };
 		78092A8B5735AB5313EC7DEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A24908333DE146E3D8CF491 /* PrivacyInfo.xcprivacy */; };
@@ -44,6 +46,7 @@
 		F589BC25642BB973091C779C /* ImportBackupModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CE7FF09E1BA5B0DF67CCD3C /* ImportBackupModal.swift */; };
 		F601608F9E07DBE0DCA0EE1E /* PhraseEditModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19108C1E76AF0DC6FF388D5C /* PhraseEditModal.swift */; };
 		F7017AF3AC70719B612EE848 /* VoiceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94CC1A48B0A600F8424554 /* VoiceSettings.swift */; };
+		F707A7B8E9FF28249A7A0990 /* EmergencySafetySetupModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD1D90D22611A03CBB335292 /* EmergencySafetySetupModal.swift */; };
 		F9063BF6D35C72017B467DD1 /* TwoWayConversationModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */; };
 		F9855B5A9B09BCF5407734B4 /* WhyFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB1831C4F14CA69F722554B /* WhyFinder.swift */; };
 /* End PBXBuildFile section */
@@ -89,18 +92,21 @@
 		9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoWayConversationModal.swift; sourceTree = "<group>"; };
 		A5BD715FE763CD0F9DDDCF9A /* SpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechService.swift; sourceTree = "<group>"; };
 		A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickSpeakBarView.swift; sourceTree = "<group>"; };
+		A7C94148F5523C697C80D733 /* WelcomeOnboardingModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeOnboardingModal.swift; sourceTree = "<group>"; };
 		A8B54D57DD9AC696E5411B70 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AD53981A09D731C3D34A2376 /* BackupData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupData.swift; sourceTree = "<group>"; };
 		AEA9648D29EB3F5FF0F8D077 /* SottoTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SottoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B88901ABDF66A60F6C7640F3 /* PmfSurveyModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PmfSurveyModal.swift; sourceTree = "<group>"; };
 		BD3DE72B916FD4F83893C0BD /* WhyTreeEditorModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WhyTreeEditorModal.swift; sourceTree = "<group>"; };
 		BFCB269166351DC98A174384 /* ExportBackupModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportBackupModal.swift; sourceTree = "<group>"; };
+		C0A67DFC574C34A9041ED2F8 /* MainSubViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainSubViews.swift; sourceTree = "<group>"; };
 		C203C02585BC6B4EE7610171 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		CB5E8E026AB8A20658DD8382 /* TranslationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranslationHelper.swift; sourceTree = "<group>"; };
 		DCBBAC2D1DDA6F654C153B57 /* LocaleHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleHelper.swift; sourceTree = "<group>"; };
 		E3D46D2F57F9B2A8F0B0168B /* SottoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoApp.swift; sourceTree = "<group>"; };
 		EB5E6918B1C8328F8FCB740B /* SottoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoTests.swift; sourceTree = "<group>"; };
 		F1DB5CF59AD2D6A9BD0F8FE3 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
+		FD1D90D22611A03CBB335292 /* EmergencySafetySetupModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencySafetySetupModal.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -154,9 +160,11 @@
 		8F1DC9F74E195FE611C2BBF1 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				FD1D90D22611A03CBB335292 /* EmergencySafetySetupModal.swift */,
 				BFCB269166351DC98A174384 /* ExportBackupModal.swift */,
 				933C92FEFEE7ED36415AAE2D /* FullscreenPhraseModal.swift */,
 				1CE7FF09E1BA5B0DF67CCD3C /* ImportBackupModal.swift */,
+				C0A67DFC574C34A9041ED2F8 /* MainSubViews.swift */,
 				787EE0C858C2EF6B6815D85B /* MainView.swift */,
 				3208745C0B31F5EA1ABCFFCF /* ManageCategoriesModal.swift */,
 				0E81F2622E53599603D99FE8 /* PhraseCardView.swift */,
@@ -167,6 +175,7 @@
 				A62902E07A971A37BD09D149 /* QuickSpeakBarView.swift */,
 				9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */,
 				95A15978C9724C96D4D6E1B4 /* VoiceSettingsModal.swift */,
+				A7C94148F5523C697C80D733 /* WelcomeOnboardingModal.swift */,
 				0A0CC169971418B967842472 /* WhyLogModal.swift */,
 				BD3DE72B916FD4F83893C0BD /* WhyTreeEditorModal.swift */,
 			);
@@ -341,10 +350,12 @@
 				1261DEC94E9AFB324AC2D8D7 /* BackupData.swift in Sources */,
 				691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */,
 				14C9F014A6BC00133503B046 /* DemoAutomationRunner.swift in Sources */,
+				F707A7B8E9FF28249A7A0990 /* EmergencySafetySetupModal.swift in Sources */,
 				6012A55B5746CBF6A9D0461A /* ExportBackupModal.swift in Sources */,
 				F2D9D9BA1300747675205C36 /* FullscreenPhraseModal.swift in Sources */,
 				F589BC25642BB973091C779C /* ImportBackupModal.swift in Sources */,
 				EEA44B73F5CB7F15A93B9F11 /* LocaleHelper.swift in Sources */,
+				4F778E01E5752DE15352FA06 /* MainSubViews.swift in Sources */,
 				D3EA2EC4CCE185B808EC9BC0 /* MainView.swift in Sources */,
 				2DF0CB5F729EF542DD5246E0 /* MainViewModel.swift in Sources */,
 				981523BBB225B144C23D87AE /* ManageCategoriesModal.swift in Sources */,
@@ -369,6 +380,7 @@
 				F7017AF3AC70719B612EE848 /* VoiceSettings.swift in Sources */,
 				E47EF526BBC7E02278EA6898 /* VoiceSettingsModal.swift in Sources */,
 				DB6B73CD6F36992D2FB9BD3C /* VoiceSettingsRepository.swift in Sources */,
+				04E3758B9B6810FC8E8A93EC /* WelcomeOnboardingModal.swift in Sources */,
 				F9855B5A9B09BCF5407734B4 /* WhyFinder.swift in Sources */,
 				1748436BA521219B91977F19 /* WhyFinderRepository.swift in Sources */,
 				BE82EAB0A2D329BB278464B3 /* WhyFinderSession.swift in Sources */,

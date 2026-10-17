@@ -3,6 +3,36 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.7.4] - 2026-10-17
+
+### Added
+- **Guided Emergency Safety Card Setup & 1-Tap Hero Actions**: Interactive tap-to-configure modal (`EmergencySafetySetupModal.swift`) for safety cards containing bracket placeholders (`[Area/Neighborhood]`, `[phone number]`), natural spoken digit pacing via `LocaleHelper.formatSafetyPhrase`, and 1-tap Fullscreen (`⛶`) and Speak (`🔊`) hero buttons on `PhraseCardView` ([#55](https://github.com/triton1502oc/Sotto-iOS/issues/55)).
+- **3-Step First-Launch Welcome & Role Onboarding Flow**: Value-first, skippable onboarding modal (`WelcomeOnboardingModal.swift`) covering user role selection (`Self-expression`, `Caregiver / Family`, `Therapist / Educator`), optional inline emergency safety card setup, and role-tailored interface guide with demo-automation bypass ([#58](https://github.com/triton1502oc/Sotto-iOS/issues/58)).
+- **Upright Caregiver Mirror HUD & Screen Wake**: Dedicated upright status bar facing the caregiver in 180° flip mode displaying live selections and check-in depth; active screen wake lock during Partner Mode; safe exit confirmation protecting active check-ins; and remembered tab preference ([#43](https://github.com/triton1502oc/Sotto-iOS/issues/43), [#68](https://github.com/triton1502oc/Sotto/issues/68)).
+- **Calming Terracotta Crisis Palette & Standardized Yes/No Tactile Dock**: 80pt+ tactile targets with core haptics and WCAG AAA terracotta container for "No" to eliminate sensory agitation during acute meltdowns ([#42](https://github.com/triton1502oc/Sotto-iOS/issues/42), [#72](https://github.com/triton1502oc/Sotto/issues/72)).
+- **Dual-Language Quick-Speak Fullscreen & Dictation Error Feedback**: Automatic translation resolution for Quick-Speak cards expanded to Fullscreen when language switcher is enabled, accompanied by actionable error banners and guidance when speech recognition or microphone permissions are unavailable ([#60](https://github.com/triton1502oc/Sotto-iOS/issues/60)).
+- **Universal iPad Adaptive Grid & Keyboard Shortcuts**: Fluid 2-to-6 column responsive grid layouts for 11-inch and 13-inch iPad displays with hardware keyboard navigation shortcuts ([#45](https://github.com/triton1502oc/Sotto-iOS/issues/45)).
+- **Offline QR Deck Sharing Parity & Backup v2 Selective Restore**: Seamless encrypted QR code import/export compatible with Android, and selective category/phrase deduplication during backup restore ([#47](https://github.com/triton1502oc/Sotto-iOS/issues/47), [#50](https://github.com/triton1502oc/Sotto-iOS/issues/50)).
+
+### Changed
+- **Zero-Distraction Category Bar**: Gated administrative `Manage Categories` (`tune`) chip behind Edit Mode so active communication surfaces only clean speech filter chips ([#59](https://github.com/triton1502oc/Sotto-iOS/issues/59)).
+- **Duplicate Phrase Alert**: In-app validation and alert preventing accidental duplicate phrase creation with opt-in friction telemetry ([#59](https://github.com/triton1502oc/Sotto-iOS/issues/59)).
+- **Modularized Main Screen Architecture**: Refactored `MainView.swift` by extracting `MainTopBarView`, `CategoryFilterBarView`, and `ReorderablePhraseCard` into `MainSubViews.swift` for cleaner state isolation and SwiftUI diffing ([#62](https://github.com/triton1502oc/Sotto-iOS/issues/62)).
+- **Telemetry Sanitization**: Purged health-adjacent metrics (`bodyPart`, pain intensity) from telemetry payloads and ensured full pre-consent data privacy ([#51](https://github.com/triton1502oc/Sotto-iOS/issues/51)).
+
+### Performance
+- **Zero-Lag Quick-Speak Typing**: Isolated Quick-Speak text state and conformed `PhraseCardView` to `Equatable`, eliminating full phrase-grid re-evaluation on keystrokes and dictation ([#56](https://github.com/triton1502oc/Sotto-iOS/issues/56)).
+- **Sub-50ms Speech Latency**: Cached `AVSpeechSynthesisVoice` lookups, pre-warmed `AVAudioSession`, and reused `NLLanguageRecognizer` across phrase evaluations ([#57](https://github.com/triton1502oc/Sotto-iOS/issues/57)).
+- **Asynchronous Background Persistence**: Offloaded `UserDefaults` JSON serialization for phrase cards and Why Log entries to a dedicated serial I/O background queue for fluid 60/120Hz drag-and-drop animations ([#61](https://github.com/triton1502oc/Sotto-iOS/issues/61)).
+
+### Fixed
+- **Single-Language Mode Speech Fallback**: Card taps now vocalize primary card text regardless of background spokenText translation when dual-language mode is off.
+- **Why Finder Session ID Synchronization**: Regenerated session UUIDs on restart and synced session logs via upsert ([#54](https://github.com/triton1502oc/Sotto-iOS/issues/54)).
+- **Indonesian Digit Speech Pacing**: Formatted emergency contact numbers to speak naturally digit-by-digit in Indonesian TTS.
+
+### Assets
+- `Sotto-v1.7.4.ipa`: Universal Release IPA for iOS and iPadOS.
+
 ## [v1.7.2] - 2026-10-12
 
 ### Added
