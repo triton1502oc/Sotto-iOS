@@ -247,7 +247,7 @@ public enum LocaleHelper {
         case "type": return isIndonesian ? "Ketik" : "Type"
         case "mic": return isIndonesian ? "Mik" : "Mic"
         case "stop": return isIndonesian ? "Berhenti" : "Stop"
-        case "listening": return isIndonesian ? "Mendengarkan…" : "Listening…"
+        case "listening", "listening…", "listening...": return isIndonesian ? "Mendengarkan…" : "Listening…"
         case "replied_prefix": return isIndonesian ? "Menjawab: " : "Replied: "
         case "restart": return isIndonesian ? "Ulangi" : "Restart"
         case "done": return isIndonesian ? "Selesai" : "Done"

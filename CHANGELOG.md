@@ -3,6 +3,22 @@
 ### TL;DR
 All notable changes to the Sotto (iOS) project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.7.5] - 2026-10-17
+
+### Added
+- **Selective Category Export for Phrase Library**: Export Backup dialog and QR sharing now support selecting specific phrase categories, live count preview, and privacy-preserving opt-in telemetry (`backup_category_filtered_export`), enabling focused deck sharing without clobbering unrelated categories during merge ([#63](https://github.com/budiap/Sotto-iOS/issues/63)).
+- **Automated Documentation Synchronization**: Added `scripts/sync_release_docs.py` with cross-document version synchronization, deployment target verification, source tree auditing, and pre-release integrity checks.
+- **TestFlight Distribution Automation**: Added `scripts/upload_testflight.sh` and automated Release signing, App Store IPA archiving, validation, and TestFlight deployment.
+
+### Changed
+- **Persistent Quick Speak Microphone Access & Dynamic "Listening…" Prompt**: Kept the microphone button accessible when text is present in the Quick Speak bar to support dictation appending, and added dynamic "Listening…" visual placeholder feedback during active speech recognition.
+
+### Fixed
+- **Resilient Speech Recognition Partial Preservation**: Preserved partial transcriptions upon unexpected recognition halts or silence timeouts, falling back smoothly to existing text without clearing recognized speech.
+
+### Assets
+- `Sotto-v1.7.5.ipa`: Universal Release IPA for iOS and iPadOS.
+
 ## [v1.7.4] - 2026-10-17
 
 ### Added
@@ -12,7 +28,7 @@ All notable changes to the Sotto (iOS) project will be documented in this file. 
 - **Calming Terracotta Crisis Palette & Standardized Yes/No Tactile Dock**: 80pt+ tactile targets with core haptics and WCAG AAA terracotta container for "No" to eliminate sensory agitation during acute meltdowns ([#42](https://github.com/triton1502oc/Sotto-iOS/issues/42), [#72](https://github.com/triton1502oc/Sotto/issues/72)).
 - **Dual-Language Quick-Speak Fullscreen & Dictation Error Feedback**: Automatic translation resolution for Quick-Speak cards expanded to Fullscreen when language switcher is enabled, accompanied by actionable error banners and guidance when speech recognition or microphone permissions are unavailable ([#60](https://github.com/triton1502oc/Sotto-iOS/issues/60)).
 - **Universal iPad Adaptive Grid & Keyboard Shortcuts**: Fluid 2-to-6 column responsive grid layouts for 11-inch and 13-inch iPad displays with hardware keyboard navigation shortcuts ([#45](https://github.com/triton1502oc/Sotto-iOS/issues/45)).
-- **Offline QR Deck Sharing Parity & Backup v2 Selective Category Export/Restore**: Seamless encrypted QR code import/export compatible with Android, selective category chip filtering (`Select All` / `Clear All` with live phrase counter) when exporting backups or QR decks, and selective category/phrase deduplication during backup restore ([#47](https://github.com/triton1502oc/Sotto-iOS/issues/47), [#50](https://github.com/triton1502oc/Sotto-iOS/issues/50), [#63](https://github.com/triton1502oc/Sotto-iOS/issues/63)).
+- **Offline QR Deck Sharing Parity & Backup v2 Selective Restore**: Seamless encrypted QR code import/export compatible with Android, and selective category/phrase deduplication during backup restore ([#47](https://github.com/triton1502oc/Sotto-iOS/issues/47), [#50](https://github.com/triton1502oc/Sotto-iOS/issues/50)).
 
 ### Changed
 - **Zero-Distraction Category Bar**: Gated administrative `Manage Categories` (`tune`) chip behind Edit Mode so active communication surfaces only clean speech filter chips ([#59](https://github.com/triton1502oc/Sotto-iOS/issues/59)).

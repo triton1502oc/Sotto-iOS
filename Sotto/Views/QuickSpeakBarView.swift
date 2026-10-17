@@ -95,7 +95,8 @@ public struct QuickSpeakBarView: View {
                                 draftText = newValue
                             }
                         ),
-                        prompt: Text("Type something to speak…").foregroundColor(palette.textSecondary.opacity(0.5)),
+                        prompt: Text(speechRecognizer.isRecording ? "Listening…" : "Type something to speak…")
+                            .foregroundColor(speechRecognizer.isRecording ? palette.accent : palette.textSecondary.opacity(0.5)),
                         axis: .vertical
                     )
                     .lineLimit(1...4)
@@ -112,16 +113,7 @@ public struct QuickSpeakBarView: View {
                     }
                     .demoTarget("quickSpeak_textField")
                     
-                    // Trailing Inline Actions: Stop Mic / Clear / Add Card / Mic
-                    if speechRecognizer.isRecording {
-                        Button(action: toggleDictation) {
-                            SottoIconView(.stop, size: 16, tint: SottoTheme.destructiveRed)
-                                .frame(width: 36, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .accessibilityLabel("Stop recording speech")
-                    }
-                    
+                    // Trailing Inline Actions: Clear / Add Card / Mic (or Stop Mic)
                     if isNotEmpty {
                         Button(action: {
                             if speechRecognizer.isRecording { speechRecognizer.stopRecording() }
@@ -153,7 +145,16 @@ public struct QuickSpeakBarView: View {
                             .accessibilityHint("Adds text to phrase library")
                             .transition(.scale.combined(with: .opacity))
                         }
-                    } else if !speechRecognizer.isRecording {
+                    }
+                    
+                    if speechRecognizer.isRecording {
+                        Button(action: toggleDictation) {
+                            SottoIconView(.stop, size: 16, tint: SottoTheme.destructiveRed)
+                                .frame(width: 36, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .accessibilityLabel("Stop recording speech")
+                    } else {
                         Button(action: toggleDictation) {
                             SottoIconView(.mic, size: 17, tint: palette.textSecondary)
                                 .frame(width: 36, height: 44)
@@ -221,7 +222,8 @@ public struct QuickSpeakBarView: View {
                     baseTextBeforeRecording = draftText.trimmingCharacters(in: .whitespacesAndNewlines)
                     speechRecognizer.startRecording { recognizedText in
                         let cleanRecognized = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
-                        if draftText.isEmpty && !cleanRecognized.isEmpty {
+                        guard !cleanRecognized.isEmpty else { return }
+                        if draftText.isEmpty {
                             UsabilityTracker.shared.startIntent("QuickSpeak")
                         }
                         if baseTextBeforeRecording.isEmpty {

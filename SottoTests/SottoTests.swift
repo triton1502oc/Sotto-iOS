@@ -268,6 +268,15 @@ final class SottoTests: XCTestCase {
         let waitId = "tolong beri saya waktu sebentar."
         let waitEn = TranslationHelper.dictionaryTranslation(for: waitId, sourceLang: "id", targetLang: "en")
         XCTAssertEqual(waitEn, "Please give me a moment.")
+        
+        let listeningEllipsis = TranslationHelper.dictionaryTranslation(for: "Listening…", sourceLang: "en", targetLang: "id")
+        XCTAssertEqual(listeningEllipsis, "Mendengarkan…")
+        
+        let listeningDots = TranslationHelper.dictionaryTranslation(for: "Listening...", sourceLang: "en", targetLang: "id")
+        XCTAssertEqual(listeningDots, "Mendengarkan…")
+        
+        let mendengarkanEn = TranslationHelper.dictionaryTranslation(for: "Mendengarkan…", sourceLang: "id", targetLang: "en")
+        XCTAssertEqual(mendengarkanEn, "Listening…")
     }
     
     // MARK: - Category Management Tests (v1.5.8)

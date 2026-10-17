@@ -92,9 +92,37 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 
 ---
 
-## Step 4: Upload to App Store Connect
+## Step 4: Upload to App Store Connect / TestFlight
 
-1. When the build completes, the **Organizer** window will automatically appear.
+### Option A: Automated Local CLI Push (Recommended)
+
+Run the one-command TestFlight upload script from the repository root. It automatically runs the pre-flight release doc audit, regenerates `Sotto.xcodeproj`, detects your Apple Developer Team ID from Keychain, creates a signed release archive, and uploads it directly to App Store Connect / TestFlight using your signed-in Xcode session (`-allowProvisioningUpdates`):
+
+```bash
+./scripts/upload_testflight.sh
+```
+
+- To verify archiving locally without uploading to App Store Connect:
+  ```bash
+  ./scripts/upload_testflight.sh --archive-only
+  ```
+
+### Option B: Automated GitHub Actions Push (`v*` Tags or Manual Dispatch)
+
+`.github/workflows/release.yml` includes an automated `testflight` job that runs on every `v*` tag push (or manually via **Actions > Release IPA & Publish GitHub Release > Run workflow**) once the following repository secrets are configured under **Settings > Secrets and variables > Actions**:
+
+| Secret Name | Description |
+|---|---|
+| `APPLE_TEAM_ID` | Your 10-character Apple Developer Team ID |
+| `ASC_KEY_ID` | App Store Connect API Key ID (from **App Store Connect > Users and Access > Integrations > Team Keys**) |
+| `ASC_ISSUER_ID` | App Store Connect API Issuer ID (UUID shown at the top of the Integrations page) |
+| `ASC_PRIVATE_KEY` | Full contents of your `AuthKey_<KEY_ID>.p8` file |
+| `BUILD_CERTIFICATE_BASE64` | Base64-encoded Apple Distribution `.p12` certificate (`base64 -i Certificates.p12 \| pbcopy`) |
+| `P12_PASSWORD` | Password used when exporting `Certificates.p12` from Keychain Access |
+
+### Option C: Manual Upload via Xcode Organizer
+
+1. When `Product > Archive` completes in Xcode, the **Organizer** window will automatically appear.
 2. Select the latest archive and click **Distribute App** (right pane).
 3. Select **Custom** > **App Store Connect** (or **App Store Connect** directly).
 4. Select **Upload** > Click **Next**.
@@ -130,7 +158,7 @@ Follow this complete step-by-step checklist to configure Apple Developer Portal,
 
 ## Step 6: App Store Listing & Review Submission
 
-1. In App Store Connect, go to **iOS App > 1.7.4 Prepare for Submission**.
+1. In App Store Connect, go to **iOS App > 1.7.5 Prepare for Submission**.
 2. Fill in the listing details using [APP_STORE_LISTING.md](APP_STORE_LISTING.md):
    - **Promotional Text**:
      ```text

@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -11,6 +12,7 @@ permissions:
 jobs:
   release:
     name: Build Release IPA & Create Release
+    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: macos-15
 
     steps:
@@ -93,3 +95,81 @@ jobs:
       - name: Clean up Release Artifacts
         if: always()
         run: rm -rf build/release
+
+  testflight:
+    name: Archive & Upload to TestFlight
+    runs-on: macos-15
+
+    steps:
+      - name: Check App Store Connect Secrets
+        id: check_secrets
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+        run: |
+          if [ -n "$APPLE_TEAM_ID" ] && [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ] && [ -n "$ASC_PRIVATE_KEY" ] && [ -n "$BUILD_CERTIFICATE_BASE64" ]; then
+            echo "configured=true" >> $GITHUB_OUTPUT
+          else
+            echo "configured=false" >> $GITHUB_OUTPUT
+            echo "::notice::Skipping TestFlight upload because App Store Connect / Signing secrets are not configured in repository settings."
+          fi
+
+      - name: Checkout repository
+        if: steps.check_secrets.outputs.configured == 'true'
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install XcodeGen
+        if: steps.check_secrets.outputs.configured == 'true'
+        run: |
+          if ! command -v xcodegen &> /dev/null; then
+            brew install xcodegen
+          fi
+
+      - name: Import Apple Signing Certificate & Configure API Key
+        if: steps.check_secrets.outputs.configured == 'true'
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD || 'ci-ephemeral-keychain-pass' }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          ASC_KEY_DIR="$RUNNER_TEMP/private_keys"
+
+          mkdir -p "$ASC_KEY_DIR"
+          echo "$ASC_PRIVATE_KEY" > "$ASC_KEY_DIR/AuthKey_${ASC_KEY_ID}.p8"
+          chmod 600 "$ASC_KEY_DIR/AuthKey_${ASC_KEY_ID}.p8"
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERTIFICATE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security import "$CERTIFICATE_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychain -d user -s "$KEYCHAIN_PATH" login.keychain
+
+      - name: Archive and Upload to TestFlight
+        if: steps.check_secrets.outputs.configured == 'true'
+        env:
+          DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_PATH: ${{ runner.temp }}/private_keys/AuthKey_${{ secrets.ASC_KEY_ID }}.p8
+        run: ./scripts/upload_testflight.sh
+
+      - name: Clean up Keychain, Certificates & Build Artifacts
+        if: always() && steps.check_secrets.outputs.configured == 'true'
+        run: |
+          security delete-keychain "$RUNNER_TEMP/app-signing.keychain-db" 2>/dev/null || true
+          rm -rf "$RUNNER_TEMP/build_certificate.p12" "$RUNNER_TEMP/private_keys" build/testflight
+

@@ -1,8 +1,13 @@
-# Xcode
+# Xcode & Signing
 .DS_Store
 build/
 */build/*
 *.ipa
+*.xcarchive
+*.p8
+*.p12
+*.cer
+*.mobileprovision
 *.moved-aside
 *.xcuserstate
 xcuserdata/

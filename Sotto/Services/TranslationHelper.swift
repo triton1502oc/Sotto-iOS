@@ -44,6 +44,8 @@ public final class TranslationHelper {
         "no": "Tidak",
         "repeat": "Ulangi",
         "wait": "Tunggu",
+        "listening…": "Mendengarkan…",
+        "listening...": "Mendengarkan…",
         "please give me a moment.": "Tolong beri saya waktu sebentar."
     ]
     
@@ -80,6 +82,8 @@ public final class TranslationHelper {
         "tidak": "No",
         "ulangi": "Repeat",
         "tunggu": "Wait",
+        "mendengarkan…": "Listening…",
+        "mendengarkan...": "Listening…",
         "tolong beri saya waktu sebentar.": "Please give me a moment."
     ]
     
@@ -129,3 +133,5 @@ public final class TranslationHelper {
         return nil
     }
 }
+
+public typealias LocalizationHelper = TranslationHelper

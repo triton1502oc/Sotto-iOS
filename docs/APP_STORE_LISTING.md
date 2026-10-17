@@ -124,15 +124,13 @@ Sotto adalah alat bantu komunikasi asistif dan tidak menyediakan diagnosis atau 
 github.com/triton1502oc/Sotto-iOS | Tersedia versi Android
 ```
 
-### What's New *(v1.7.4)*
+### What's New *(v1.7.5)*
 ```text
-• Guided Emergency Setup: 1-tap configuration modal for neighborhood, contact, and phone with natural digit speech.
-• 3-Step Onboarding: Guided role selection (Self, Caregiver, Professional) and quick-start interface walkthrough.
-• Upright Caregiver HUD: Live selections and check-in depth directly visible to the caregiver in 180° flip mode with screen wake lock.
-• Performance & Zero-Lag Typing: Isolated speech bar state and equatable cards eliminate grid redraws during typing.
-• Sub-50ms Speech Latency: Cached voice selection and pre-warmed audio session for faster spoken response.
-• Zero-Distraction Category Strip: Category management is neatly tucked into Edit Mode to keep active communication distraction-free.
-• Selective Category Export & Offline QR Sharing: Choose specific phrase categories to export via Backup JSON or cross-platform Android/iOS QR Code Decks.
+• Selective Category Export: Choose specific phrase categories to export via Backup JSON or cross-platform Android/iOS QR Code Decks with live card counts.
+• Persistent Quick Speak Microphone: Access the microphone while drafting text to seamlessly append dictation to your message.
+• Dynamic Listening Feedback: Visual "Listening…" prompt highlights active speech recognition state in the Quick Speak bar.
+• Resilient Speech Recognition: Preserves partial dictation transcriptions without unexpected text clearing upon silence timeouts.
+• Automated Release Quality: Added rigorous release document synchronization and streamlined TestFlight deployment validation.
 ```
 
 ### URLs

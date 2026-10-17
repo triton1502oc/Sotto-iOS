@@ -115,11 +115,11 @@ public final class SpeechRecognizerService: ObservableObject {
                 
                 if let result = result {
                     let text = result.bestTranscription.formattedString
+                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
                     DispatchQueue.main.async {
-                        self.transcribedText = text
-                        onUpdate?(text)
-                        
-                        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                        if !trimmed.isEmpty {
+                            self.transcribedText = text
+                            onUpdate?(text)
                             self.initialTimeoutTask?.cancel()
                             self.initialTimeoutTask = nil
                             if autoStopDelay > 0 {
