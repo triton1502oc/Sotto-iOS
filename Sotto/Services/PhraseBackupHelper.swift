@@ -85,10 +85,6 @@ public enum PhraseBackupHelper {
         return jsonStr
     }
     
-    public static func exportToJson(phrases: [Phrase], categories: [String]) -> String {
-        return exportToJson(phrases: phrases, categories: categories, whyTree: nil, whyLog: nil)
-    }
-    
     /// Generates lightweight, compact JSON optimized specifically for optical QR code scanning.
     /// Excludes bulky question trees and logs, and omits default values to keep byte count well within QR limits (<2 KB).
     public static func exportCompactPhrasesForQR(phrases: [Phrase], categories: [String]) -> String {

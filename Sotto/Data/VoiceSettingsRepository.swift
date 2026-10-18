@@ -10,8 +10,6 @@ public protocol VoiceSettingsRepositoryProtocol {
     func clearInstallId()
     func hasPromptedRole() -> Bool
     func setPromptedRole(_ prompted: Bool)
-    func getUserRole() -> String
-    func setUserRole(_ role: String)
     func getFirstInstalledAt() -> Int64
     func recordActiveDay(_ todayDate: String)
     func getActiveDayCount() -> Int
@@ -25,7 +23,6 @@ public final class UserDefaultsVoiceSettingsRepository: VoiceSettingsRepositoryP
     private let keyVoiceSettings = "sotto_voice_prefs"
     private let keyMetricsPromptVersion = "metrics_prompt_version_code"
     private let keyInstallId = "telemetry_install_id"
-    private let keyUserRole = "user_role"
     private let keyRolePrompted = "role_prompted"
     private let keyFirstInstalledAt = "first_installed_at"
     private let keyActiveDays = "active_days"
@@ -95,14 +92,6 @@ public final class UserDefaultsVoiceSettingsRepository: VoiceSettingsRepositoryP
     
     public func setPromptedRole(_ prompted: Bool) {
         userDefaults.set(prompted, forKey: keyRolePrompted)
-    }
-    
-    public func getUserRole() -> String {
-        return userDefaults.string(forKey: keyUserRole) ?? VoiceSettings.roleUnset
-    }
-    
-    public func setUserRole(_ role: String) {
-        userDefaults.set(role, forKey: keyUserRole)
     }
     
     public func getFirstInstalledAt() -> Int64 {

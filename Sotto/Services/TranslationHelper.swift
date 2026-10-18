@@ -1,25 +1,7 @@
 import Foundation
-import SwiftUI
-#if canImport(Translation)
-import Translation
-#endif
 
 /// Helper for on-device translation and AAC phrase translation dictionary.
 public final class TranslationHelper {
-    public static let shared = TranslationHelper()
-    
-    private init() {}
-    
-    public static let idTranslations: [String: String] = [
-        "Share QR Image": "Bagikan Gambar QR",
-        "Pick QR Image": "Pilih Gambar QR",
-        "Save Safety Card": "Simpan Kartu Keselamatan",
-        "Safety Card": "Kartu Keselamatan",
-        "Appearance & Safety": "Tampilan & Keselamatan",
-        "No valid Sotto QR code found in the selected image.": "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih.",
-        "Share phrase card as image": "Bagikan kartu frasa sebagai gambar"
-    ]
-    
     // Built-in offline dictionary for common AAC phrases (English <-> Indonesian)
     private static let enToIdPhrases: [String: String] = [
         "i cannot speak right now. please read my screen.": "Saya tidak bisa bicara sekarang. Tolong baca layar saya.",
@@ -144,5 +126,3 @@ public final class TranslationHelper {
         return nil
     }
 }
-
-public typealias LocalizationHelper = TranslationHelper

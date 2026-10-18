@@ -1,6 +1,4 @@
 import SwiftUI
-import Speech
-import AVFoundation
 
 public enum CaregiverTab {
     case whyFinder

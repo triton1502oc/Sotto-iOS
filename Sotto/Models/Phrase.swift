@@ -46,14 +46,14 @@ public struct PhraseCategory: RawRepresentable, Codable, Hashable, Identifiable,
         }
     }
     
+    private static let systemCategoryNames: Set<String> = ["all", "emergency", "safety", "general"]
+    
     public static func isSystemCategory(_ category: String) -> Bool {
-        let lower = category.lowercased()
-        return lower == "all" || lower == "emergency" || lower == "safety" || lower == "general"
+        systemCategoryNames.contains(category.lowercased())
     }
     
     public static func isUndeletableCategory(_ category: String) -> Bool {
-        let lower = category.lowercased()
-        return lower == "all" || lower == "emergency" || lower == "safety" || lower == "general"
+        isSystemCategory(category)
     }
     
     public static func isUnrenamableCategory(_ category: String) -> Bool {
@@ -121,12 +121,7 @@ public struct Phrase: Identifiable, Codable, Equatable, Hashable {
 }
 
 public extension Phrase {
-    static let categoryGeneral = PhraseCategory.general.rawValue
-    static let categoryEmergency = PhraseCategory.emergency.rawValue
     static let categorySafety = PhraseCategory.emergency.rawValue
-    static let categoryNeeds = PhraseCategory.needs.rawValue
-    static let categorySocial = PhraseCategory.social.rawValue
-    static let categoryCare = PhraseCategory.care.rawValue
     
     static func isSystemCategory(_ category: String) -> Bool {
         PhraseCategory.isSystemCategory(category)

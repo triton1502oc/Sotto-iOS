@@ -59,32 +59,6 @@ public struct VoiceSettings: Codable, Equatable {
         self.respectSilentSwitchForChime = respectSilentSwitchForChime
     }
     
-    public init(
-        speechRate: Float = 1.0,
-        speechPitch: Float = 1.0,
-        voiceIdentifier: String? = nil,
-        appLanguage: String = "system",
-        playAttentionChime: Bool = false,
-        showLanguageSwitcher: Bool = false,
-        secondaryLanguage: String = "id"
-    ) {
-        self.init(
-            speechRate: speechRate,
-            speechPitch: speechPitch,
-            voiceIdentifier: voiceIdentifier,
-            appLanguage: appLanguage,
-            playAttentionChime: playAttentionChime,
-            showLanguageSwitcher: showLanguageSwitcher,
-            secondaryLanguage: secondaryLanguage,
-            shareUsabilityMetrics: false,
-            userRole: "unset",
-            appTheme: VoiceSettings.themeCharcoal,
-            showSafetyCards: true,
-            cardLayout: VoiceSettings.cardLayoutSquare,
-            respectSilentSwitchForChime: false
-        )
-    }
-    
     enum CodingKeys: String, CodingKey {
         case speechRate, speechPitch, voiceIdentifier, appLanguage, playAttentionChime, showLanguageSwitcher, secondaryLanguage, shareUsabilityMetrics, userRole, appTheme, showSafetyCards, cardLayout, respectSilentSwitchForChime
     }

@@ -36,12 +36,6 @@ public final class DemoTargetRegistry {
         guard let rect = targets[id], rect.width > 0, rect.height > 0 else { return nil }
         return CGPoint(x: rect.midX, y: rect.midY)
     }
-    
-    public func frame(for id: String) -> CGRect? {
-        lock.lock()
-        defer { lock.unlock() }
-        return targets[id]
-    }
 }
 
 public struct DemoTargetModifier: ViewModifier {
@@ -544,19 +538,6 @@ public final class DemoAutomationRunner: ObservableObject {
             isTouching = false
         }
         try? await Task.sleep(nanoseconds: 200_000_000)
-    }
-    
-    @MainActor
-    private func performDrag(from start: CGPoint, to end: CGPoint, duration: Double) async {
-        withAnimation(.easeInOut(duration: 0.15)) {
-            isTouching = true
-        }
-        try? await Task.sleep(nanoseconds: 150_000_000)
-        await animateMove(to: end, duration: duration)
-        withAnimation(.easeOut(duration: 0.15)) {
-            isTouching = false
-        }
-        try? await Task.sleep(nanoseconds: 150_000_000)
     }
 }
 

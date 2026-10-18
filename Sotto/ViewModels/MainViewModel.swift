@@ -7,7 +7,6 @@ public final class MainViewModel: ObservableObject {
     @Published public var selectedCategory: PhraseCategory = .all
     @Published public var voiceSettings: VoiceSettings = VoiceSettings()
     @Published public var isEditMode: Bool = false
-    @Published public var ttsReady: Bool = true
     @Published public var activeFullscreenPhrase: Phrase? = nil
     @Published public var phraseToEdit: Phrase? = nil
     @Published public var phraseForSafetySetup: Phrase? = nil
@@ -169,17 +168,6 @@ public final class MainViewModel: ObservableObject {
         phraseRepository.saveCategories(categories)
     }
     
-    public func moveCategory(fromName: String, toName: String) {
-        guard let from = categories.firstIndex(where: { $0.caseInsensitiveCompare(fromName) == .orderedSame }),
-              let to = categories.firstIndex(where: { $0.caseInsensitiveCompare(toName) == .orderedSame }),
-              from != to else {
-            return
-        }
-        let item = categories.remove(at: from)
-        categories.insert(item, at: to)
-        phraseRepository.saveCategories(categories)
-    }
-    
     // MARK: - Phrase Operations
     
     public func hasDuplicatePhrase(_ text: String, excludingId: UUID? = nil) -> Bool {
@@ -230,13 +218,6 @@ public final class MainViewModel: ObservableObject {
         }
         let item = phrases.remove(at: fromIndex)
         phrases.insert(item, at: toIndex)
-        phraseRepository.savePhrases(phrases)
-    }
-    
-    public func movePhrases(from source: IndexSet, to destination: Int) {
-        var updated = phrases
-        updated.move(fromOffsets: source, toOffset: destination)
-        phrases = updated
         phraseRepository.savePhrases(phrases)
     }
     

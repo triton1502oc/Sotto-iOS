@@ -5,8 +5,6 @@ public protocol PhraseRepositoryProtocol {
     func savePhrases(_ phrases: [Phrase])
     func getCategories() -> [String]
     func saveCategories(_ categories: [String])
-    func getCustomCategories() -> [String]
-    func saveCustomCategories(_ categories: [String])
 }
 
 public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
@@ -261,27 +259,5 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
             }
         }
         return result
-    }
-    
-    public func getCustomCategories() -> [String] {
-        Self.ioQueue.sync {
-            getCustomCategoriesSync()
-        }
-    }
-    
-    public func saveCustomCategories(_ categories: [String]) {
-        Self.ioQueue.async { [weak self] in
-            guard let self = self else { return }
-            var cleanList: [String] = []
-            for cat in categories {
-                let trimmed = cat.trimmingCharacters(in: .whitespacesAndNewlines)
-                if !trimmed.isEmpty && !PhraseCategory.isUndeletableCategory(trimmed) && !cleanList.contains(where: { $0.caseInsensitiveCompare(trimmed) == .orderedSame }) {
-                    cleanList.append(trimmed)
-                }
-            }
-            if let data = try? Self.encoder.encode(cleanList) {
-                self.userDefaults.set(data, forKey: self.keyCustomCategories)
-            }
-        }
     }
 }
