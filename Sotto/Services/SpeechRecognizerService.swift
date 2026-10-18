@@ -114,12 +114,12 @@ public final class SpeechRecognizerService: ObservableObject {
                 guard let self = self else { return }
                 
                 if let result = result {
-                    let text = result.bestTranscription.formattedString
-                    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let rawText = result.bestTranscription.formattedString
+                    let normalized = Self.normalizeHypothesis(rawText)
                     DispatchQueue.main.async {
-                        if !trimmed.isEmpty {
-                            self.transcribedText = text
-                            onUpdate?(text)
+                        if !normalized.isEmpty {
+                            self.transcribedText = normalized
+                            onUpdate?(normalized)
                             self.initialTimeoutTask?.cancel()
                             self.initialTimeoutTask = nil
                             if autoStopDelay > 0 {
@@ -196,5 +196,80 @@ public final class SpeechRecognizerService: ObservableObject {
         silenceTask = nil
         initialTimeoutTask?.cancel()
         initialTimeoutTask = nil
+    }
+    
+    /// Collapses progressive prefix repetitions produced by some on-device STT engines
+    /// (e.g. "I I need I need water" -> "I need water") while preserving genuine single-word emphasis.
+    nonisolated public static func normalizeHypothesis(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty { return "" }
+        var words = trimmed.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        var changed = true
+        while changed && words.count >= 2 {
+            changed = false
+            let maxPrefix = words.count / 2
+            for k in stride(from: maxPrefix, through: 1, by: -1) {
+                let prefixMatches = (0..<k).allSatisfy {
+                    words[$0].caseInsensitiveCompare(words[k + $0]) == .orderedSame
+                }
+                if !prefixMatches { continue }
+                if k >= 2 {
+                    words = Array(words.dropFirst(k))
+                    changed = true
+                    break
+                } else {
+                    let remaining = Array(words.dropFirst(1))
+                    let maxM = remaining.count / 2
+                    let hasFollowup: Bool
+                    if maxM >= 2 {
+                        hasFollowup = (2...maxM).contains { m in
+                            (0..<m).allSatisfy {
+                                remaining[$0].caseInsensitiveCompare(remaining[m + $0]) == .orderedSame
+                            }
+                        }
+                    } else {
+                        hasFollowup = false
+                    }
+                    if hasFollowup {
+                        words = remaining
+                        changed = true
+                        break
+                    }
+                }
+            }
+        }
+        return words.joined(separator: " ")
+    }
+    
+    /// Merges existing draft text with a new STT hypothesis without duplicating overlapping prefixes/suffixes.
+    nonisolated public static func mergeDictationText(baseText: String, hypothesis: String) -> String {
+        let base = baseText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let hyp = normalizeHypothesis(hypothesis)
+        if base.isEmpty { return hyp }
+        if hyp.isEmpty { return base }
+        if hyp.caseInsensitiveCompare(base) == .orderedSame { return hyp }
+        if hyp.lowercased().hasPrefix(base.lowercased()) {
+            if hyp.count == base.count || hyp[hyp.index(hyp.startIndex, offsetBy: base.count)].isWhitespace {
+                return hyp
+            }
+        }
+        if base.lowercased().hasSuffix(hyp.lowercased()) {
+            if base.count == hyp.count || base[base.index(base.endIndex, offsetBy: -hyp.count - 1)].isWhitespace {
+                return base
+            }
+        }
+        let baseWords = base.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        let hypWords = hyp.components(separatedBy: .whitespacesAndNewlines).filter { !$0.isEmpty }
+        let maxOverlap = min(baseWords.count, hypWords.count)
+        for k in stride(from: maxOverlap, through: 1, by: -1) {
+            if k == 1 && baseWords.count > 1 { continue }
+            let overlaps = (0..<k).allSatisfy {
+                baseWords[baseWords.count - k + $0].caseInsensitiveCompare(hypWords[$0]) == .orderedSame
+            }
+            if overlaps {
+                return (baseWords + hypWords.dropFirst(k)).joined(separator: " ")
+            }
+        }
+        return "\(base) \(hyp)"
     }
 }

@@ -22,6 +22,7 @@
 		4F778E01E5752DE15352FA06 /* MainSubViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A67DFC574C34A9041ED2F8 /* MainSubViews.swift */; };
 		6012A55B5746CBF6A9D0461A /* ExportBackupModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFCB269166351DC98A174384 /* ExportBackupModal.swift */; };
 		691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B55F23C484A0237DA644B35 /* ChimePlayer.swift */; };
+		77D68E319477D88B95F6D85C /* QRCodeImageHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE5DAF75432C94BF77E933FE /* QRCodeImageHelper.swift */; };
 		78092A8B5735AB5313EC7DEA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1A24908333DE146E3D8CF491 /* PrivacyInfo.xcprivacy */; };
 		7CF3D8E2962C5D0794487D95 /* PmfSurveyModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B88901ABDF66A60F6C7640F3 /* PmfSurveyModal.swift */; };
 		7D285F069E47980D04FDCBE1 /* SottoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB5E6918B1C8328F8FCB740B /* SottoTests.swift */; };
@@ -47,6 +48,7 @@
 		F601608F9E07DBE0DCA0EE1E /* PhraseEditModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19108C1E76AF0DC6FF388D5C /* PhraseEditModal.swift */; };
 		F7017AF3AC70719B612EE848 /* VoiceSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D94CC1A48B0A600F8424554 /* VoiceSettings.swift */; };
 		F707A7B8E9FF28249A7A0990 /* EmergencySafetySetupModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD1D90D22611A03CBB335292 /* EmergencySafetySetupModal.swift */; };
+		F7A22CCE5761369D50B4109C /* CardShareHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC1770BDE57D409C33AE164 /* CardShareHelper.swift */; };
 		F9063BF6D35C72017B467DD1 /* TwoWayConversationModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2601ED2F3DCE387905CC6F /* TwoWayConversationModal.swift */; };
 		F9855B5A9B09BCF5407734B4 /* WhyFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EB1831C4F14CA69F722554B /* WhyFinder.swift */; };
 /* End PBXBuildFile section */
@@ -105,8 +107,10 @@
 		DCBBAC2D1DDA6F654C153B57 /* LocaleHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocaleHelper.swift; sourceTree = "<group>"; };
 		E3D46D2F57F9B2A8F0B0168B /* SottoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoApp.swift; sourceTree = "<group>"; };
 		EB5E6918B1C8328F8FCB740B /* SottoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SottoTests.swift; sourceTree = "<group>"; };
+		EBC1770BDE57D409C33AE164 /* CardShareHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardShareHelper.swift; sourceTree = "<group>"; };
 		F1DB5CF59AD2D6A9BD0F8FE3 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
 		FD1D90D22611A03CBB335292 /* EmergencySafetySetupModal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencySafetySetupModal.swift; sourceTree = "<group>"; };
+		FE5DAF75432C94BF77E933FE /* QRCodeImageHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeImageHelper.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -141,8 +145,10 @@
 		45ADC20DA0474BF055E86D9B /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				EBC1770BDE57D409C33AE164 /* CardShareHelper.swift */,
 				93CC9160B7A08390A91875D2 /* DemoAutomationRunner.swift */,
 				DCBBAC2D1DDA6F654C153B57 /* LocaleHelper.swift */,
+				FE5DAF75432C94BF77E933FE /* QRCodeImageHelper.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -348,6 +354,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1261DEC94E9AFB324AC2D8D7 /* BackupData.swift in Sources */,
+				F7A22CCE5761369D50B4109C /* CardShareHelper.swift in Sources */,
 				691730770E010F020CF5B7F7 /* ChimePlayer.swift in Sources */,
 				14C9F014A6BC00133503B046 /* DemoAutomationRunner.swift in Sources */,
 				F707A7B8E9FF28249A7A0990 /* EmergencySafetySetupModal.swift in Sources */,
@@ -365,6 +372,7 @@
 				F601608F9E07DBE0DCA0EE1E /* PhraseEditModal.swift in Sources */,
 				DA7CE9AD75CD9E56B3DD93A9 /* PhraseRepository.swift in Sources */,
 				7CF3D8E2962C5D0794487D95 /* PmfSurveyModal.swift in Sources */,
+				77D68E319477D88B95F6D85C /* QRCodeImageHelper.swift in Sources */,
 				8082A12B594DF6AE66932CA9 /* QRCodeModal.swift in Sources */,
 				A5FD6DB9CB856DA2C090046B /* QRScannerModal.swift in Sources */,
 				3DDC0BE5B1377078B0E6621C /* QuickSpeakBarView.swift in Sources */,

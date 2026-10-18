@@ -10,6 +10,16 @@ public final class TranslationHelper {
     
     private init() {}
     
+    public static let idTranslations: [String: String] = [
+        "Share QR Image": "Bagikan Gambar QR",
+        "Pick QR Image": "Pilih Gambar QR",
+        "Save Safety Card": "Simpan Kartu Keselamatan",
+        "Safety Card": "Kartu Keselamatan",
+        "Appearance & Safety": "Tampilan & Keselamatan",
+        "No valid Sotto QR code found in the selected image.": "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih.",
+        "Share phrase card as image": "Bagikan kartu frasa sebagai gambar"
+    ]
+    
     // Built-in offline dictionary for common AAC phrases (English <-> Indonesian)
     private static let enToIdPhrases: [String: String] = [
         "i cannot speak right now. please read my screen.": "Saya tidak bisa bicara sekarang. Tolong baca layar saya.",
@@ -22,7 +32,7 @@ public final class TranslationHelper {
         "hello.": "Halo.",
         "please repeat that.": "Tolong ulangi.",
         "i need help.": "Saya butuh bantuan.",
-        "i am in pain.": "Saya sedang merasa sakit.",
+        "i am in pain.": "Saya merasa sakit.",
         "water please.": "Tolong air minum.",
         "where is the restroom?": "Di mana toilet / kamar mandi?",
         "i am overwhelmed.": "Saya merasa kewalahan.",
@@ -60,6 +70,7 @@ public final class TranslationHelper {
         "halo.": "Hello.",
         "tolong ulangi.": "Please repeat that.",
         "saya butuh bantuan.": "I need help.",
+        "saya merasa sakit.": "I am in pain.",
         "saya sedang merasa sakit.": "I am in pain.",
         "tolong air minum.": "Water please.",
         "di mana toilet / kamar mandi?": "Where is the restroom?",

@@ -60,17 +60,27 @@ Sotto was created by a father to navigate overwhelming communication breakdowns 
 
 ## 4. Release Process & Guides
 
-* Releases are tracked in [CHANGELOG.md](CHANGELOG.md) and published via GitHub Releases (`gh release create` or automated tag-triggered GitHub Action in `.github/workflows/release.yml`).
-* Before publishing any release or version bump, run `python3 scripts/sync_release_docs.py --check` to verify cross-document version parity, deployment targets, and documentation integrity.
-* Automated continuous integration runs on pull requests and pushes to `main` via `.github/workflows/ios.yml` (Gitleaks security scanning, documentation verification, XcodeGen generation, unit tests, and IPA artifact packaging).
-* User and caregiver workflows are documented in [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md).
-* App Store assets and metadata are documented in [docs/APP_STORE_LISTING.md](docs/APP_STORE_LISTING.md).
-* Cross-platform porting guidelines are documented in [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md).
-* Community standards are defined in our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+* **Pre-Release Verification & Device Testing (MANDATORY)**:
+  - Regenerate the project (`xcodegen generate`), verify Swift compilation/tests, and install/test the release build on a physical device or simulator before tagging.
+  - **AI Agent Rule**: AI agents assisting with a release **must explicitly ask and remind the user to test the release build on a physical device or simulator** before creating the release tag.
+* **Version Sync & Doc Audit**:
+  - Before publishing any release or version bump, run `python3 scripts/sync_release_docs.py --bump <version> --build <build>` (as needed) and `python3 scripts/sync_release_docs.py --check` to verify cross-document version parity, deployment targets, and documentation integrity.
+* **Documentation, Changelog & Issue Milestone Tracking**:
+  - Associate planned issues and bug fixes with the target release milestone in GitHub (e.g. `gh issue edit <id> --milestone "v<version>"`), and close the milestone once the release is published.
+  - When updating or closing an unassigned issue (`gh issue edit <id>`), always assign it to yourself (`--add-assignee "@me"`).
+  - Update [CHANGELOG.md](CHANGELOG.md) under the new version header: check the previous release format via `gh release view` and commit diff via `git log <prev>..<current>`, and link closed issues (e.g. `([#2](...))`).
+* **Git Commit, Tag & Automated Release**:
+  - Commit release preparations using the standard release chore format: `git commit -m "chore(release): prepare v<version>"`.
+  - Push `main` and the `v<version>` tag to trigger `.github/workflows/release.yml` (or publish via `gh release create`).
+  - Automated continuous integration also runs on pull requests and pushes to `main` via `.github/workflows/ios.yml` (Gitleaks security scanning, documentation verification, XcodeGen generation, unit tests, and IPA artifact packaging).
+* **Reference Guides**:
+  - User and caregiver workflows: [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md).
+  - App Store assets and metadata: [docs/APP_STORE_LISTING.md](docs/APP_STORE_LISTING.md).
+  - Cross-platform porting guidelines: [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md).
+  - Community standards: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 
 ## 5. Licensing & Inbound Contributions
 
 Sotto is licensed under the [GNU General Public License v3.0](LICENSE) with an Apple App Store Exception. All contributions submitted to this repository are understood to be licensed under these same terms.
-

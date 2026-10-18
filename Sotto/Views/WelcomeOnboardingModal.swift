@@ -151,13 +151,13 @@ public struct WelcomeOnboardingModal: View {
     
     @ViewBuilder
     private var step2SafetySetup: some View {
-        Text(isIndonesian ? "Kartu Kontak Darurat" : "Emergency Safety Card")
+        Text(isIndonesian ? "Kartu Keselamatan" : "Safety Card")
             .font(.title2.weight(.bold))
             .foregroundColor(palette.textPrimary)
         
         Text(isIndonesian
-             ? "Atur kartu darurat agar penolong atau pendamping tahu lokasi dan kontak darurat Anda."
-             : "Set up your emergency card so first responders or caregivers know where you live and who to contact.")
+             ? "Atur kartu keselamatan agar penolong atau pendamping tahu lokasi dan kontak darurat Anda."
+             : "Set up your safety card so first responders or caregivers know where you live and who to contact.")
             .font(.body)
             .foregroundColor(palette.textSecondary)
         
@@ -247,7 +247,7 @@ public struct WelcomeOnboardingModal: View {
                 currentStep = 3
             }
         }) {
-            Text(isIndonesian ? "Simpan Kartu Darurat" : "Save Emergency Card")
+            Text(isIndonesian ? "Simpan Kartu Keselamatan" : "Save Safety Card")
                 .font(.headline.weight(.bold))
                 .foregroundColor(canSaveSafety ? palette.background : palette.textSecondary.opacity(0.5))
                 .frame(maxWidth: .infinity)

@@ -141,8 +141,10 @@ Sotto-iOS/
 │   │   ├── TranslationHelper.swift # Offline phrase dictionary & language normalization
 │   │   └── UsabilityTracker.swift  # Privacy-preserving usability telemetry v2
 │   ├── Utils/
+│   │   ├── CardShareHelper.swift   # High-contrast 1080x1080 phrase card PNG image renderer
 │   │   ├── DemoAutomationRunner.swift # Automated UI flow runner for demo recordings
-│   │   └── LocaleHelper.swift      # Language detection & locale helpers
+│   │   ├── LocaleHelper.swift      # Language detection & locale helpers
+│   │   └── QRCodeImageHelper.swift # Branded 1080x1080 QR deck card generator & offline image decoder
 │   ├── Theme/
 │   │   ├── SottoIcon.swift         # Low-stimulus SF Symbol vector iconography
 │   │   └── Theme.swift             # Centralized low-stimulus dark theme palette

@@ -20,7 +20,7 @@ A clear and concise description of what you expected to happen.
 **Device & Environment**
 - Device: [e.g. iPhone 15 Pro, iPad Air M2]
 - iOS Version: [e.g. iOS 17.5, iOS 18.0]
-- Sotto Version: [e.g. v1.7.5]
+- Sotto Version: [e.g. v1.7.7]
 - Active Language / Voice: [e.g. English (US), Indonesian]
 
 **Screenshots**

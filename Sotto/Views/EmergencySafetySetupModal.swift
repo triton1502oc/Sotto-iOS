@@ -128,7 +128,7 @@ public struct EmergencySafetySetupModal: View {
                         }
                         
                         Button(action: saveConfiguredCard) {
-                            Text(isIndonesian ? "Simpan Kartu Darurat" : "Save Emergency Card")
+                            Text(isIndonesian ? "Simpan Kartu Keselamatan" : "Save Safety Card")
                                 .font(.headline.weight(.bold))
                                 .foregroundColor(canSave ? palette.background : palette.textSecondary.opacity(0.5))
                                 .frame(maxWidth: .infinity)

@@ -158,7 +158,7 @@ Run the one-command TestFlight upload script from the repository root. It automa
 
 ## Step 6: App Store Listing & Review Submission
 
-1. In App Store Connect, go to **iOS App > 1.7.5 Prepare for Submission**.
+1. In App Store Connect, go to **iOS App > 1.7.7 Prepare for Submission**.
 2. Fill in the listing details using [APP_STORE_LISTING.md](APP_STORE_LISTING.md):
    - **Promotional Text**:
      ```text

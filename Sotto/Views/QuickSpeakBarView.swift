@@ -221,16 +221,15 @@ public struct QuickSpeakBarView: View {
                 if granted {
                     baseTextBeforeRecording = draftText.trimmingCharacters(in: .whitespacesAndNewlines)
                     speechRecognizer.startRecording { recognizedText in
-                        let cleanRecognized = recognizedText.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let cleanRecognized = SpeechRecognizerService.normalizeHypothesis(recognizedText)
                         guard !cleanRecognized.isEmpty else { return }
                         if draftText.isEmpty {
                             UsabilityTracker.shared.startIntent("QuickSpeak")
                         }
-                        if baseTextBeforeRecording.isEmpty {
-                            draftText = cleanRecognized
-                        } else {
-                            draftText = "\(baseTextBeforeRecording) \(cleanRecognized)"
-                        }
+                        draftText = SpeechRecognizerService.mergeDictationText(
+                            baseText: baseTextBeforeRecording,
+                            hypothesis: cleanRecognized
+                        )
                     }
                 }
             }

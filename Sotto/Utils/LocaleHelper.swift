@@ -288,10 +288,55 @@ public enum LocaleHelper {
         case 0:
             return isIndonesian ? "Suara & Ucapan" : "Voice & Speech"
         case 1:
-            return isIndonesian ? "Tampilan & Keamanan" : "Appearance & Safety"
+            return isIndonesian ? "Tampilan & Keselamatan" : "Appearance & Safety"
         default:
             return isIndonesian ? "Data & Cadangan" : "Data & Backup"
         }
+    }
+    
+    public static let idTranslations: [String: String] = [
+        "Share QR Image": "Bagikan Gambar QR",
+        "Pick QR Image": "Pilih Gambar QR",
+        "Save Safety Card": "Simpan Kartu Keselamatan",
+        "Safety Card": "Kartu Keselamatan",
+        "Appearance & Safety": "Tampilan & Keselamatan",
+        "No valid Sotto QR code found in the selected image.": "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih.",
+        "Share phrase card as image": "Bagikan kartu frasa sebagai gambar"
+    ]
+    
+    public static func getShareQRImageLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Bagikan Gambar QR" : "Share QR Image"
+    }
+
+    public static func getPickQRImageLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Pilih Gambar QR" : "Pick QR Image"
+    }
+
+    public static func getSaveSafetyCardLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Simpan Kartu Keselamatan" : "Save Safety Card"
+    }
+
+    public static func getSafetyCardLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Kartu Keselamatan" : "Safety Card"
+    }
+
+    public static func getAppearanceAndSafetyLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Tampilan & Keselamatan" : "Appearance & Safety"
+    }
+
+    public static func getQRDecodeFailedError(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih." : "No valid Sotto QR code found in the selected image."
+    }
+
+    public static func getSharePhraseCardImageLabel(appLanguage: String = "system") -> String {
+        let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
+        return isIndonesian ? "Bagikan kartu frasa sebagai gambar" : "Share phrase card as image"
     }
     
     public static func getCardLayoutTitle(appLanguage: String = "system") -> String {

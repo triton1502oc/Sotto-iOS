@@ -21,6 +21,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
     private let keyMigrated = "v2_migrated"
     private let keyCareMigrated = "care_migrated"
     private let keySafetyConsolidatedMigrated = "safety_consolidated_migrated"
+    private let keyCareRoleClarityMigrated = "care_role_clarity_migrated"
     
     public init(userDefaults: UserDefaults = .standard) {
         self.userDefaults = userDefaults
@@ -37,11 +38,11 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                 Phrase(text: "Ya, silakan.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "Tidak, terima kasih.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "Terima kasih.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
-                Phrase(text: "Apakah merasa sakit?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Apakah butuh minum atau makan?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Apakah perlu ke kamar mandi?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Apakah merasa dingin atau panas?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Apakah ingin istirahat atau tidur?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Saya merasa sakit.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Saya butuh minum atau makan.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Saya perlu ke kamar mandi.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Saya merasa terlalu dingin atau panas.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "Saya ingin istirahat atau tidur.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
                 Phrase(text: "Halo.", language: LocaleHelper.langAuto, isEmergency: false, category: .general),
                 Phrase(text: "Tolong ulangi.", language: LocaleHelper.langAuto, isEmergency: false, category: .general)
             ]
@@ -54,11 +55,11 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                 Phrase(text: "Yes, please.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "No, thank you.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
                 Phrase(text: "Thank you.", language: LocaleHelper.langAuto, isEmergency: false, category: .social),
-                Phrase(text: "Are you in pain?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Do you need water or food?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Do you need the restroom?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Are you feeling cold or warm?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
-                Phrase(text: "Do you want to rest or sleep?", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "I am in pain.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "I need water or food.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "I need the restroom.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "I feel too cold or too warm.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
+                Phrase(text: "I need to rest or sleep.", language: LocaleHelper.langAuto, isEmergency: false, category: .care),
                 Phrase(text: "Hello.", language: LocaleHelper.langAuto, isEmergency: false, category: .general),
                 Phrase(text: "Please repeat that.", language: LocaleHelper.langAuto, isEmergency: false, category: .general)
             ]
@@ -73,6 +74,7 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                 userDefaults.set(true, forKey: keyMigrated)
                 userDefaults.set(true, forKey: keyCareMigrated)
                 userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
+                userDefaults.set(true, forKey: keyCareRoleClarityMigrated)
                 return defaults
             }
             
@@ -137,6 +139,31 @@ public final class UserDefaultsPhraseRepository: PhraseRepositoryProtocol {
                         }
                     }
                     userDefaults.set(true, forKey: keySafetyConsolidatedMigrated)
+                    needsSave = true
+                }
+
+                // One-time upgrade: Convert legacy 2nd-person Care questions into 1st-person self-advocacy statements
+                let isCareRoleClarityMigrated = userDefaults.bool(forKey: keyCareRoleClarityMigrated)
+                if !isCareRoleClarityMigrated {
+                    let careQuestionToStatementMap: [String: String] = [
+                        "Are you in pain?": "I am in pain.",
+                        "Do you need water or food?": "I need water or food.",
+                        "Do you need the restroom?": "I need the restroom.",
+                        "Are you feeling cold or warm?": "I feel too cold or too warm.",
+                        "Do you want to rest or sleep?": "I need to rest or sleep.",
+                        "Apakah merasa sakit?": "Saya merasa sakit.",
+                        "Apakah butuh minum atau makan?": "Saya butuh minum atau makan.",
+                        "Apakah perlu ke kamar mandi?": "Saya perlu ke kamar mandi.",
+                        "Apakah merasa dingin atau panas?": "Saya merasa terlalu dingin atau panas.",
+                        "Apakah ingin istirahat atau tidur?": "Saya ingin istirahat atau tidur."
+                    ]
+                    for i in 0..<phrases.count {
+                        if phrases[i].category == .care, let replacement = careQuestionToStatementMap[phrases[i].text] {
+                            phrases[i].text = replacement
+                            needsSave = true
+                        }
+                    }
+                    userDefaults.set(true, forKey: keyCareRoleClarityMigrated)
                     needsSave = true
                 }
                 

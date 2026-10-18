@@ -136,7 +136,6 @@ def check_docs(repo_root: Path) -> bool:
         print(f"Deployment Target in project.yml: {BOLD}iOS {target_deployment}{RESET}")
 
     doc_targets = [
-        ("ANTIGRAVITY.md", repo_root / "ANTIGRAVITY.md", rf"iOS {re.escape(target_deployment)}\+"),
         ("README.md", repo_root / "README.md", rf"iOS {re.escape(target_deployment)}\+"),
         ("CONTRIBUTING.md", repo_root / "CONTRIBUTING.md", rf"iOS {re.escape(target_deployment)}\+"),
     ]
@@ -148,9 +147,6 @@ def check_docs(repo_root: Path) -> bool:
             else:
                 print(f"{RED}[FAIL]{RESET} {name} does not match deployment target iOS {target_deployment}+")
                 all_passed = False
-        elif name == "ANTIGRAVITY.md":
-            # Local-only AI instructions (gitignored), skip in clean CI checkouts
-            continue
         else:
             print(f"{RED}[FAIL]{RESET} Missing {name}")
             all_passed = False

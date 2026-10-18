@@ -683,7 +683,7 @@ public struct VoiceSettingsModal: View {
             // Safety & Bystander Section
             sectionHeader(
                 icon: .shield,
-                title: isIndonesian ? "Keamanan & Pengamat" : "Safety & Bystander"
+                title: isIndonesian ? "Keselamatan & Pengamat" : "Safety & Bystander"
             )
             
             Toggle(isOn: Binding(

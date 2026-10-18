@@ -79,8 +79,31 @@ public struct FullscreenPhraseModal: View {
                         .cornerRadius(8)
                     }
                     
-                    HStack {
+                    HStack(spacing: 8) {
                         Spacer()
+                        Button(action: {
+                            let isId = LocaleHelper.getEffectiveLanguage(appLanguage: voiceSettings.appLanguage) == LocaleHelper.langIndonesian
+                            let badge = isEmergency
+                                ? LocaleHelper.getCategoryDisplayName("EMERGENCY", appLanguage: voiceSettings.appLanguage)
+                                : LocaleHelper.getCategoryDisplayName(phrase.category.rawValue, appLanguage: voiceSettings.appLanguage)
+                            let footer = isId ? "Sotto • Komunikasi Asistif" : "Sotto • Assistive Communication"
+                            let spec = ShareableCardSpec(
+                                primaryText: phrase.text,
+                                secondaryText: hasSpokenText ? phrase.spokenText : nil,
+                                badgeLabel: badge,
+                                isEmergency: isEmergency,
+                                footerBrandText: footer
+                            )
+                            CardShareHelper.shareCard(spec, sourceTag: "fullscreen_card", voiceSettings: voiceSettings)
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 19, weight: .semibold))
+                                .foregroundColor(isEmergency ? SottoTheme.emergencyBorder : palette.textPrimary)
+                                .frame(width: 44, height: 44)
+                        }
+                        .accessibilityLabel(LocaleHelper.getEffectiveLanguage(appLanguage: voiceSettings.appLanguage) == LocaleHelper.langIndonesian ? "Bagikan kartu frasa sebagai gambar" : "Share phrase card as image")
+                        .demoTarget("fullscreen_shareButton")
+                        
                         Button(action: onDismiss) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 20, weight: .bold))

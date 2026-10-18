@@ -193,7 +193,7 @@ final class SottoTests: XCTestCase {
         XCTAssertTrue(PhraseCategory.selectableCategories.contains(.care))
         XCTAssertTrue(PhraseCategory.filterCategories.contains(.care))
         
-        let carePhrase = Phrase(text: "Are you in pain?", category: .care)
+        let carePhrase = Phrase(text: "I am in pain.", category: .care)
         XCTAssertEqual(carePhrase.category, .care)
         XCTAssertFalse(carePhrase.isEmergency)
     }
@@ -202,12 +202,12 @@ final class SottoTests: XCTestCase {
         let enDefaults = UserDefaultsPhraseRepository.defaultPhrases(forLanguage: "en")
         let careEn = enDefaults.filter { $0.category == .care }
         XCTAssertEqual(careEn.count, 5)
-        XCTAssertTrue(careEn.contains { $0.text == "Are you in pain?" })
+        XCTAssertTrue(careEn.contains { $0.text == "I am in pain." })
         
         let idDefaults = UserDefaultsPhraseRepository.defaultPhrases(forLanguage: "id")
         let careId = idDefaults.filter { $0.category == .care }
         XCTAssertEqual(careId.count, 5)
-        XCTAssertTrue(careId.contains { $0.text == "Apakah merasa sakit?" })
+        XCTAssertTrue(careId.contains { $0.text == "Saya merasa sakit." })
     }
     
     func testCareMigrationAppendsCarePhrases() {
@@ -257,9 +257,13 @@ final class SottoTests: XCTestCase {
     }
     
     func testCareAndTwoWayDictionaryTranslations() {
-        let careEn = "Are you in pain?"
+        let careEn = "I am in pain."
         let careId = TranslationHelper.dictionaryTranslation(for: careEn, sourceLang: "en", targetLang: "id")
-        XCTAssertEqual(careId, "Apakah merasa sakit?")
+        XCTAssertEqual(careId, "Saya merasa sakit.")
+        
+        let caregiverEn = "Are you in pain?"
+        let caregiverId = TranslationHelper.dictionaryTranslation(for: caregiverEn, sourceLang: "en", targetLang: "id")
+        XCTAssertEqual(caregiverId, "Apakah merasa sakit?")
         
         let repeatEn = "repeat"
         let repeatId = TranslationHelper.dictionaryTranslation(for: repeatEn, sourceLang: "en", targetLang: "id")
@@ -1664,6 +1668,210 @@ final class SottoTests: XCTestCase {
         XCTAssertTrue(events.contains { $0.intent == "friction" && $0.frictionTag == "speech_error" })
         
         defaults.removePersistentDomain(forName: suite)
+    }
+    
+    // MARK: - v1.7.6 & v1.7.7 Parity Unit Tests
+    
+    func testCareRoleClarityMigration() {
+        let suite = "test_care_role_clarity_\(UUID().uuidString)"
+        let testDefaults = UserDefaults(suiteName: suite)!
+        
+        let legacyCarePhrases = [
+            Phrase(text: "Are you in pain?", category: .care),
+            Phrase(text: "Do you need water or food?", category: .care),
+            Phrase(text: "Do you need the restroom?", category: .care),
+            Phrase(text: "Are you feeling cold or warm?", category: .care),
+            Phrase(text: "Do you want to rest or sleep?", category: .care),
+            Phrase(text: "Apakah merasa sakit?", category: .care),
+            Phrase(text: "Apakah butuh minum atau makan?", category: .care),
+            Phrase(text: "Apakah perlu ke kamar mandi?", category: .care),
+            Phrase(text: "Apakah merasa dingin atau panas?", category: .care),
+            Phrase(text: "Apakah ingin istirahat atau tidur?", category: .care),
+            Phrase(text: "My custom care routine", category: .care),
+            Phrase(text: "Are you in pain?", category: .general) // non-care phrase with same text
+        ]
+        let data = try! JSONEncoder().encode(legacyCarePhrases)
+        testDefaults.set(data, forKey: "saved_phrases")
+        testDefaults.set(true, forKey: "v2_migrated")
+        testDefaults.set(true, forKey: "care_migrated")
+        testDefaults.set(true, forKey: "safety_consolidated_migrated")
+        testDefaults.set(false, forKey: "care_role_clarity_migrated")
+        
+        let repo = UserDefaultsPhraseRepository(userDefaults: testDefaults)
+        let loaded = repo.getPhrases()
+        
+        XCTAssertTrue(testDefaults.bool(forKey: "care_role_clarity_migrated"))
+        
+        // Upgraded phrases to 1st-person self-advocacy statements
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "I am in pain." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "I need water or food." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "I need the restroom." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "I feel too cold or too warm." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "I need to rest or sleep." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "Saya merasa sakit." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "Saya butuh minum atau makan." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "Saya perlu ke kamar mandi." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "Saya merasa terlalu dingin atau panas." })
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "Saya ingin istirahat atau tidur." })
+        
+        // Custom care phrase preserved
+        XCTAssertTrue(loaded.contains { $0.category == .care && $0.text == "My custom care routine" })
+        
+        // Non-care phrase not modified
+        XCTAssertTrue(loaded.contains { $0.category == .general && $0.text == "Are you in pain?" })
+        
+        testDefaults.removePersistentDomain(forName: suite)
+    }
+    
+    func testTwoWayConversationModalDefaultCaregiverQuestions() {
+        let enQuestions = TwoWayConversationModal.defaultCaregiverQuestions(isIndonesian: false)
+        XCTAssertEqual(enQuestions.count, 8)
+        XCTAssertEqual(enQuestions[0], "Are you in pain?")
+        XCTAssertEqual(enQuestions[1], "Do you need water or food?")
+        XCTAssertEqual(enQuestions[2], "Do you need the restroom?")
+        XCTAssertEqual(enQuestions[3], "Are you feeling cold or warm?")
+        XCTAssertEqual(enQuestions[4], "Do you want to rest or sleep?")
+        XCTAssertEqual(enQuestions[5], "Do you need a quiet space?")
+        XCTAssertEqual(enQuestions[6], "Would you like more time?")
+        XCTAssertEqual(enQuestions[7], "Do you want to leave now?")
+        
+        let idQuestions = TwoWayConversationModal.defaultCaregiverQuestions(isIndonesian: true)
+        XCTAssertEqual(idQuestions.count, 8)
+        XCTAssertEqual(idQuestions[0], "Apakah merasa sakit?")
+        XCTAssertEqual(idQuestions[1], "Apakah butuh minum atau makan?")
+        XCTAssertEqual(idQuestions[2], "Apakah perlu ke kamar mandi?")
+        XCTAssertEqual(idQuestions[3], "Apakah merasa dingin atau panas?")
+        XCTAssertEqual(idQuestions[4], "Apakah ingin istirahat atau tidur?")
+        XCTAssertEqual(idQuestions[5], "Apakah butuh tempat yang tenang?")
+        XCTAssertEqual(idQuestions[6], "Apakah butuh waktu lebih?")
+        XCTAssertEqual(idQuestions[7], "Apakah ingin pergi sekarang?")
+    }
+    
+    func testSpeechRecognizerServiceNormalizeHypothesis() {
+        // Collapses progressive prefix repetitions
+        XCTAssertEqual(
+            SpeechRecognizerService.normalizeHypothesis("I I need I need water"),
+            "I need water"
+        )
+        XCTAssertEqual(
+            SpeechRecognizerService.normalizeHypothesis("I need I need water"),
+            "I need water"
+        )
+        XCTAssertEqual(
+            SpeechRecognizerService.normalizeHypothesis("hello hello world"),
+            "hello world"
+        )
+        
+        // Preserves natural single-word emphasis or duplicate responses
+        XCTAssertEqual(
+            SpeechRecognizerService.normalizeHypothesis("no no"),
+            "no no"
+        )
+        XCTAssertEqual(
+            SpeechRecognizerService.normalizeHypothesis("very very good"),
+            "very very good"
+        )
+        
+        // Handles empty or whitespace
+        XCTAssertEqual(SpeechRecognizerService.normalizeHypothesis(""), "")
+        XCTAssertEqual(SpeechRecognizerService.normalizeHypothesis("   "), "")
+        
+        // Normal single sentence unmodified
+        XCTAssertEqual(
+            SpeechRecognizerService.normalizeHypothesis("Please give me some water."),
+            "Please give me some water."
+        )
+    }
+    
+    func testSpeechRecognizerServiceMergeDictationText() {
+        // Empty base or hypothesis
+        XCTAssertEqual(SpeechRecognizerService.mergeDictationText(baseText: "", hypothesis: "Hello"), "Hello")
+        XCTAssertEqual(SpeechRecognizerService.mergeDictationText(baseText: "Hello", hypothesis: ""), "Hello")
+        
+        // Exact same text
+        XCTAssertEqual(SpeechRecognizerService.mergeDictationText(baseText: "Hello world", hypothesis: "Hello world"), "Hello world")
+        
+        // Prefix containment (hypothesis contains base)
+        XCTAssertEqual(SpeechRecognizerService.mergeDictationText(baseText: "I need", hypothesis: "I need water please"), "I need water please")
+        
+        // Suffix containment (base contains hypothesis)
+        XCTAssertEqual(SpeechRecognizerService.mergeDictationText(baseText: "I need water please", hypothesis: "please"), "I need water please")
+        
+        // Overlapping boundary deduplication
+        XCTAssertEqual(
+            SpeechRecognizerService.mergeDictationText(baseText: "I want to go to the", hypothesis: "go to the store"),
+            "I want to go to the store"
+        )
+        
+        // Clean append without overlap
+        XCTAssertEqual(
+            SpeechRecognizerService.mergeDictationText(baseText: "Hello.", hypothesis: "How are you?"),
+            "Hello. How are you?"
+        )
+    }
+    
+    func testCardShareHelperCaptionAndImageRendering() {
+        // Standard card spec
+        let standardSpec = ShareableCardSpec(
+            primaryText: "I need a quiet space.",
+            secondaryText: "Reply: Understood, take your time.",
+            badgeLabel: "Partner Exchange",
+            isEmergency: false,
+            footerBrandText: "Sotto • Assistive Communication"
+        )
+        
+        let caption = CardShareHelper.buildShareCaption(standardSpec)
+        XCTAssertTrue(caption.contains("[Partner Exchange]"))
+        XCTAssertTrue(caption.contains("I need a quiet space."))
+        XCTAssertTrue(caption.contains("Reply: Understood, take your time."))
+        
+        // Emergency badge formatting
+        let emergencySpec = ShareableCardSpec(
+            primaryText: "Please call my contact: 555-0199",
+            badgeLabel: "Safety",
+            isEmergency: true
+        )
+        let emergencyCaption = CardShareHelper.buildShareCaption(emergencySpec)
+        XCTAssertTrue(emergencyCaption.contains("[🛡️ Safety]"))
+        XCTAssertTrue(emergencyCaption.contains("Please call my contact: 555-0199"))
+        
+        // Render image dimensions
+        let renderedImage = CardShareHelper.renderCardImage(standardSpec)
+        XCTAssertEqual(renderedImage.size.width, 1080)
+        XCTAssertEqual(renderedImage.size.height, 1080)
+        
+        let emergencyImage = CardShareHelper.renderCardImage(emergencySpec)
+        XCTAssertEqual(emergencyImage.size.width, 1080)
+        XCTAssertEqual(emergencyImage.size.height, 1080)
+    }
+    
+    func testQRCodeImageHelperRoundTrip() {
+        let samplePayload = "SOTTO:v1:eyJwIjpbeyJ0IjoiSSBhbSBpbiBwYWluLiIsImMiOiJDYXJlIn1dfQ=="
+        
+        // Raw QR image generation
+        let rawQR = QRCodeImageHelper.generateRawQRImage(from: samplePayload)
+        XCTAssertNotNil(rawQR)
+        
+        // Branded QR card rendering
+        guard let qr = rawQR else {
+            XCTFail("Raw QR generation failed")
+            return
+        }
+        let brandedCard = QRCodeImageHelper.renderBrandedQRCardImage(
+            qrImage: qr,
+            title: "Care Phrases Deck",
+            subtitle: "5 phrases • Sotto Deck",
+            payloadByteCount: samplePayload.utf8.count
+        )
+        XCTAssertEqual(brandedCard.size.width, 1080)
+        XCTAssertEqual(brandedCard.size.height, 1080)
+        
+        // Offline decode round-trip from both raw and branded images
+        let decodedFromRaw = QRCodeImageHelper.decodeQRFromImage(qr)
+        XCTAssertEqual(decodedFromRaw, samplePayload)
+        
+        let decodedFromBranded = QRCodeImageHelper.decodeQRFromImage(brandedCard)
+        XCTAssertEqual(decodedFromBranded, samplePayload)
     }
 }
 

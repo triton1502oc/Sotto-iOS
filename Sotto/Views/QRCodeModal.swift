@@ -111,25 +111,53 @@ public struct QRCodeModal: View {
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 24)
                     
-                    // Copy Data Button
-                    Button(action: {
-                        UIPasteboard.general.string = dataString
-                        copied = true
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                            copied = false
+                    // Share & Copy Buttons
+                    HStack(spacing: 12) {
+                        if let image = qrImage {
+                            Button(action: {
+                                let settings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
+                                QRCodeImageHelper.shareQRImage(
+                                    qrImage: image,
+                                    title: title,
+                                    subtitle: subtitle,
+                                    dataString: dataString,
+                                    appLanguage: settings.appLanguage,
+                                    voiceSettings: settings
+                                )
+                            }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "square.and.arrow.up")
+                                        .font(.system(size: 15, weight: .semibold))
+                                    Text(LocaleHelper.getShareQRImageLabel(appLanguage: UserDefaultsVoiceSettingsRepository().getVoiceSettings().appLanguage))
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                                .foregroundColor(SottoTheme.onPrimary)
+                                .padding(.horizontal, 16)
+                                .frame(height: 44)
+                                .background(SottoTheme.primary)
+                                .cornerRadius(12)
+                            }
                         }
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                                .font(.system(size: 15, weight: .semibold))
-                            Text(copied ? "Copied to Clipboard" : "Copy Deck Data")
-                                .font(.system(size: 14, weight: .semibold))
+                        
+                        Button(action: {
+                            UIPasteboard.general.string = dataString
+                            copied = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                                copied = false
+                            }
+                        }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                                    .font(.system(size: 15, weight: .semibold))
+                                Text(copied ? "Copied to Clipboard" : "Copy Deck Data")
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .foregroundColor(SottoTheme.textPrimary)
+                            .padding(.horizontal, 16)
+                            .frame(height: 44)
+                            .background(SottoTheme.surfaceVariant)
+                            .cornerRadius(12)
                         }
-                        .foregroundColor(SottoTheme.textPrimary)
-                        .padding(.horizontal, 16)
-                        .frame(height: 44)
-                        .background(SottoTheme.surfaceVariant)
-                        .cornerRadius(12)
                     }
                     
                     Spacer()

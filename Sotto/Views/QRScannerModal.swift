@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import PhotosUI
 
 public struct QRScannerModal: View {
     public let onScan: (_ dataString: String) -> Void
@@ -9,6 +10,8 @@ public struct QRScannerModal: View {
     @State private var hasCameraPermission: Bool = true
     @State private var cameraUnavailable: Bool = false
     @State private var detectedClipboardDeck: String? = nil
+    @State private var selectedPhotoItem: PhotosPickerItem? = nil
+    @State private var qrImageDecodeError: String? = nil
     
     public init(
         onScan: @escaping (String) -> Void,
@@ -16,6 +19,21 @@ public struct QRScannerModal: View {
     ) {
         self.onScan = onScan
         self.onDismiss = onDismiss
+    }
+    
+    private var photoPickerButton: some View {
+        PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+            HStack(spacing: 6) {
+                Image(systemName: "photo.on.rectangle")
+                Text(LocaleHelper.getPickQRImageLabel(appLanguage: UserDefaultsVoiceSettingsRepository().getVoiceSettings().appLanguage))
+            }
+            .font(.system(size: 14, weight: .medium))
+            .foregroundColor(SottoTheme.textPrimary)
+            .padding(.horizontal, 14)
+            .frame(height: 44)
+            .background(SottoTheme.surfaceVariant)
+            .cornerRadius(10)
+        }
     }
     
     public var body: some View {
@@ -49,6 +67,27 @@ public struct QRScannerModal: View {
                         }
                     }
                     
+                    if let decodeErr = qrImageDecodeError {
+                        HStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .foregroundColor(SottoTheme.warningAmber)
+                            Text(decodeErr)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(SottoTheme.textPrimary)
+                            Spacer()
+                            Button(action: { qrImageDecodeError = nil }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(SottoTheme.textSecondary)
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(SottoTheme.surfaceVariant)
+                        .cornerRadius(10)
+                        .padding(.horizontal, 20)
+                    }
+                    
                     if cameraUnavailable || !hasCameraPermission {
                         // Fallback: Manual / Paste Input
                         VStack(spacing: 16) {
@@ -76,7 +115,9 @@ public struct QRScannerModal: View {
                                     .cornerRadius(10)
                                     .foregroundColor(SottoTheme.textPrimary)
                                 
-                                HStack(spacing: 12) {
+                                HStack(spacing: 10) {
+                                    photoPickerButton
+                                    
                                     Button(action: {
                                         if let clip = UIPasteboard.general.string {
                                             manualInput = clip
@@ -103,7 +144,7 @@ public struct QRScannerModal: View {
                                         Text("Import Deck")
                                             .font(.system(size: 14, weight: .semibold))
                                             .foregroundColor(SottoTheme.onPrimary)
-                                            .padding(.horizontal, 20)
+                                            .padding(.horizontal, 18)
                                             .frame(height: 44)
                                             .background(!manualInput.isEmpty ? SottoTheme.primary : SottoTheme.surfaceVariant)
                                             .cornerRadius(10)
@@ -137,22 +178,26 @@ public struct QRScannerModal: View {
                             )
                             .padding(.horizontal, 20)
                             
-                            // Paste Option Below Camera
-                            Button(action: {
-                                if let clip = UIPasteboard.general.string, !clip.isEmpty {
-                                    onScan(clip)
+                            // Photo Picker & Paste Options Below Camera
+                            HStack(spacing: 12) {
+                                photoPickerButton
+                                
+                                Button(action: {
+                                    if let clip = UIPasteboard.general.string, !clip.isEmpty {
+                                        onScan(clip)
+                                    }
+                                }) {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "doc.on.clipboard")
+                                        Text("Paste from Clipboard")
+                                    }
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(SottoTheme.textPrimary)
+                                    .padding(.horizontal, 16)
+                                    .frame(height: 44)
+                                    .background(SottoTheme.surfaceVariant)
+                                    .cornerRadius(10)
                                 }
-                            }) {
-                                HStack(spacing: 6) {
-                                    Image(systemName: "doc.on.clipboard")
-                                    Text("Paste from Clipboard")
-                                }
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(SottoTheme.textPrimary)
-                                .padding(.horizontal, 16)
-                                .frame(height: 44)
-                                .background(SottoTheme.surfaceVariant)
-                                .cornerRadius(10)
                             }
                         }
                     }
@@ -172,6 +217,33 @@ public struct QRScannerModal: View {
             }
         }
         .navigationViewStyle(.stack)
+        .onChange(of: selectedPhotoItem) { newItem in
+            guard let item = newItem else { return }
+            qrImageDecodeError = nil
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let uiImage = UIImage(data: data),
+                   let decoded = QRCodeImageHelper.decodeQRFromImage(uiImage),
+                   !decoded.isEmpty {
+                    await MainActor.run {
+                        let settings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
+                        UsabilityTracker.shared.recordActivation(key: "qr_image_imported", voiceSettings: settings)
+                        onScan(decoded)
+                    }
+                } else {
+                    await MainActor.run {
+                        let settings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
+                        let isId = LocaleHelper.getEffectiveLanguage(appLanguage: settings.appLanguage) == LocaleHelper.langIndonesian
+                        qrImageDecodeError = isId
+                            ? "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih."
+                            : "No valid Sotto QR code found in the selected image."
+                    }
+                }
+                await MainActor.run {
+                    selectedPhotoItem = nil
+                }
+            }
+        }
         .onAppear {
             checkCameraAvailability()
             if let clip = UIPasteboard.general.string?.trimmingCharacters(in: .whitespacesAndNewlines),

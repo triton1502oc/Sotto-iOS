@@ -84,6 +84,8 @@ public struct TwoWayConversationModal: View {
         if (args.contains("--triage") || args.contains("--screenshot-triage")) && !args.contains("--whyfinder") {
             _displayedText = State(initialValue: isId ? "Apakah kamu butuh tempat tenang sekarang?" : "Do you need a quiet space right now?")
         }
+        let savedCat = UserDefaults.standard.string(forKey: "saved_freeform_prompt_category") ?? "ALL"
+        _selectedPromptCategory = State(initialValue: savedCat)
     }
     
     private var isIndonesian: Bool {
@@ -250,6 +252,7 @@ public struct TwoWayConversationModal: View {
                     lastReply: lastReply,
                     isListening: speechRecognizer.isRecording,
                     appLanguage: appLanguage,
+                    voiceSettings: voiceSettings,
                     isPromptFocused: $isPromptFocused,
                     onRestartWhyTree: {
                         whySession.restart()
@@ -461,16 +464,12 @@ public struct TwoWayConversationModal: View {
             handleUserResponse(displayText: label, ttsText: label)
             if activeTab == .whyFinder {
                 whySession.answerYes()
-            } else {
-                showPostResolutionPrompt = true
             }
         case "no":
             let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "no", appLanguage: appLanguage)
             handleUserResponse(displayText: label, ttsText: label)
             if activeTab == .whyFinder {
                 whySession.answerNo()
-            } else {
-                showPostResolutionPrompt = true
             }
         case "wait":
             let label = LocaleHelper.getTwoWayResponseLabel(responseKey: "wait", appLanguage: appLanguage)
@@ -612,6 +611,32 @@ public struct TwoWayConversationModal: View {
     
     // MARK: - Card Picker Sheet
     
+    public static func defaultCaregiverQuestions(isIndonesian: Bool) -> [String] {
+        if isIndonesian {
+            return [
+                "Apakah merasa sakit?",
+                "Apakah butuh minum atau makan?",
+                "Apakah perlu ke kamar mandi?",
+                "Apakah merasa dingin atau panas?",
+                "Apakah ingin istirahat atau tidur?",
+                "Apakah butuh tempat yang tenang?",
+                "Apakah butuh waktu lebih?",
+                "Apakah ingin pergi sekarang?"
+            ]
+        } else {
+            return [
+                "Are you in pain?",
+                "Do you need water or food?",
+                "Do you need the restroom?",
+                "Are you feeling cold or warm?",
+                "Do you want to rest or sleep?",
+                "Do you need a quiet space?",
+                "Would you like more time?",
+                "Do you want to leave now?"
+            ]
+        }
+    }
+    
     private var questionsPickerSheet: some View {
         NavigationView {
             ZStack {
@@ -703,12 +728,16 @@ public struct TwoWayConversationModal: View {
                             .padding(16)
                         }
                     } else {
-                        // Phrases Cards (Talk Mode)
+                        // Phrases Cards + Caregiver Questions (Talk Mode)
                         let effectiveCats = categories.isEmpty ? PhraseCategory.defaultCategoryNames : categories
+                        let caregiverPrompts = Self.defaultCaregiverQuestions(isIndonesian: isIndonesian)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 6) {
                                 let isAll = selectedPromptCategory == "ALL"
-                                Button(action: { selectedPromptCategory = "ALL" }) {
+                                Button(action: {
+                                    selectedPromptCategory = "ALL"
+                                    UserDefaults.standard.set("ALL", forKey: "saved_freeform_prompt_category")
+                                }) {
                                     Text(LocaleHelper.getCategoryDisplayName("ALL", appLanguage: appLanguage))
                                         .font(.system(size: 13, weight: isAll ? .bold : .regular))
                                         .foregroundColor(isAll ? SottoTheme.textPrimary : SottoTheme.textSecondary)
@@ -722,9 +751,30 @@ public struct TwoWayConversationModal: View {
                                         )
                                 }
                                 
+                                let isQuestions = selectedPromptCategory == "CAREGIVER_QUESTIONS"
+                                Button(action: {
+                                    selectedPromptCategory = "CAREGIVER_QUESTIONS"
+                                    UserDefaults.standard.set("CAREGIVER_QUESTIONS", forKey: "saved_freeform_prompt_category")
+                                }) {
+                                    Text(isIndonesian ? "💬 Pertanyaan" : "💬 Questions")
+                                        .font(.system(size: 13, weight: isQuestions ? .bold : .regular))
+                                        .foregroundColor(isQuestions ? SottoTheme.textPrimary : SottoTheme.textSecondary)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(isQuestions ? SottoTheme.surfaceVariant : SottoTheme.surface)
+                                        .cornerRadius(16)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16)
+                                                .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                                        )
+                                }
+                                
                                 ForEach(effectiveCats, id: \.self) { catName in
                                     let isSel = selectedPromptCategory == catName
-                                    Button(action: { selectedPromptCategory = catName }) {
+                                    Button(action: {
+                                        selectedPromptCategory = catName
+                                        UserDefaults.standard.set(catName, forKey: "saved_freeform_prompt_category")
+                                    }) {
                                         Text(LocaleHelper.getCategoryDisplayName(catName, appLanguage: appLanguage))
                                             .font(.system(size: 13, weight: isSel ? .bold : .regular))
                                             .foregroundColor(isSel ? SottoTheme.textPrimary : SottoTheme.textSecondary)
@@ -743,25 +793,34 @@ public struct TwoWayConversationModal: View {
                             .padding(.top, 8)
                         }
                         
-                        let filteredPhrases: [Phrase] = {
-                            if selectedPromptCategory == "ALL" {
-                                return allPhrases
+                        let pickerTexts: [String] = {
+                            if selectedPromptCategory == "CAREGIVER_QUESTIONS" {
+                                return caregiverPrompts
+                            } else if selectedPromptCategory == "ALL" {
+                                var combined = allPhrases.map { $0.text }
+                                for q in caregiverPrompts where !combined.contains(q) {
+                                    combined.append(q)
+                                }
+                                return combined
                             } else if selectedPromptCategory.uppercased() == "EMERGENCY" || selectedPromptCategory.uppercased() == "SAFETY" {
-                                return allPhrases.filter { $0.isEmergency }
+                                return allPhrases.filter { $0.isEmergency }.map { $0.text }
                             } else {
-                                return allPhrases.filter { !$0.isEmergency && $0.category.rawValue == selectedPromptCategory }
+                                return allPhrases.filter { !$0.isEmergency && $0.category.rawValue == selectedPromptCategory }.map { $0.text }
                             }
                         }()
                         
                         ScrollView {
                             LazyVStack(spacing: 8) {
-                                ForEach(filteredPhrases) { phrase in
+                                ForEach(pickerTexts, id: \.self) { itemText in
                                     Button(action: {
-                                        displayedText = phrase.text
+                                        if caregiverPrompts.contains(itemText) {
+                                            UsabilityTracker.shared.recordActivation(key: "partner_freeform_question_picked", voiceSettings: voiceSettings)
+                                        }
+                                        displayedText = itemText
                                         showQuestionsSheet = false
                                     }) {
                                         HStack {
-                                            Text(phrase.text)
+                                            Text(itemText)
                                                 .font(.system(size: 15, weight: .medium))
                                                 .foregroundColor(SottoTheme.textPrimary)
                                             Spacer()
@@ -802,41 +861,91 @@ private struct CaregiverDisplayCard: View {
     let lastReply: String?
     let isListening: Bool
     let appLanguage: String
+    let voiceSettings: VoiceSettings
     var isPromptFocused: AccessibilityFocusState<Bool>.Binding
     let onRestartWhyTree: () -> Void
     let onFinish: () -> Void
     let onReadAloudPrompt: () -> Void
     
+    private var isFinishedWhy: Bool {
+        if activeTab == .whyFinder, case .finished = whyState {
+            return true
+        }
+        return false
+    }
+    
+    private var activePrompt: String {
+        activeTab == .whyFinder ? whyPromptText : activeFreeformText
+    }
+    
+    private var canShareCard: Bool {
+        isFinishedWhy || !activePrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !(lastReply ?? "").isEmpty
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
-            // Status reply / steady listening badge
-            HStack {
-                if let reply = lastReply {
-                    let prefix = LocaleHelper.getTwoWayActionLabel(actionKey: "replied_prefix", appLanguage: appLanguage)
-                    HStack(spacing: 6) {
-                        SottoIconView(.check, size: 12, tint: .white)
-                        Text("\(prefix)\(reply)")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.white)
+            // Status reply / steady listening badge + Share button
+            ZStack {
+                HStack {
+                    if let reply = lastReply {
+                        let prefix = LocaleHelper.getTwoWayActionLabel(actionKey: "replied_prefix", appLanguage: appLanguage)
+                        HStack(spacing: 6) {
+                            SottoIconView(.check, size: 12, tint: .white)
+                            Text("\(prefix)\(reply)")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(SottoTheme.successGreen)
+                        .cornerRadius(12)
+                    } else if isListening {
+                        HStack(spacing: 6) {
+                            SottoIconView(.mic, size: 12, tint: SottoTheme.recordingPulseRed)
+                            Text(LocaleHelper.getTwoWayActionLabel(actionKey: "listening", appLanguage: appLanguage))
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(SottoTheme.recordingPulseRed)
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(SottoTheme.recordingPulseRed.opacity(0.15))
+                        .cornerRadius(12)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(SottoTheme.successGreen)
-                    .cornerRadius(12)
-                } else if isListening {
-                    HStack(spacing: 6) {
-                        SottoIconView(.mic, size: 12, tint: SottoTheme.recordingPulseRed)
-                        Text(LocaleHelper.getTwoWayActionLabel(actionKey: "listening", appLanguage: appLanguage))
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(SottoTheme.recordingPulseRed)
+                }
+                
+                if canShareCard {
+                    HStack {
+                        Spacer()
+                        Button(action: {
+                            let isId = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
+                            let badge = isId ? "Percakapan Pendamping" : "Partner Exchange"
+                            let footer = isId ? "Sotto • Komunikasi Asistif" : "Sotto • Assistive Communication"
+                            let primary = !activePrompt.isEmpty ? activePrompt : (lastReply ?? "")
+                            let secondary: String?
+                            if let reply = lastReply, !reply.isEmpty, !activePrompt.isEmpty {
+                                secondary = isId ? "Balasan: \(reply)" : "Reply: \(reply)"
+                            } else {
+                                secondary = nil
+                            }
+                            let spec = ShareableCardSpec(
+                                primaryText: primary,
+                                secondaryText: secondary,
+                                badgeLabel: badge,
+                                isEmergency: false,
+                                footerBrandText: footer
+                            )
+                            CardShareHelper.shareCard(spec, sourceTag: "partner_mode", voiceSettings: voiceSettings)
+                        }) {
+                            Image(systemName: "square.and.arrow.up")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(palette.textSecondary)
+                                .frame(width: 32, height: 32)
+                        }
+                        .accessibilityLabel(LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian ? "Bagikan kartu frasa sebagai gambar" : "Share phrase card as image")
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(SottoTheme.recordingPulseRed.opacity(0.15))
-                    .cornerRadius(12)
                 }
             }
-            .frame(height: 24)
+            .frame(height: 28)
             
             Spacer()
             
