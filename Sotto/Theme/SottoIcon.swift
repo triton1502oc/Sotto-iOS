@@ -62,10 +62,6 @@ public enum SottoIcon: String, CaseIterable {
 
     public var systemName: String { rawValue }
 
-    public func image() -> Image {
-        Image(systemName: rawValue)
-    }
-
     /// Localized accessibility label for VoiceOver screen reader (EN & ID).
     public func accessibilityLabel(appLanguage: String = "system") -> String {
         let isId = LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian

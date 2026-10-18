@@ -1,6 +1,4 @@
 import SwiftUI
-import Speech
-import AVFoundation
 
 public enum CaregiverTab {
     case whyFinder
@@ -1437,6 +1435,48 @@ private struct CaregiverBottomMenu: View {
         LocaleHelper.getEffectiveLanguage(appLanguage: appLanguage) == LocaleHelper.langIndonesian
     }
     
+    @ViewBuilder
+    private func actionButton(
+        icon: SottoIcon,
+        labelKey: String,
+        width: CGFloat,
+        enabled: Bool = true,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: {
+            UsabilityTracker.shared.startIntent("caregiver_action")
+            UsabilityTracker.shared.endIntent(
+                "caregiver_action",
+                outcome: labelKey,
+                voiceSettings: voiceSettings
+            )
+            action()
+        }) {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 4) {
+                    SottoIconView(icon, size: 16, tint: palette.textPrimary)
+                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: labelKey, appLanguage: appLanguage))
+                        .font(.system(size: 13, weight: .semibold))
+                        .lineLimit(1)
+                }
+                .padding(.horizontal, 4)
+                
+                SottoIconView(icon, size: 18, tint: palette.textPrimary)
+            }
+            .foregroundColor(palette.textPrimary)
+            .frame(width: width, height: 44)
+            .background(palette.surfaceVariant)
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(palette.outlineVariant, lineWidth: 1)
+            )
+        }
+        .disabled(!enabled)
+        .opacity(enabled ? 1.0 : 0.4)
+        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: labelKey, appLanguage: appLanguage))
+    }
+    
     var body: some View {
         VStack(spacing: 8) {
             // Line 1: Mode Switcher Tabs + Tool Capsule + Standalone Dismissal
@@ -1603,70 +1643,21 @@ private struct CaregiverBottomMenu: View {
                     
                     HStack(spacing: spacing) {
                         // Speak prompt
-                        Button(action: {
-                            UsabilityTracker.shared.startIntent("caregiver_action")
-                            UsabilityTracker.shared.endIntent(
-                                "caregiver_action",
-                                outcome: "speak",
-                                voiceSettings: voiceSettings
-                            )
-                            onSpeakPrompt()
-                        }) {
-                            ViewThatFits(in: .horizontal) {
-                                HStack(spacing: 4) {
-                                    SottoIconView(.volumeUp, size: 16, tint: palette.textPrimary)
-                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .lineLimit(1)
-                                }
-                                .padding(.horizontal, 4)
-                                
-                                SottoIconView(.volumeUp, size: 18, tint: palette.textPrimary)
-                            }
-                            .foregroundColor(palette.textPrimary)
-                            .frame(width: btnWidth, height: 44)
-                            .background(palette.surfaceVariant)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(palette.outlineVariant, lineWidth: 1)
-                            )
-                        }
-                        .disabled(!canSpeakPrompt)
-                        .opacity(canSpeakPrompt ? 1.0 : 0.4)
-                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
+                        actionButton(
+                            icon: .volumeUp,
+                            labelKey: "speak",
+                            width: btnWidth,
+                            enabled: canSpeakPrompt,
+                            action: onSpeakPrompt
+                        )
                         
                         // Pick card
-                        Button(action: {
-                            UsabilityTracker.shared.startIntent("caregiver_action")
-                            UsabilityTracker.shared.endIntent(
-                                "caregiver_action",
-                                outcome: "cards",
-                                voiceSettings: voiceSettings
-                            )
-                            onPickCard()
-                        }) {
-                            ViewThatFits(in: .horizontal) {
-                                HStack(spacing: 4) {
-                                    SottoIconView(.cards, size: 16, tint: palette.textPrimary)
-                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .lineLimit(1)
-                                }
-                                .padding(.horizontal, 4)
-                                
-                                SottoIconView(.cards, size: 18, tint: palette.textPrimary)
-                            }
-                            .foregroundColor(palette.textPrimary)
-                            .frame(width: btnWidth, height: 44)
-                            .background(palette.surfaceVariant)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(palette.outlineVariant, lineWidth: 1)
-                            )
-                        }
-                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                        actionButton(
+                            icon: .cards,
+                            labelKey: "cards",
+                            width: btnWidth,
+                            action: onPickCard
+                        )
                         
                         // Step back
                         if canStepBack {
@@ -1711,70 +1702,21 @@ private struct CaregiverBottomMenu: View {
                     
                     HStack(spacing: spacing) {
                         // Companion 1: Speak
-                        Button(action: {
-                            UsabilityTracker.shared.startIntent("caregiver_action")
-                            UsabilityTracker.shared.endIntent(
-                                "caregiver_action",
-                                outcome: "speak",
-                                voiceSettings: voiceSettings
-                            )
-                            onSpeakPrompt()
-                        }) {
-                            ViewThatFits(in: .horizontal) {
-                                HStack(spacing: 4) {
-                                    SottoIconView(.volumeUp, size: 16, tint: palette.textPrimary)
-                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .lineLimit(1)
-                                }
-                                .padding(.horizontal, 2)
-                                
-                                SottoIconView(.volumeUp, size: 18, tint: palette.textPrimary)
-                            }
-                            .foregroundColor(palette.textPrimary)
-                            .frame(width: companionWidth, height: 44)
-                            .background(palette.surfaceVariant)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(palette.outlineVariant, lineWidth: 1)
-                            )
-                        }
-                        .disabled(!canSpeakPrompt)
-                        .opacity(canSpeakPrompt ? 1.0 : 0.4)
-                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "speak", appLanguage: appLanguage))
+                        actionButton(
+                            icon: .volumeUp,
+                            labelKey: "speak",
+                            width: companionWidth,
+                            enabled: canSpeakPrompt,
+                            action: onSpeakPrompt
+                        )
                         
                         // Companion 2: Cards
-                        Button(action: {
-                            UsabilityTracker.shared.startIntent("caregiver_action")
-                            UsabilityTracker.shared.endIntent(
-                                "caregiver_action",
-                                outcome: "cards",
-                                voiceSettings: voiceSettings
-                            )
-                            onPickCard()
-                        }) {
-                            ViewThatFits(in: .horizontal) {
-                                HStack(spacing: 4) {
-                                    SottoIconView(.cards, size: 16, tint: palette.textPrimary)
-                                    Text(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
-                                        .font(.system(size: 13, weight: .semibold))
-                                        .lineLimit(1)
-                                }
-                                .padding(.horizontal, 2)
-                                
-                                SottoIconView(.cards, size: 18, tint: palette.textPrimary)
-                            }
-                            .foregroundColor(palette.textPrimary)
-                            .frame(width: companionWidth, height: 44)
-                            .background(palette.surfaceVariant)
-                            .cornerRadius(12)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .stroke(palette.outlineVariant, lineWidth: 1)
-                            )
-                        }
-                        .accessibilityLabel(LocaleHelper.getTwoWayActionLabel(actionKey: "cards", appLanguage: appLanguage))
+                        actionButton(
+                            icon: .cards,
+                            labelKey: "cards",
+                            width: companionWidth,
+                            action: onPickCard
+                        )
                         
                         // HERO: Listen / Mic (weight 1.5x)
                         Button(action: {

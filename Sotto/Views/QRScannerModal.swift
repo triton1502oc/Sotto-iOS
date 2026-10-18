@@ -5,6 +5,7 @@ import PhotosUI
 public struct QRScannerModal: View {
     public let onScan: (_ dataString: String) -> Void
     public let onDismiss: () -> Void
+    private let voiceSettings: VoiceSettings
     
     @State private var manualInput: String = ""
     @State private var hasCameraPermission: Bool = true
@@ -19,13 +20,14 @@ public struct QRScannerModal: View {
     ) {
         self.onScan = onScan
         self.onDismiss = onDismiss
+        self.voiceSettings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
     }
     
     private var photoPickerButton: some View {
         PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
             HStack(spacing: 6) {
                 Image(systemName: "photo.on.rectangle")
-                Text(LocaleHelper.getPickQRImageLabel(appLanguage: UserDefaultsVoiceSettingsRepository().getVoiceSettings().appLanguage))
+                Text(LocaleHelper.getPickQRImageLabel(appLanguage: voiceSettings.appLanguage))
             }
             .font(.system(size: 14, weight: .medium))
             .foregroundColor(SottoTheme.textPrimary)
@@ -226,14 +228,12 @@ public struct QRScannerModal: View {
                    let decoded = QRCodeImageHelper.decodeQRFromImage(uiImage),
                    !decoded.isEmpty {
                     await MainActor.run {
-                        let settings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
-                        UsabilityTracker.shared.recordActivation(key: "qr_image_imported", voiceSettings: settings)
+                        UsabilityTracker.shared.recordActivation(key: "qr_image_imported", voiceSettings: voiceSettings)
                         onScan(decoded)
                     }
                 } else {
                     await MainActor.run {
-                        let settings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
-                        let isId = LocaleHelper.getEffectiveLanguage(appLanguage: settings.appLanguage) == LocaleHelper.langIndonesian
+                        let isId = LocaleHelper.getEffectiveLanguage(appLanguage: voiceSettings.appLanguage) == LocaleHelper.langIndonesian
                         qrImageDecodeError = isId
                             ? "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih."
                             : "No valid Sotto QR code found in the selected image."

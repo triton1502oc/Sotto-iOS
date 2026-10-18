@@ -294,16 +294,6 @@ public enum LocaleHelper {
         }
     }
     
-    public static let idTranslations: [String: String] = [
-        "Share QR Image": "Bagikan Gambar QR",
-        "Pick QR Image": "Pilih Gambar QR",
-        "Save Safety Card": "Simpan Kartu Keselamatan",
-        "Safety Card": "Kartu Keselamatan",
-        "Appearance & Safety": "Tampilan & Keselamatan",
-        "No valid Sotto QR code found in the selected image.": "Tidak ditemukan kode QR Sotto yang valid pada gambar yang dipilih.",
-        "Share phrase card as image": "Bagikan kartu frasa sebagai gambar"
-    ]
-    
     public static func getShareQRImageLabel(appLanguage: String = "system") -> String {
         let isIndonesian = getEffectiveLanguage(appLanguage: appLanguage) == langIndonesian
         return isIndonesian ? "Bagikan Gambar QR" : "Share QR Image"

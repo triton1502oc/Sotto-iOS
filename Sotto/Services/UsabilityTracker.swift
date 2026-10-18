@@ -149,7 +149,7 @@ public final class UsabilityTracker {
         }
     }
 
-    public static func categoryType(category: String, isEmergency: Bool = false) -> String {
+    public static func categoryType(_ category: String, isEmergency: Bool = false) -> String {
         if isEmergency || category.caseInsensitiveCompare("Emergency") == .orderedSame {
             return "emergency"
         }
@@ -159,10 +159,6 @@ public final class UsabilityTracker {
             return lower
         }
         return "custom"
-    }
-
-    public static func categoryType(_ category: String, isEmergency: Bool = false) -> String {
-        categoryType(category: category, isEmergency: isEmergency)
     }
 
     public func recordCardTap(category: String, phraseId: String, isEmergency: Bool = false, voiceSettings: VoiceSettings) {
@@ -176,7 +172,7 @@ public final class UsabilityTracker {
             self.lastTapTime = now
             self.lastTapTarget = phraseId
 
-            let catType = Self.categoryType(category: category, isEmergency: isEmergency)
+            let catType = Self.categoryType(category, isEmergency: isEmergency)
 
             if isRapid {
                 let intervalMs = min(Int(intervalNs / 1_000_000), 30_000)

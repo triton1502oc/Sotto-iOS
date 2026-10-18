@@ -1,19 +1,12 @@
 import Foundation
 import AVFoundation
 
-public protocol SpeechServiceDelegate: AnyObject {
-    func speechDidStart()
-    func speechDidFinish()
-}
-
 public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthesizerDelegate {
     public static let shared = SpeechService()
     
     private let synthesizer = AVSpeechSynthesizer()
-    public weak var delegate: SpeechServiceDelegate?
     
     @Published public private(set) var isSpeaking = false
-    @Published public private(set) var isReady = true
     public private(set) var lastSpokenText: String?
     public private(set) var lastSpokenLocale: Locale?
     
@@ -33,8 +26,7 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
     public func speak(
         text: String,
         language: String = LocaleHelper.langAuto,
-        settings: VoiceSettings,
-        completion: (() -> Void)? = nil
+        settings: VoiceSettings
     ) {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         
@@ -234,21 +226,18 @@ public final class SpeechService: NSObject, @unchecked Sendable, AVSpeechSynthes
     public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
         DispatchQueue.main.async {
             self.isSpeaking = true
-            self.delegate?.speechDidStart()
         }
     }
     
     public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         DispatchQueue.main.async {
             self.isSpeaking = false
-            self.delegate?.speechDidFinish()
         }
     }
     
     public func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         DispatchQueue.main.async {
             self.isSpeaking = false
-            self.delegate?.speechDidFinish()
         }
     }
 }

@@ -19,51 +19,6 @@ public enum WhyFinderState: Equatable {
     )
 }
 
-public extension WhyFinderState {
-    var area: WhyArea? {
-        if case .askingArea(_, let a) = self { return a }
-        return nil
-    }
-    
-    var question: WhyQuestion? {
-        switch self {
-        case .askingQuestion(_, _, let q): return q
-        case .selectingBodyPart(_, _, let q): return q
-        case .selectingIntensity(_, _, let q, _): return q
-        default: return nil
-        }
-    }
-    
-    var causeText: String? {
-        switch self {
-        case .confirmingCause(_, _, let c, _, _): return c
-        case .finished(_, _, let c, _, _, _, _, _): return c
-        default: return nil
-        }
-    }
-    
-    var bodyPart: String? {
-        switch self {
-        case .selectingIntensity(_, _, _, let p): return p
-        case .confirmingCause(_, _, _, let p, _): return p
-        case .finished(_, _, _, let p, _, _, _, _): return p
-        default: return nil
-        }
-    }
-    
-    var intensity: Int? {
-        switch self {
-        case .confirmingCause(_, _, _, _, let i): return i
-        case .finished(_, _, _, _, let i, _, _, _): return i
-        default: return nil
-        }
-    }
-    
-    var outcome: WhyOutcome? {
-        if case .finished(let o, _, _, _, _, _, _, _) = self { return o }
-        return nil
-    }
-}
 
 public final class WhyFinderSession: ObservableObject {
     public let tree: WhyTree

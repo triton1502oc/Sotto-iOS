@@ -41,8 +41,12 @@ Sotto features are developed first in the Android repository (`../Sotto`), and s
 | **180° Screen Flip** | `Modifier.rotate(180f)` | `.rotationEffect(.degrees(180))` |
 | **Care Category** | `PhraseCategory.CARE` | `PhraseCategory.care` (`cross.case.fill`) |
 | **Safety Category** | `PhraseCategory.EMERGENCY` / Safety | `PhraseCategory.emergency` (`shield.fill`) |
-| **String Resources** | `res/values/strings.xml`, `values-in/strings.xml` | `PhraseRepository.defaultPhrases()`, `LocaleHelper` |
 | **CI/CD Workflows** | `.github/workflows/android.yml`, `release.yml` | `.github/workflows/ios.yml`, `release.yml` |
+
+### Platform Implementation Divergences
+- **TTS Readiness**: Android requires asynchronous TextToSpeech engine initialization (`ttsReady`), whereas iOS `AVSpeechSynthesizer` initializes synchronously upon instantiation; iOS does not require an asynchronous readiness state or initializing banner.
+- **Role Preference Storage**: Android stores user role via dedicated SharedPreferences keys (`getUserRole` / `setUserRole`), whereas iOS persists user role within the unified `VoiceSettings` model (`sotto_voice_prefs`).
+- **Category Identifiers**: Android defines static string constants (`Phrase.CATEGORY_*`), whereas iOS utilizes a strongly typed `PhraseCategory` struct/enum with Set-based membership lookups.
 
 ---
 

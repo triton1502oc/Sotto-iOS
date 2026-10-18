@@ -15,7 +15,7 @@ struct MainTopBarView: View {
         if availableWidth < 400 {
             return true
         }
-        if availableWidth < 460 && (viewModel.voiceSettings.showLanguageSwitcher || !viewModel.ttsReady) {
+        if availableWidth < 460 && viewModel.voiceSettings.showLanguageSwitcher {
             return true
         }
         return false
@@ -30,19 +30,6 @@ struct MainTopBarView: View {
                 .fixedSize(horizontal: true, vertical: false)
             
             Spacer(minLength: 6)
-            
-            if !viewModel.ttsReady {
-                Text("Initializing")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.black)
-                    .lineLimit(1)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(SottoTheme.warning)
-                    .cornerRadius(6)
-                    .padding(.trailing, 4)
-                    .fixedSize(horizontal: true, vertical: false)
-            }
             
             if viewModel.voiceSettings.showLanguageSwitcher {
                 let isPrimary = viewModel.activeSpeechTarget == "primary"
