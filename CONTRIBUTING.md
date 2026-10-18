@@ -72,7 +72,7 @@ Sotto was created by a father to navigate overwhelming communication breakdowns 
 * **Git Commit, Tag & Automated Release**:
   - Commit release preparations using the standard release chore format: `git commit -m "chore(release): prepare v<version>"`.
   - Push `main` and the `v<version>` tag to trigger `.github/workflows/release.yml` (or publish via `gh release create`).
-  - Automated continuous integration also runs on pull requests and pushes to `main` via `.github/workflows/ios.yml` (Gitleaks security scanning, documentation verification, XcodeGen generation, unit tests, and IPA artifact packaging).
+  - Automated continuous integration also runs on pull requests and pushes to `main` via `.github/workflows/ios.yml` (Gitleaks security scanning and documentation verification on every run; XcodeGen generation and unit tests only when non-doc files change; Release build and IPA packaging only on pushes to `main` or when project/build config changes).
 * **Reference Guides**:
   - User and caregiver workflows: [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md).
   - App Store assets and metadata: [docs/APP_STORE_LISTING.md](docs/APP_STORE_LISTING.md).
