@@ -1,11 +1,11 @@
 import SwiftUI
-import CoreImage.CIFilterBuiltins
 
 public struct QRCodeModal: View {
     public let title: String
     public let subtitle: String
     public let dataString: String
     public let onDismiss: () -> Void
+    private let voiceSettings: VoiceSettings
     
     @State private var qrImage: UIImage?
     @State private var generationFailed: Bool = false
@@ -21,6 +21,7 @@ public struct QRCodeModal: View {
         self.subtitle = subtitle
         self.dataString = dataString
         self.onDismiss = onDismiss
+        self.voiceSettings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
     }
     
     private var dataByteSizeString: String {
@@ -29,21 +30,6 @@ public struct QRCodeModal: View {
             return String(format: "%.1f KB", Double(count) / 1024.0)
         }
         return "\(count) bytes"
-    }
-    
-    private func generateQRCode(from text: String) -> UIImage? {
-        let data = Data(text.utf8)
-        guard data.count <= 2800 else { return nil }
-        
-        let context = CIContext()
-        let filter = CIFilter.qrCodeGenerator()
-        filter.setValue(data, forKey: "inputMessage")
-        filter.setValue("L", forKey: "inputCorrectionLevel")
-        guard let outputImage = filter.outputImage else { return nil }
-        let transform = CGAffineTransform(scaleX: 10, y: 10)
-        let scaledImage = outputImage.transformed(by: transform)
-        guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
-        return UIImage(cgImage: cgImage)
     }
     
     public var body: some View {
@@ -115,20 +101,19 @@ public struct QRCodeModal: View {
                     HStack(spacing: 12) {
                         if let image = qrImage {
                             Button(action: {
-                                let settings = UserDefaultsVoiceSettingsRepository().getVoiceSettings()
                                 QRCodeImageHelper.shareQRImage(
                                     qrImage: image,
                                     title: title,
                                     subtitle: subtitle,
                                     dataString: dataString,
-                                    appLanguage: settings.appLanguage,
-                                    voiceSettings: settings
+                                    appLanguage: voiceSettings.appLanguage,
+                                    voiceSettings: voiceSettings
                                 )
                             }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.up")
                                         .font(.system(size: 15, weight: .semibold))
-                                    Text(LocaleHelper.getShareQRImageLabel(appLanguage: UserDefaultsVoiceSettingsRepository().getVoiceSettings().appLanguage))
+                                    Text(LocaleHelper.getShareQRImageLabel(appLanguage: voiceSettings.appLanguage))
                                         .font(.system(size: 14, weight: .semibold))
                                 }
                                 .foregroundColor(SottoTheme.onPrimary)
@@ -177,7 +162,7 @@ public struct QRCodeModal: View {
         }
         .navigationViewStyle(.stack)
         .onAppear {
-            if let image = generateQRCode(from: dataString) {
+            if let image = QRCodeImageHelper.generateRawQRImage(from: dataString, scale: 10) {
                 qrImage = image
             } else {
                 generationFailed = true

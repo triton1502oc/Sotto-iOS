@@ -33,8 +33,8 @@ public enum SottoTheme {
     public static let emergencyBadgeText = Color(hex: 0xFFB74D)
     public static let emergencyChipBackground = Color(hex: 0x4E342E)
     public static let emergencyChipBackgroundDark = Color(hex: 0x3E2723)
-    public static let emergencyChipBg = Color(hex: 0x3E2723)
-    public static let emergencyChipSelectedBg = Color(hex: 0x4E342E)
+    public static let emergencyChipBg = emergencyChipBackgroundDark
+    public static let emergencyChipSelectedBg = emergencyChipBackground
     public static let emergencyChipSelectedText = Color(hex: 0xFFCC80)
     public static let emergencyTranslucent = Color(hex: 0xFFB74D, alpha: 0.2)
     
@@ -58,7 +58,7 @@ public enum SottoTheme {
     public static let confirm = Color(hex: 0x4CAF50)
     public static let danger = Color(hex: 0xEF5350)
     public static let warning = Color(hex: 0xFFC107)
-    public static let destructiveRed = Color(hex: 0xEF5350)
+    public static let destructiveRed = danger
     public static let crisisStopContainer = Color(hex: 0x7F1D1D)
     public static let crisisStopText = Color(hex: 0xFFEBEE)
     public static let crisisNoContainer = Color(hex: 0x5A3030)
@@ -70,12 +70,12 @@ public enum SottoTheme {
     public static let successGreen = Color(hex: 0x2E7D32)
     public static let successContainer = Color(hex: 0x1B5E20)
     public static let successText = Color(hex: 0xE8F5E9)
-    public static let activeGreen = Color(hex: 0x4CAF50)
+    public static let activeGreen = confirm
     public static let downloadedGreen = Color(hex: 0x81C784)
     
     // Warning / Attention
     public static let warningOrange = Color(hex: 0xFFA726)
-    public static let warningAmber = Color(hex: 0xFFC107)
+    public static let warningAmber = warning
     public static let warningHighContainer = Color(hex: 0xE65100)
     public static let warningHighText = Color(hex: 0xFFF3E0)
     
