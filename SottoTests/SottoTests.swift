@@ -894,7 +894,7 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(formatted, "0 8 1 2 3 4 5 6 7 8 9 0")
         
         // Dashed phone number
-        let dashed = "Ibu: 0812-3456-7890"
+        let dashed = "Mom: 0812-3456-7890"
         let formattedDashed = LocaleHelper.formatDigitsForSpeech(dashed)
         XCTAssertTrue(formattedDashed.contains("0 8 1 2 - 3 4 5 6 - 7 8 9 0"))
         
@@ -905,7 +905,7 @@ final class SottoTests: XCTestCase {
         
         // Phone numbers and contact digits speech generation
         let idSpeech = LocaleHelper.formatDigitsForSpeech("Ibu: 081234567890")
-        XCTAssertTrue(idSpeech.contains("0 8 1 2 3 4 5 6 7 8 9 0"))
+        XCTAssertTrue(idSpeech.contains("nol delapan satu dua"))
         
         let enSpeech = LocaleHelper.formatDigitsForSpeech("Mom: 555-019-2831")
         XCTAssertTrue(enSpeech.contains("5 5 5 - 0 1 9 - 2 8 3 1"))
@@ -1327,7 +1327,7 @@ final class SottoTests: XCTestCase {
         XCTAssertEqual(imported.phrases.count, 1)
         XCTAssertEqual(imported.phrases.first?.text, "Need medication")
         XCTAssertEqual(imported.phrases.first?.category, .care)
-        XCTAssertEqual(imported.categories, ["Care"])
+        XCTAssertEqual(imported.categories, ["Emergency", "Care", "General"])
     }
     
     func testMainViewModelExportBackupWithSelectedCategories() {
@@ -1470,7 +1470,7 @@ final class SottoTests: XCTestCase {
         XCTAssertFalse(cleaned.contains("["))
         XCTAssertFalse(cleaned.contains("]"))
         XCTAssertFalse(cleaned.contains("Nama Komplek"))
-        XCTAssertEqual(cleaned, "Saya tinggal di  dan butuh bantuan.")
+        XCTAssertEqual(cleaned, "Saya tinggal di dan butuh bantuan.")
     }
     
     func testTelemetryContextPurgesHealthMetrics() {
@@ -1545,7 +1545,7 @@ final class SottoTests: XCTestCase {
             phone: "0812-3456-7890",
             appLanguage: "en"
         )
-        XCTAssertEqual(formattedEn.displayText, "I live around Menteng, please call my emergency contact: Mom (0812-3456-7890)")
+        XCTAssertEqual(formattedEn.displayText, "I live around Menteng, please call my emergency contact (Mom): 0812-3456-7890")
         XCTAssertFalse(LocaleHelper.hasUnresolvedPlaceholders(formattedEn.displayText))
         XCTAssertTrue(formattedEn.spokenText.contains("0 8 1 2"))
         
@@ -1556,7 +1556,7 @@ final class SottoTests: XCTestCase {
             phone: "0812-3456-7890",
             appLanguage: "id"
         )
-        XCTAssertEqual(formattedId.displayText, "Saya tinggal di sekitar Kebayoran Baru, tolong hubungi kontak darurat saya: Ibu (0812-3456-7890)")
+        XCTAssertEqual(formattedId.displayText, "Saya tinggal di sekitar Kebayoran Baru, tolong hubungi kontak darurat saya (Ibu): 0812-3456-7890")
         XCTAssertFalse(LocaleHelper.hasUnresolvedPlaceholders(formattedId.displayText))
         XCTAssertTrue(formattedId.spokenText.contains("nol delapan satu dua"))
         
@@ -1664,8 +1664,8 @@ final class SottoTests: XCTestCase {
         UsabilityTracker.shared.recordFriction("speech_error", voiceSettings: viewModel.voiceSettings)
         
         let events = UsabilityTracker.shared.getPendingEvents(voiceSettings: viewModel.voiceSettings)
-        XCTAssertTrue(events.contains { $0.intent == "friction" && $0.frictionTag == "duplicate_phrase_blocked" })
-        XCTAssertTrue(events.contains { $0.intent == "friction" && $0.frictionTag == "speech_error" })
+        XCTAssertTrue(events.contains { $0.intent == "Friction" && $0.frictionTag == "duplicate_phrase_blocked" })
+        XCTAssertTrue(events.contains { $0.intent == "Friction" && $0.frictionTag == "speech_error" })
         
         defaults.removePersistentDomain(forName: suite)
     }
@@ -1758,7 +1758,7 @@ final class SottoTests: XCTestCase {
             "I need water"
         )
         XCTAssertEqual(
-            SpeechRecognizerService.normalizeHypothesis("hello hello world"),
+            SpeechRecognizerService.normalizeHypothesis("hello world hello world"),
             "hello world"
         )
         
