@@ -26,13 +26,15 @@ assets/
 │   │   ├── 02_two_way_partner_triage.png      # Caregiver yes/no crisis triage & 180° flip HUD
 │   │   ├── 03_why_finder_tree.png             # Why Finder root-cause inquiry tree
 │   │   ├── 04_whylog_analytics.png            # Private on-device Why Log 30-day trends
-│   │   └── 05_bystander_safety_card.png       # Fullscreen high-contrast bystander safety card
+│   │   ├── 05_bystander_safety_card.png       # Fullscreen high-contrast bystander safety card
+│   │   └── 06_voice_settings.png              # Voice settings, speech sliders & sensory themes
 │   └── ipad_13_inch/                          # 13" iPad Displays (2064×2752 px, 24-bit RGB)
 │       ├── 01_aac_speech_board.png
 │       ├── 02_two_way_partner_triage.png
 │       ├── 03_why_finder_tree.png
 │       ├── 04_whylog_analytics.png
-│       └── 05_bystander_safety_card.png
+│       ├── 05_bystander_safety_card.png
+│       └── 06_voice_settings.png
 └── ipad/                                      # iPad Pro Showcase & App Preview Library
     ├── screenshot_13inch_portrait_2064x2752.png
     ├── screenshot_13inch_landscape_2752x2064.png

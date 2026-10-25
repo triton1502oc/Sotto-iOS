@@ -81,6 +81,10 @@ SPECIFICATIONS = [
         (1206, 2622), False, "iPhone Screenshot 05 (Safety Hero Card)"
     ),
     (
+        "assets/screenshots/iphone_medium_dynamic_island/06_voice_settings.png",
+        (1206, 2622), False, "iPhone Screenshot 06 (Voice Settings)"
+    ),
+    (
         "assets/screenshots/ipad_13_inch/01_aac_speech_board.png",
         (2064, 2752), False, "iPad 13\" Screenshot 01 (Speech Grid)"
     ),
@@ -99,6 +103,10 @@ SPECIFICATIONS = [
     (
         "assets/screenshots/ipad_13_inch/05_bystander_safety_card.png",
         (2064, 2752), False, "iPad 13\" Screenshot 05 (Safety Hero Card)"
+    ),
+    (
+        "assets/screenshots/ipad_13_inch/06_voice_settings.png",
+        (2064, 2752), False, "iPad 13\" Screenshot 06 (Voice Settings)"
     ),
     (
         "assets/ipad/screenshot_13inch_portrait_2064x2752.png",

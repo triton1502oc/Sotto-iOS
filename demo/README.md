@@ -27,6 +27,7 @@ High-definition demo videos and reproduction scripts showcasing Sotto's flagship
 5. **Private Why Log & 30-Day Trends**: 100% on-device private crisis event logging with environmental trend insights.
 6. **Voice Customization & Attention Chime**: Two-tone pre-speech alert chime (D5 587.33 Hz + A5 880.00 Hz) and configurable speech rate/pitch.
 7. **5 Sensory Color Themes**: Charcoal, OLED Pure Black, Warm Amber, Slate Navy, and Soft Parchment for photophobia comfort.
+8. **High-Contrast PNG Card Sharing & Offline QR Deck Images**: 1080×1080 high-contrast PNG card exports with authentic Sotto brand footer + caption for WhatsApp/Messages, and offline QR deck PNG image generation and camera/photo import.
 
 ---
 

@@ -48,11 +48,12 @@ Why Sotto works for Autism & AAC:
 • Two-Way Caregiver Partner Mode: Talk HUD with speech-to-text dictation, question bank, read-aloud prompts, and animated 180° flip display
 • High-Contrast Safety Bystander Card: Instant amber hero card for nonverbal episodes, emergencies, and medical needs with digit-by-digit phone number readout
 • 1-Press Hardware Action Button: Launch directly into Partner Talk mode via the iPhone Action Button, Back Tap, or Siri Shortcuts (AppIntents)
+• High-Contrast PNG Card Sharing: Export any phrase or safety card as a 1080×1080 high-contrast branded PNG image with caption for WhatsApp & Messages
 • Single-Row Quick-Speak Dock: Spontaneous text-to-speech, fullscreen presentation, and one-tap phrase saving
 • Low-Stimulus Sensory Design: 5 dark-neutral palettes (Charcoal, OLED Pure Black, Warm Amber, Slate Navy, Soft Parchment) meeting WCAG AAA contrast, zero cartoon clutter
 • Dual-Language Offline AAC: Built-in English and Indonesian with natural on-device voices (Samantha, Ava, Damayanti)
 • Private Pattern Logger: After resolution, optionally log Pain, Sensory/Noise, Task, or Emotion triggers locally to identify 30-day patterns
-• Offline QR Deck Sharing: Share custom AAC phrase decks instantly between iOS and Android via encrypted QR codes — zero cloud required
+• Offline QR Deck Sharing & Image Import: Share custom phrase decks via encrypted QR codes or branded QR PNG images; import 100% offline via camera scan or photo picker
 • Universal iPad Support: Fluid grid layouts optimized for 13-inch and 11-inch iPad displays for tabletop speech therapy
 • Flexible Backup v2: Easily export and import custom phrases, Why trees, and trigger logs
 
@@ -103,11 +104,12 @@ Mengapa Sotto Sangat Efektif untuk Autisme & AAC di iOS:
 • Mode Pendamping Dua Arah: Dilengkapi dikte suara lokal, bank pertanyaan cepat, pembacaan audio, dan tampilan putar layar 180°
 • Kartu Keselamatan Darurat: Kartu warna amber kontras tinggi untuk kondisi non-verbal darurat dengan pelafalan nomor telepon per digit
 • Tombol Aksi (Action Button): Akses kilat ke Mode Pendamping via Action Button iPhone, Ketuk Belakang (Back Tap), atau Siri Shortcuts
+• Berbagi Kartu Gambar PNG Kontras Tinggi: Ekspor kartu kata atau kartu keselamatan sebagai gambar PNG 1080×1080 berformat rapi dengan caption untuk WhatsApp & aplikasi pesan
 • Bilah Quick-Speak: Ketik bebas untuk langsung disuarakan, kartu layar penuh, dan simpan frasa dengan 1 ketukan
 • Desain Minim Stimulasi: 5 palet warna sensorik netral-gelap standar WCAG AAA, tanpa animasi kartun yang memicu distraksi
 • AAC Offline Dua Bahasa: Mendukung bahasa Indonesia dan Inggris secara penuh dengan suara alami (Damayanti, Samantha)
 • Pencatat Pemicu Pribadi: Setelah krisis mereda, catat pemicu (Rasa Sakit, Bising, Tugas, atau Emosi) untuk melacak tren 30 hari secara lokal
-• Berbagi Kartu via QR: Bagikan dek kartu kata antar perangkat iOS dan Android via kode QR offline tanpa internet
+• Berbagi Kartu via QR & Impor Gambar: Bagikan dek kartu kata via kode QR atau kartu gambar QR PNG; impor 100% offline via pemindai kamera atau galeri foto
 • Tampilan Universal iPad: Tata letak responsif dioptimalkan untuk iPad 11 inci dan 13 inci untuk sesi terapi wicara
 • Cadangkan & Pulihkan (Backup v2): Ekspor dan impor frasa khusus, pohon tanya, dan catatan pemicu dengan mudah
 
@@ -124,16 +126,22 @@ Sotto adalah alat bantu komunikasi asistif dan tidak menyediakan diagnosis atau 
 github.com/triton1502oc/Sotto-iOS | Tersedia versi Android
 ```
 
-### What's New *(v1.7.5)*
+### What's New (v1.7.7)
 ```text
-• Selective Category Export: Choose specific phrase categories to export via Backup JSON or cross-platform Android/iOS QR Code Decks with live card counts.
-• Persistent Quick Speak Microphone: Access the microphone while drafting text to seamlessly append dictation to your message.
-• Dynamic Listening Feedback: Visual "Listening…" prompt highlights active speech recognition state in the Quick Speak bar.
-• Resilient Speech Recognition: Preserves partial dictation transcriptions without unexpected text clearing upon silence timeouts.
-• Automated Release Quality: Added rigorous release document synchronization and streamlined TestFlight deployment validation.
+• Share high-contrast phrase cards as 1080×1080 PNG images + text captions via WhatsApp & Messages.
+• Share branded QR deck images and import QR decks from saved photos or chat shares 100% offline.
+• Unified Safety Card terminology and badges across the app.
+```
+
+### Apa yang Baru (v1.7.7)
+```text
+• Bagikan kartu kata kontras tinggi sebagai gambar PNG 1080×1080 + teks ke WhatsApp & aplikasi obrolan.
+• Bagikan gambar QR dek dan impor dek QR dari galeri atau kiriman pesan 100% offline.
+• Penyelarasan istilah Kartu Keselamatan di seluruh aplikasi.
 ```
 
 ### URLs
+* **Public Beta (Apple TestFlight):** `https://testflight.apple.com/join/g38BD5w6`
 * **Support URL:** `https://github.com/triton1502oc/Sotto-iOS/issues`
 * **Marketing URL:** `https://github.com/triton1502oc/Sotto-iOS`
 * **Privacy Policy URL:** `https://github.com/triton1502oc/Sotto-iOS/blob/main/PRIVACY_POLICY.md`
@@ -160,12 +168,13 @@ github.com/triton1502oc/Sotto-iOS | Tersedia versi Android
 | **Social / Vertical Video (Shorts/Reels)** | 1080 x 1920 px (9:16 Portrait @ 30fps) | ✅ Ready: [`demo/sotto_vertical_preview.mp4`](../demo/sotto_vertical_preview.mp4) ([YouTube Shorts](https://youtube.com/shorts/7jKnRHIvJv8)) |
 
 ### Screenshot Set Organization (App Store Review Compliant)
-Both folders contain 5 sequential screens matching App Store Connect review requirements:
+Both folders contain sequential screens matching App Store Connect review requirements and 1:1 parity with Android:
 1. `01_aac_speech_board.png` – Low-stimulus AAC speech grid with Quick-Speak bar
 2. `02_two_way_partner_triage.png` – Caregiver yes/no crisis check-in & 180° tabletop partner mode
 3. `03_why_finder_tree.png` – Why Finder systematic root-cause discovery tree
 4. `04_whylog_analytics.png` – Private on-device Why Log with 30-day pattern insights
-5. `05_bystander_safety_card.png` – Fullscreen Bystander Hero card with TTS readout
+5. `05_bystander_safety_card.png` – Fullscreen Bystander Hero card with TTS readout & high-contrast card sharing
+6. `06_voice_settings.png` – Voice settings, speech rate/pitch sliders, and 5 sensory-friendly color themes
 
 ### Re-generating and Verifying Assets
 To re-generate all creative assets or verify App Store compliance at any time:
@@ -173,6 +182,7 @@ To re-generate all creative assets or verify App Store compliance at any time:
 ./scripts/build_assets.sh          # Re-generate creative assets & verify
 ./scripts/build_assets.sh --all    # Full simulator capture, generation, and verification
 ./scripts/build_assets.sh --verify # Verification check only
+```
 ```
 
 

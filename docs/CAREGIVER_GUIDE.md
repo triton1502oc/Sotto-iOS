@@ -160,10 +160,11 @@ For autistic teens and adults, as well as individuals with unclear, slurred, or 
    - **Delete a Card**: Inside the edit dialog, tap the red **Delete** button.
 3. Tap **`[✓ Done]`** when finished.
 
-### Instant QR Code Deck Sharing (`📷` / `⬛`)
+### Instant QR Code Deck Sharing & Branded PNG Cards (`📷` / `⬛`)
 Exchange communication decks between caregivers, therapists, and users completely offline without internet, cloud logins, or AirDrop:
-- **Export to QR Code**: In Settings > Data & Backup, tap **Export Deck as QR Code**. You can export all phrases or selectively filter specific category chips (with `Select All` / `Clear All` quick toggles and live phrase counts). Sotto encodes phrases into high-density Base64 (`SOTTO:v1:...`) and renders an instant QR code.
-- **Scan QR Code**: In Settings > Data & Backup, tap **Scan QR Code** to launch the camera scanner and instantly import phrase decks from another iPhone, iPad, or Android device.
+- **Export to QR Code & Branded Image**: In Settings > Data & Backup, tap **Export Deck as QR Code**. You can export all phrases or selectively filter specific category chips (with `Select All` / `Clear All` quick toggles and live phrase counts). Tap **Share QR Image** to export a clean, high-density branded PNG image with authentic Sotto icons directly to WhatsApp, Messages, or AirDrop.
+- **Scan QR Code & Pick QR Image**: In Settings > Data & Backup, tap **Scan QR Code** to launch the camera scanner, or tap **Pick QR Image** to import saved QR deck screenshots or received images directly from your photo library 100% offline.
+- **Share High-Contrast Phrase Cards**: In Fullscreen view (long-press any card) or Partner Mode, tap the **Share** button to render and share a 1080×1080 high-contrast PNG card + caption directly to WhatsApp or Messages.
 
 ### Voice & App Settings (`⚙️`)
 Tap the gear icon (`⚙️`) in the top app bar to adjust:

@@ -47,6 +47,11 @@ SCREENS = [
         "filename": "05_bystander_safety_card.png",
         "arg": "--screenshot-safety",
         "description": "Fullscreen Bystander Safety Hero Card"
+    },
+    {
+        "filename": "06_voice_settings.png",
+        "arg": "--screenshot-settings",
+        "description": "Voice Settings & Sensory Palettes"
     }
 ]
 
@@ -90,11 +95,23 @@ def ensure_device_booted(device_id):
     run(f'xcrun simctl status_bar {device_id} override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4')
 
 def capture_screen(device_id, arg, temp_png):
-    run(f"xcrun simctl terminate {device_id} com.amh.sotto 2>/dev/null")
-    time.sleep(0.5)
-    run(f"xcrun simctl launch {device_id} com.amh.sotto {arg}")
-    time.sleep(3.5)
-    run(f"xcrun simctl io {device_id} screenshot {temp_png}")
+    for attempt in range(2):
+        run(f"xcrun simctl terminate {device_id} com.amh.sotto 2>/dev/null")
+        time.sleep(0.5)
+        run(f"xcrun simctl launch {device_id} com.amh.sotto {arg}")
+        time.sleep(4.5)
+        run(f"xcrun simctl io {device_id} screenshot {temp_png}")
+        if os.path.exists(temp_png):
+            try:
+                test_im = Image.open(temp_png)
+                # Check for blank / unrendered screens (less than 1% non-black pixels)
+                non_zero = sum(1 for p in test_im.getdata() if p[:3] != (0, 0, 0))
+                if non_zero > 0.01 * test_im.width * test_im.height:
+                    break
+                print(f"  [Notice] Screen appeared unrendered (attempt {attempt + 1}), retrying...")
+            except Exception:
+                pass
+        time.sleep(1.0)
 
 def process_and_save(temp_png, target_png, expected_size):
     if not os.path.exists(temp_png):
