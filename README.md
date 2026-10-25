@@ -5,6 +5,14 @@
 </p>
 
 <p align="center">
+  <a href="https://testflight.apple.com/join/g38BD5w6">
+    <img src="https://img.shields.io/badge/TestFlight-Install%20iOS%20Beta-007AFF?style=for-the-badge&logo=apple&logoColor=white" alt="Install via TestFlight" height="38"/>
+  </a>
+</p>
+
+<p align="center">
+  📱 <b>Public Beta:</b> <a href="https://testflight.apple.com/join/g38BD5w6"><b>Install on iPhone & iPad via Apple TestFlight</b></a>
+  <br>
   🎬 <b>Video Demo:</b> 
   <a href="https://youtu.be/Qk76_dPfbko">YouTube (Master Preview)</a> •
   <a href="https://youtube.com/shorts/7jKnRHIvJv8">YouTube Shorts</a>
@@ -179,14 +187,26 @@ Sotto-iOS/
 
 ---
 
-## Building and Running
+## Installation & Building
 
-### Requirements
+### Option A: Install via Apple TestFlight (Recommended for Testers)
+
+If you have an iPhone or iPad running iOS 16.0+, you can install and test Sotto immediately without building from source:
+
+1. Open the public beta invitation link on your iOS device: **[Join Sotto Beta on TestFlight](https://testflight.apple.com/join/g38BD5w6)**.
+2. Install Apple's free **TestFlight** app from the App Store if prompted.
+3. Tap **Accept** and **Install**.
+
+---
+
+### Option B: Build and Run from Source (Xcode)
+
+#### Requirements
 - macOS 14.0+
 - Xcode 15.0+
 - iOS 16.0+ Deployment Target (iPhone & iPad)
 
-### Steps
+#### Steps
 1. Clone this repository:
    ```bash
    git clone https://github.com/triton1502oc/Sotto-iOS.git
@@ -207,7 +227,7 @@ Sotto-iOS/
 
 - **Caregiver & User Guide**: See [docs/CAREGIVER_GUIDE.md](docs/CAREGIVER_GUIDE.md) for Two-Way Mode, phrase cards, and emergency protocols.
 - **Language & Localization**: See [docs/LANGUAGE_AND_LOCALIZATION.md](docs/LANGUAGE_AND_LOCALIZATION.md) for TTS voices, audio tuning, and offline translation.
-- **Running on Physical Device**: See [docs/RUNNING_ON_DEVICE.md](docs/RUNNING_ON_DEVICE.md) for signing and installation instructions.
+- **Running on Physical Device**: See [docs/RUNNING_ON_DEVICE.md](docs/RUNNING_ON_DEVICE.md) for TestFlight beta install and Xcode signing instructions.
 - **Curated Scenario Decks**: See [docs/SCENARIO_DECKS.md](docs/SCENARIO_DECKS.md) for scannable QR codes and printable phrase packs (Medical, Transit, School, Dental).
 - **Contributing & Architecture**: See [CONTRIBUTING.md](CONTRIBUTING.md) for design philosophy, architectural guardrails, and verification rules.
 - **Cross-Platform Workflow**: See [docs/CROSS_PLATFORM_WORKFLOW.md](docs/CROSS_PLATFORM_WORKFLOW.md) for the Android-to-iOS porting guide and checklist.

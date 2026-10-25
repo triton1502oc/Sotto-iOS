@@ -142,9 +142,9 @@ Run the one-command TestFlight upload script from the repository root. It automa
 2. Within 5–15 minutes, your uploaded build will finish processing.
    > [!NOTE]
    > If prompted for *Missing Compliance*, click it and confirm that the app uses standard system encryption (`ITSAppUsesNonExemptEncryption` is already in `Info.plist`, so this is usually skipped automatically).
-3. Under **Internal Testing**:
-   - Click **+** next to Internal Groups.
-   - Add your Apple ID as an internal tester.
+3. Under **Internal Testing & External Public Link**:
+   - Internal Testing: Click **+** next to Internal Groups and add your tester Apple IDs.
+   - Public TestFlight Invitation Link: **`https://testflight.apple.com/join/g38BD5w6`** (testers can install directly without individual email invites).
 4. On your iPhone/iPad, open the **TestFlight** app, install Sotto, and verify:
    - App launches cleanly on both iPhone and iPad in Portrait and Landscape orientations.
    - Tap phrase cards to verify text-to-speech with natural voices (Samantha/Siri/Damayanti).

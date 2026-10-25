@@ -1,8 +1,21 @@
 # Running Sotto on a Physical iOS Device (iPhone / iPad)
 
-**TL;DR**: Connect your iPhone or iPad via USB, configure a free personal development team in Xcode, trust your developer certificate on the device, and press `Cmd + R` (or use `xcrun devicectl`) to install and run.
+**TL;DR**: For testers, install directly via the **[TestFlight Public Beta](https://testflight.apple.com/join/g38BD5w6)** (no Mac or Xcode required). For developers building from source, connect via USB, configure a free personal development team in Xcode, trust your developer certificate on the device, and press `Cmd + R` (or use `xcrun devicectl`) to install and run.
 
 ---
+
+## Method 1: Install via Apple TestFlight (Recommended for Testers)
+
+If you are testing Sotto on an iPhone or iPad running iOS 16.0+, you do not need a Mac or Xcode:
+
+1. On your iPhone or iPad, open the public invitation link: **[https://testflight.apple.com/join/g38BD5w6](https://testflight.apple.com/join/g38BD5w6)**.
+2. If prompted, install Apple's free **TestFlight** app from the App Store.
+3. Tap **Accept** and **Install** to install Sotto.
+4. Updates will be delivered automatically whenever a new beta build is published.
+
+---
+
+## Method 2: Build & Install from Source via Xcode (Developers)
 
 ### 1. Prerequisites
 - A Mac with **Xcode 15.0+** installed.
